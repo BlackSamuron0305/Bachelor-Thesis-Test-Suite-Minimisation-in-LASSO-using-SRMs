@@ -1,0 +1,141 @@
+% ---------------------------------------
+%
+%    Bachelor Thesis Template
+%
+% ---------------------------------------
+
+\documentclass[
+    headings=small,       % smaller headings
+    twoside=off,          % one-sided, only right-hand pages
+    listof=totoc,         % include lists in table of contents
+    bibliography=totoc,   % include bibliography in table of contents
+    headsepline,          % separation line under header
+    12pt,	              % font size
+	]{scrbook}
+
+\usepackage[left=4cm,right=2.5cm,top=3.7cm,bottom=4cm]{geometry}
+\usepackage[english, ngerman]{babel}    % use German and American hyphenation
+\usepackage[utf8]{inputenc}             % umlauts can be written in the usual way
+\usepackage[super]{nth}                 % superscript
+\usepackage{listings}                   % to support code listings
+\usepackage[toc,title,page]{appendix}   % for the correct appendix representation
+\usepackage{subfigure}                  % to support multipart figures
+\usepackage{epsfig}                     % to allow figures to be embedded with epsfig.
+\usepackage{graphicx}                   % to support figure embedding
+\usepackage{csquotes}                   % for the biblatex package
+\graphicspath{{graphics}{../}{kapitel}} % to support picture inclusion using the includegraphics command, so the whole path does not have to be inserted
+
+\usepackage{multirow}                   % to support complex tables
+\usepackage{longtable}	                % to support complex tables
+\usepackage{rotating}	                % to enable landscape pages
+\usepackage{framed}
+\usepackage{scrlayer-scrpage}           % to support headers and footers
+\pagestyle{scrheadings}                 % the header style
+
+\usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating
+
+\usepackage[urldate=long, dateabbrev=true]{biblatex}
+\addbibresource{literature/lit.bib}
+
+
+
+\usepackage[
+pdftitle={The title of this paper},     % the title to display for pdfs
+pdfauthor={The Author},                 % set the author
+colorlinks,                             % setw link color for all links to black, i.e. invisible but working links
+citecolor=black,
+filecolor=black,
+linkcolor=black,
+urlcolor=black, 
+plainpages=false,    % used with pdfpagelabels to make pdf readers show roman and arabic page numbers correctly
+pdfpagelabels        % used with plainpages=false to make pdf readers show roman and arabic page numbers correctly
+]{hyperref}          %include hyperlinks for citations, urls, and references
+
+
+\usepackage{setspace}
+\usepackage{url}          % for urls: notation is \url{http://www.uni-mannheim.de}, for example
+%\urlstyle{same} makes urls in the same font as the rest of the text
+
+\usepackage{array}        % for table column types
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+% generates a list of abbreviations automatically: 2x latex, makeindex myfile.nlo -s nomencl.ist -o myfile.nls, 2x latex
+\usepackage{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
+
+
+\let\abbrev\nomenclature
+\renewcommand{\nomname}{List of Abbreviations} 
+\setlength{\nomlabelwidth}{.25\hsize}
+\renewcommand{\nomlabel}[1]{#1 \dotfill}
+\setlength{\nomitemsep}{-\parsep}
+\makenomenclature
+\newcommand{\Listofabbrev}{
+\printnomenclature
+\newpage
+}
+
+
+\setlength{\parindent}{0pt}	        % indention of new paragraph
+\setlength{\parskip}\medskipamount  % space between new paragraphs
+\onehalfspacing                     % sets the line spacing to 1,5
+
+\setkomafont{sectioning}{\normalfont\normalcolor\bfseries}
+
+% header design
+\ohead{\pagemark}
+\ifoot{}
+\cfoot{}
+\ofoot{} 
+\cohead{}
+\ihead{\headmark}
+\setkomafont{pagehead}{\normalfont\bfseries}
+\setkomafont{pagenumber}{\normalfont\bfseries}
+\automark{chapter}
+\automark*{section}
+
+
+\begin{document}           % start of the document 
+\selectlanguage{english}   % English hyphenation
+\frontmatter               % Roman numerals for lead pages
+
+\newgeometry{margin=3cm}
+\include{sections/title}    % includes front page
+\restoregeometry
+\include{sections/abstract} % include the abstract
+\tableofcontents            % includes table of contents
+
+\listoffigures              % includes list of figures
+\listoftables               % includes list of tables
+\clearpage                  % tell the ToC that there is a page break after list of tables, however the hyperlink still points to the wrong page
+\addcontentsline{toc}{chapter}{\nomname} 
+
+\Listofabbrev               %  list of abbreviations
+
+\mainmatter                 % main part, arabic numerals for chapters
+\input{sections/abbreviations}
+\include{sections/introduction}
+\include{sections/implementation}
+\include{sections/conclusion}
+
+%Backmatter, if the list of tables, figures or abbreviations are longer than 1 page set the correct page counter!
+\backmatter
+\pagenumbering{roman}
+\setcounter{page}{7}
+
+%Bibliography
+\printbibliography
+
+
+%Appendix
+\renewcommand{\appendixpagename}{Appendix}
+\renewcommand{\appendixtocname}{Appendix}
+\renewcommand{\thesection}{\Alph{section}.\arabic{section}}
+\setcounter{section}{0}
+\input{sections/append}
+
+% Declaration of Authorship
+\include{sections/Authorship}
+
+% Assignment of Usage Rights
+\include{sections/UsageRights}
+
+\end{document}
