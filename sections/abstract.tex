@@ -1,4 +1,8 @@
 \chapter{Abstract}
 
-The abstract goes here.
+Software testing has become increasingly resource-intensive, often consuming nearly half of a software system's development budget~\cite{Boehm1981}. Large-scale test suites in modern projects can include thousands of automatically generated test cases, taking days or even weeks to execute~\cite{Rothermel1998}. This escalating complexity and cost of testing demand effective strategies to maintain manageable, high-impact test suites. \textit{Test suite minimization} offers a solution by eliminating redundant tests to reduce execution time and maintenance overhead~\cite{Wong1995}. However, naïve reduction of test suites can risk omitting tests that detect faults, potentially undermining software quality~\cite{Yoo2012}. 
+
+The LASSO platform (Large-Scale Software Observatorium) at the University of Mannheim provides comprehensive support for automated large-scale code analysis and testing in Java~\cite{Kessel2022}, including the generation of extensive test suites. Currently, LASSO lacks a built-in mechanism for test suite minimization, leaving an efficiency gap in its otherwise powerful testing pipeline. This thesis addresses that gap by investigating state-of-the-art Java-based test suite minimization techniques and integrating the most effective solution into LASSO. We survey existing approaches—coverage-based, fault-detection-preserving, and heuristic methods (e.g., greedy algorithms, clustering)—and evaluate them on real-world test suites in terms of reduction ratio and coverage preservation. Based on this analysis, we implement the best-performing minimization technique within LASSO. 
+
+The contributions of this work include a systematic evaluation of test suite minimization tools, empirical benchmarks of their impact on test suite size and coverage, and the extension of the LASSO platform with an integrated minimization capability to enhance its testing efficiency.
 

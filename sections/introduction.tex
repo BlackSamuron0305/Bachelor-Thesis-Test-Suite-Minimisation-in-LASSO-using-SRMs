@@ -1,70 +1,51 @@
 \chapter{Introduction}
 
-This document provides an overview of the requirements for preparing a master thesis at the Chair of Software Engineering at the University of Mannheim. It also serves as a template for the format of the thesis, which is available in both a LaTeX\footnote{An introduction to using LaTex is available here: \textit{https://en.wikibooks.org/wiki/LaTeX}} and Word form. This document, and other resources for the thesis, are provided in the resources folder of the corresponding Ilias group.  
+\section{Background and Motivation}
+Quality assurance through software testing is increasingly challenging as software systems grow in scale and complexity. Testing activities can require substantial time and resources—often accounting for 40--50\% of total development costs~\cite{Boehm1981}. As projects evolve, their test suites tend to expand cumulatively~\cite{Rothermel1998}. Prior studies have observed that regression test suites for enterprise systems may run for days or weeks~\cite{Rothermel1998}, delaying feedback in continuous integration and increasing the cost of each testing cycle. 
 
-\chapter{General Requirements}
+Automated test generation techniques exacerbate this issue by producing many overlapping or redundant tests. This leads to bloated test suites that are harder to maintain while adding little new coverage~\cite{Yoo2012}. Industry standards such as ISO/IEC/IEEE 29119~\cite{ISO29119} emphasize systematic test design and maintenance, highlighting the need for techniques like \textit{test suite minimization}~\cite{Wong1995}. Minimization aims to remove redundant tests while preserving coverage and fault-detection effectiveness. Since finding the optimal minimal subset is NP-complete~\cite{Wong1995}, practical approaches rely on heuristics such as greedy set-cover approximations, clustering, or machine learning~\cite{Yoo2012,Noemmer2020}. 
 
-Each chapter begins on a new page. This chapter gives a short overview of the formal requirements for a master thesis at the Software Engineering Group at the University of Mannheim and clarifies the submission process. Please keep in mind that you also have to adhere to the respective examination regulations of your course of study.
+Empirical studies show the trade-offs involved: Noemmer and Haas~\cite{Noemmer2020} found that minimization can reduce suite size by 70\% while incurring an average 12.5\% loss in fault detection. This balance between efficiency and effectiveness underscores the importance of careful selection of minimization techniques.
 
-The detailed requirements are listed in Table 1 below. All master theses must be prepared using either the Word or LaTex templates, which can be found in the resources folder of the Ilias group. In addition, the basic rules of scientific writing have to be observed, such as identifying the sources of your work and verbatim quotes, etc.
+\section{LASSO Context}
+The \textbf{LASSO} platform (Large-Scale Software Observatorium) was developed at the University of Mannheim to support scalable software analysis and experimentation~\cite{Kessel2022}. It integrates static and dynamic analysis at scale, supports automated test generation, and provides a domain-specific language (LSL) for orchestrating analysis pipelines. Despite these capabilities, LASSO currently lacks automated test suite minimization. As a result, generated test suites may grow excessively large, undermining LASSO's efficiency. Integrating minimization techniques directly into LASSO will reduce redundant test execution and improve throughput in large-scale testing workflows.
 
-
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|M{0.42\textwidth}|M{0.42\textwidth}|}
-\hline
-Minimum number of content-bearing pages (i.e. the arabically numbered pages) & 30 (inclusive)\\ 
-\hline
-Maximum number of content-bearing pages (i.e. the arabically numbered pages) & 35 (inclusive)\\
-\hline
-List of Figures & yes\\
-\hline
-List of Tables & yes\\
-\hline
-Declaration of Authorship & yes\\
-\hline
-Assignment of Rights & yes\\
-\hline
-Duration & 3 months\\
-\hline
-Number of copies to be submitted & Two copies (hard bound, dark blue cover) to the chair's office
-\\
-\hline
-Work products & Upload to ILIAS\\
-\hline
-\end{tabular}
-\caption{Overview of the requirements \label{tableAnforderungen}}
-\end{table}
-
-These requirements are \textbf{mandatory}. Theses which are too short or too long or do not meet the other requirements defined in this document will have a reduced grade and may fail. The Chair of Software Engineering reserves the right to check the originality of the submission using software such as TurnItIn (https://www.turnitin.com/).
-
-%\section{Figures}
-\begin{figure}
-    \centering
-    \includegraphics{graphics/diagram.pdf}
-    \caption{Example Figure}
-    \label{fig:my_label}
-\end{figure}
-
-
-\section{References and Literature}
-
-Good sources of literature for preparing a Computer Science thesis can be found here:
-
+\section{Problem Statement}
+While LASSO provides robust test generation and analysis, it lacks functionality for reducing redundant test suites. This leads to:
 \begin{itemize}
-\item IEEE Computer Society Digital Library: \url{http://www.computer.org/portal/site/csdl/index.jsp}
-\item ACM Digital Library: \url{http://portal.acm.org/dl.cfm}
-\item CEUR Workshop Proceedings: \url{http://ceur-ws.org/}
-\item Springer Link: \url{http://www.springerlink.com/home/main.mpx}
+    \item Increased execution times,
+    \item Higher computational and storage costs,
+    \item Maintenance overhead, and
+    \item Reduced efficiency of continuous integration workflows.
 \end{itemize}
+This thesis investigates how test suite minimization can be integrated into LASSO to address these issues.
 
-The ACM and Springer documents are free of charge if accessed with a university IP (e.g. over a VPN connection or from the PI pool). For the IEEE library, the login details can be obtained at the university library. CEUR documents are all freely accessible. The bibliography has to be structured according to the specifications defined by the template, and citations should have this form: \cite{tannenbaum}, which is the IEEE referencing \cite{IEEEStyle}. This is taken care of automatically by the LaTeX template.
+\section{Research Objectives}
+The objectives of this thesis are:
+\begin{enumerate}
+    \item To survey state-of-the-art test suite minimization techniques and tools for Java.
+    \item To benchmark these techniques on real-world Java projects, measuring reduction ratio, coverage, and fault-detection preservation.
+    \item To select the best-performing approach based on empirical results.
+    \item To integrate this approach into the LASSO platform's pipeline.
+    \item To evaluate the integration's impact on LASSO's efficiency and effectiveness.
+\end{enumerate}
 
-\section{Submission}
+\section{Research Questions}
+\begin{enumerate}
+    \item What test suite minimization techniques and tools are available for Java, and what are their strengths and limitations?
+    \item How do these techniques perform in terms of reduction ratio, coverage preservation, and fault-detection effectiveness?
+    \item Which approach provides the best trade-off between efficiency and effectiveness for integration into LASSO?
+    \item What are the benefits and drawbacks of integrating minimization into LASSO's workflow?
+\end{enumerate}
 
-The two physical copies of the thesis, printed double-sided, must be submitted by the agreed deadline to the group’s office. In addition, a PDF version of the thesis along with all work products (e.g. code, models, questionnaires…) must be uploaded to the respective Ilias group. If the theses are not submitted by the agreed deadline, the examination conditions have not been satisfied and you will receive a grade 5.0.
-
-Once the physical and soft copies of the thesis have been received, and all items borrowed from the group (e.g. keys, books) have been returned, the Studienbüro will be informed that the thesis has been successfully submitted. However, the thesis will NOT be graded, or certified as being sufficient for a passing grade, until after the submission deadline.
+\section{Thesis Structure}
+This thesis is structured as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2:} Literature review of test suite minimization approaches and tools.
+    \item \textbf{Chapter 3:} Methodology and experimental design for benchmarking minimization techniques.
+    \item \textbf{Chapter 4:} Design and implementation of the integration into LASSO.
+    \item \textbf{Chapter 5:} Evaluation of the integration and analysis of results.
+    \item \textbf{Chapter 6:} Conclusion and outlook for future work.
+\end{itemize}
 
 
