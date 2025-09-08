@@ -1,0 +1,32 @@
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.nlo
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# LaTeX temporary files
+*.auxlock
+*.figlist
+*.makefile
+*.nav
+*.snm
+*.vrb
+*.xdy
+*.tdo
+
+# LaTeX build directories
+build/
+output/
+
+# Keep only the final PDF
+# All other generated files will be ignored
