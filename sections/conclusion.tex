@@ -1,3 +1,17 @@
 \chapter{Conclusion}
 
-Every thesis should start with an Introduction section and end with a Conclusion section. The other sections in between should be adapted to the specific topic of the thesis.
+Test suite minimisation is essential for reducing redundancy and execution time
+in automatically generated test suites.  A comprehensive literature review shows
+that while exact optimisation techniques and search‑based methods can achieve
+high reduction, they incur substantial computational cost and require program
+structure or parameter tuning.  Greedy heuristics, particularly the
+Harrold–Gupta–Soffa (HGS) algorithm, provide a balanced trade‑off between
+reduction and preservation of coverage and mutation scores.  Industrial studies
+highlight the benefits of considering overlap between tests to further improve
+selection effectiveness.  This thesis therefore proposes to implement an
+overlap‑aware HGS minimiser on Stimulus–Response Matrices in the LASSO
+platform.  The forthcoming implementation will transform SRMs into optimised
+suites and empirically evaluate reduction ratio, coverage retention, mutation
+score and fault detection.  The results will inform improvements and
+extensions, such as incorporating mutation scores into selection metrics or
+combining overlap awareness with clustering techniques.

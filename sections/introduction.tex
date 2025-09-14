@@ -1,51 +1,98 @@
 \chapter{Introduction}
 
+Software testing is essential for ensuring that changes to a program do not
+introduce new faults.  As systems grow in size and complexity, their test
+suites can become extremely large—automated generation tools such as Randoop
+and EvoSuite may produce thousands of test cases.  While these suites achieve
+high code coverage and mutation scores, they often contain many redundant
+tests, leading to long execution times and increased maintenance costs.  Test
+suite minimisation aims to remove redundant tests while preserving the
+effectiveness of the suite.  This thesis investigates how to perform test
+suite minimisation directly on \emph{Stimulus–Response Matrices} (SRMs) within
+the LASSO platform.
+
 \section{Background and Motivation}
-Quality assurance through software testing is increasingly challenging as software systems grow in scale and complexity. Testing activities can require substantial time and resources—often accounting for 40--50\% of total development costs~\cite{Boehm1981}. As projects evolve, their test suites tend to expand cumulatively~\cite{Rothermel1998}. Prior studies have observed that regression test suites for enterprise systems may run for days or weeks~\cite{Rothermel1998}, delaying feedback in continuous integration and increasing the cost of each testing cycle. 
-
-Automated test generation techniques exacerbate this issue by producing many overlapping or redundant tests. This leads to bloated test suites that are harder to maintain while adding little new coverage~\cite{Yoo2012}. Industry standards such as ISO/IEC/IEEE 29119~\cite{ISO29119} emphasize systematic test design and maintenance, highlighting the need for techniques like \textit{test suite minimization}~\cite{Wong1995}. Minimization aims to remove redundant tests while preserving coverage and fault-detection effectiveness. Since finding the optimal minimal subset is NP-complete~\cite{Wong1995}, practical approaches rely on heuristics such as greedy set-cover approximations, clustering, or machine learning~\cite{Yoo2012,Noemmer2020}. 
-
-Empirical studies show the trade-offs involved: Noemmer and Haas~\cite{Noemmer2020} found that minimization can reduce suite size by 70\% while incurring an average 12.5\% loss in fault detection. This balance between efficiency and effectiveness underscores the importance of careful selection of minimization techniques.
+Regression testing verifies that software modifications do not break existing
+functionality.  Software testing has become a major cost factor: early
+studies estimate that it can consume nearly half of a software system's
+development budget\cite{boehm1981}.  Large-scale test suites in modern
+projects may contain thousands of automatically generated test cases and
+take days or even weeks to execute\cite{rothermel1998}.  This escalating
+complexity and cost demand effective strategies to keep test suites
+manageable.  Test-suite minimisation offers a solution by removing
+redundant tests to reduce execution time and maintenance overhead.  Yet
+naïve reduction risks omitting tests that detect faults and thereby
+undermines software quality\cite{yoo2012}.  Balancing reduction with
+coverage and fault-detection retention is therefore crucial.
 
 \section{LASSO Context}
-The \textbf{LASSO} platform (Large-Scale Software Observatorium) was developed at the University of Mannheim to support scalable software analysis and experimentation~\cite{Kessel2022}. It integrates static and dynamic analysis at scale, supports automated test generation, and provides a domain-specific language (LSL) for orchestrating analysis pipelines. Despite these capabilities, LASSO currently lacks automated test suite minimization. As a result, generated test suites may grow excessively large, undermining LASSO's efficiency. Integrating minimization techniques directly into LASSO will reduce redundant test execution and improve throughput in large-scale testing workflows.
+
+The Large-Scale Software Observatorium (LASSO) is a research platform
+developed at the University of Mannheim for large-scale software analysis.
+It integrates static and dynamic analysis, automated test generation and
+a domain-specific language for orchestrating analysis pipelines.  LASSO
+records test executions in \emph{Stimulus–Response Matrices}.  An SRM is a
+binary matrix where each row represents a test and each column represents a
+coverage requirement (statement, branch or mutant); an entry of~1 indicates
+that the test covers the requirement.  Although LASSO provides powerful
+analysis capabilities, it currently lacks an integrated test-suite minimisation
+component.  Adding minimisation would reduce redundant test execution and
+improve pipeline throughput.
 
 \section{Problem Statement}
-While LASSO provides robust test generation and analysis, it lacks functionality for reducing redundant test suites. This leads to:
-\begin{itemize}
-    \item Increased execution times,
-    \item Higher computational and storage costs,
-    \item Maintenance overhead, and
-    \item Reduced efficiency of continuous integration workflows.
-\end{itemize}
-This thesis investigates how test suite minimization can be integrated into LASSO to address these issues.
 
-\section{Research Objectives}
-The objectives of this thesis are:
+Let~$T$ be a set of test cases and let~$R$ be the set of coverage
+requirements.  Each test~$t\in T$ covers a subset $C(t)\subseteq R$.
+Executing the entire suite~$T$ yields full coverage $C(T)=\bigcup_{t\in T}C(t)$.
+The \emph{test suite minimisation} problem asks for the smallest subset
+\(S^*\subseteq T\) such that $C(S^*)=C(T)$.  Solving this problem exactly is
+NP-complete because it reduces to the set-cover problem.
+Practical techniques therefore rely on heuristics and approximations that
+balance reduction ratio, coverage retention and computational cost.
+
+\section{Research Objectives and Questions}
+
+The goal of this thesis is to design and implement an SRM-based test-suite
+minimiser for LASSO.  To achieve this goal, we address the following
+research questions:
 \begin{enumerate}
-    \item To survey state-of-the-art test suite minimization techniques and tools for Java.
-    \item To benchmark these techniques on real-world Java projects, measuring reduction ratio, coverage, and fault-detection preservation.
-    \item To select the best-performing approach based on empirical results.
-    \item To integrate this approach into the LASSO platform's pipeline.
-    \item To evaluate the integration's impact on LASSO's efficiency and effectiveness.
+  \item Which test-suite minimisation techniques are most widely studied and
+        effective according to the literature?
+  \item What criteria should be used to evaluate these techniques for
+        integration into the SRM-based LASSO environment?
+  \item Which technique best balances reduction ratio, coverage retention and
+        scalability for use with LASSO?
 \end{enumerate}
 
-\section{Research Questions}
-\begin{enumerate}
-    \item What test suite minimization techniques and tools are available for Java, and what are their strengths and limitations?
-    \item How do these techniques perform in terms of reduction ratio, coverage preservation, and fault-detection effectiveness?
-    \item Which approach provides the best trade-off between efficiency and effectiveness for integration into LASSO?
-    \item What are the benefits and drawbacks of integrating minimization into LASSO's workflow?
-\end{enumerate}
+\section{Implementation Strategy}
+
+Existing test-suite reduction tools (for example, the Java
+Software Reduction framework) often support only a single programming
+language or rely on language-specific program representations.
+Because LASSO analyses software written in diverse languages, this thesis
+adopts a language-independent strategy.  Rather than
+integrating a pre-implemented program with limited language
+support, we propose to implement the minimisation algorithm ourselves
+directly on the SRM.  This approach enables reduction of test suites
+generated for any language supported by LASSO and avoids dependencies
+on external tools with fixed language bindings.
 
 \section{Thesis Structure}
-This thesis is structured as follows:
-\begin{itemize}
-    \item \textbf{Chapter 2:} Literature review of test suite minimization approaches and tools.
-    \item \textbf{Chapter 3:} Methodology and experimental design for benchmarking minimization techniques.
-    \item \textbf{Chapter 4:} Design and implementation of the integration into LASSO.
-    \item \textbf{Chapter 5:} Evaluation of the integration and analysis of results.
-    \item \textbf{Chapter 6:} Conclusion and outlook for future work.
-\end{itemize}
+
+The remainder of this thesis is organised as follows:
+\begin{description}
+  \item[Chapter~2] introduces the fundamentals of code coverage, mutation
+    testing, SRMs and formalises the test-suite minimisation problem.
+  \item[Chapter~3] provides a comprehensive literature review of existing
+    minimisation techniques, grouped into greedy heuristics, exact
+    optimisation, search-based methods, data-driven approaches and empirical
+    evaluations.
+  \item[Chapter~4] defines evaluation criteria and compares candidate
+    algorithms using these criteria.
+  \item[Chapter~5] presents the rationale for selecting the Harrold–Gupta–Soffa
+    algorithm with overlap-aware heuristics and outlines the proposed
+    minimisation workflow.
+  \item[Chapter~6] concludes the thesis and discusses future work.
+\end{description}
 
 

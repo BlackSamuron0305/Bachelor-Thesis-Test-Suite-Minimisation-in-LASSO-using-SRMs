@@ -1,0 +1,132 @@
+\chapter{Literature Review}\label{chap:literature-review}
+
+This chapter surveys the principal test-suite minimisation (TSM)
+approaches proposed in the literature.  The techniques are grouped into
+greedy heuristics, exact optimisation, search-based methods,
+data-driven techniques and empirical evaluations.
+
+\section{Greedy Heuristics}
+
+\subsection{Classical Greedy Algorithm}
+
+The simplest heuristic for set cover---and thus TSM---selects at each
+step the test case that covers the maximum number of yet-uncovered
+requirements.  After selecting a test, all requirements it covers are
+removed from consideration and the process repeats until all
+requirements are covered.  Although easy to implement, this algorithm
+does not consider overlap among tests and may select sub-optimal
+subsets.  Despite its simplicity, it serves as a baseline and is
+widely used in practice.
+
+\subsection{Harrold--Gupta--Soffa Algorithm}
+
+Harrold, Gupta and Soffa proposed a variant that sorts requirements by
+the number of tests covering them\cite{harrold1993}.  The HGS algorithm
+first selects all tests that are the sole coverers of any requirement.
+It then repeatedly selects tests that cover requirements shared by
+exactly two tests, followed by those shared by three tests, and so on.
+In the case of ties, tests that appear most frequently in requirements
+of higher cardinality are chosen.  This method emphasises rare
+requirements because such tests cannot be discarded without losing
+coverage.  HGS typically produces smaller suites than classical greedy
+but can still miss the optimal solution.  Smith et al. implemented HGS
+in a call-tree-based tool and found that reduced suites
+contained 45~\% fewer tests and consumed 82~\% less execution time
+compared with the original suite\cite{harrold1993}.
+
+\subsection{Delayed Greedy (Concept Analysis)}
+
+Tallam and Gupta introduced a delayed greedy approach inspired by
+concept analysis\cite{tallam2005}.  Each test case is an object and
+each requirement is an attribute; coverage relationships form a context
+table.  The algorithm removes rows or columns when one test's coverage
+implies another (for example, if test $t$ covers all requirements of
+test $u$, then $u$ is redundant).  Only after these implications are
+resolved does it apply a greedy heuristic to select tests.  Empirical
+results show that delayed greedy often produces smaller suites than
+HGS and classical greedy with comparable runtime.  However, building
+and analysing concept lattices is computationally expensive for large
+SRMs.
+
+\section{Exact Optimisation Techniques}
+
+\subsection{Integer Linear Programming and Weighted Set Cover}
+
+The TSM problem can be formulated as a weighted set-cover
+problem: each test case represents a set of instructions and has an
+associated cost (for example, execution time).  The objective is to
+minimise total cost while covering all instructions.  In weighted set
+cover, each set has a cost, and the goal is to minimise the cost of the
+selected sets.  Exact solutions can be obtained by solving an
+integer linear program: minimise the sum of selected test costs subject
+to constraints that ensure every requirement is covered at least
+once.  ILP solvers (for example, GLPK) use branch-and-bound and
+cutting planes to approximate or find optimal solutions, but the
+approach is computationally expensive and feasible only for
+moderately sized suites.
+
+\subsection{REDUNET: ILP with Network-Based Optimisation}
+
+Mongiovì et al. proposed REDUNET, which integrates set-cover ILP with
+a control-flow-graph (CFG) analysis\cite{mongiovi2020}.  The
+algorithm reduces the ILP problem size by pruning CFG nodes that are
+guaranteed to be executed even if excluded from the optimisation step.
+By combining ILP and CFG analysis, REDUNET achieves optimal
+test-suite reduction while preserving code coverage.  Experiments on
+ten projects showed reductions of up to 90~\% and execution times
+faster than both pure ILP and HGS heuristics\cite{mongiovi2020}.
+However, solving an ILP still incurs higher computational cost than
+greedy heuristics, and implementing CFG analysis requires access to
+internal program structure, which may not be available in LASSO's SRM.
+
+\section{Search-Based and Meta-Heuristic Methods}
+
+Search-based software engineering treats TSM as a search problem.
+Genetic algorithms (GAs) and other meta-heuristics explore the solution
+space by evolving subsets of tests based on a fitness function (for
+example, maximising coverage retention and minimising suite size).
+Hussein et al. summarise the history of these methods and note that
+TSM is NP-complete; they propose a quantum-inspired genetic
+algorithm (QIGA) that uses quantum superposition and rotation
+operators to improve convergence\cite{hussein2020}.  Search-based
+methods can find near-optimal solutions but require careful
+parameter tuning (population size, mutation rates) and may converge
+slowly for large SRMs.
+
+\section{Data-Driven Techniques and Clustering}
+
+Several works propose clustering or similarity-aware approaches to
+TSM.  Bach et al. applied overlap-aware algorithms to
+prioritisation and selection in an industrial setting.  They observed
+that considering the size of the overlap (intersection) between tests
+can lead to up to 50~\% higher code coverage within a fixed time budget
+compared with traditional algorithms\cite{bach2017}.  Their study also
+highlighted challenges such as high redundancy in coverage data and
+randomness due to flaky tests.  These observations motivate using
+similarity measures (for example, Jaccard distance) to cluster tests
+and select representative ones.
+
+\section{Empirical Evaluations}
+
+Empirical studies reveal the trade-offs of TSM.  Rothermel et al.'s
+early experiments (cited by subsequent work) showed that removing
+tests can significantly reduce execution time but may also degrade
+fault detection.  Smith et al. developed a call-tree-based tool
+that implements HGS and several greedy variants for regression
+testing.  Their experiments on Java programs found that the reduced
+suite contained 45~\% fewer tests and consumed 82~\% less execution time
+than the original suite; HGS first selects tests that uniquely cover a
+call-tree path and then iteratively chooses tests with maximal
+additional coverage\cite{harrold1993}.  Overlap-aware greedy
+heuristics recalculated cost effectiveness after each selection and
+achieved better trade-offs.  Shi et al. analysed 1,478 failed
+builds from 32 open-source projects and introduced the
+\emph{Failed-Build Detection Loss} (FBDL) metric: the percentage of
+failed builds where the reduced suite misses faults detected by the
+original suite.  They found FBDL values up to 52.2~\%, significantly
+higher than suggested by traditional TSM metrics\cite{shi2018}.  Noemmer
+and Haas compared four minimisation algorithms on several open-source
+projects and reduced suites by over 70~\%, but observed an average
+12.5~\% loss in fault detection capability\cite{noemmer2020}.  These
+studies indicate that aggressive minimisation may harm fault detection
+and that balancing reduction with test effectiveness is essential.

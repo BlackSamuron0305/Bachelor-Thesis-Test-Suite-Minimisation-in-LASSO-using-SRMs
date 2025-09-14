@@ -1,0 +1,77 @@
+\chapter{Fundamentals}
+
+This chapter introduces the basic concepts underlying this thesis.  It
+explains the metrics used to quantify the effectiveness of a test suite,
+describes the \emph{Stimulus--Response Matrix} (SRM) representation used in
+the LASSO platform and formalises the test-suite minimisation problem.
+
+\section{Test Coverage and Mutation Score}
+
+\emph{Code coverage} measures the proportion of program elements
+(statements, branches, etc.) exercised by a test suite.  As additional
+test cases are generated automatically, coverage tends to plateau:
+after a certain point, adding more tests yields diminishing
+improvements.  In this work we also consider \emph{mutation testing}.
+Mutation testing introduces small syntactic changes (\emph{mutants})
+into the program and measures whether the test suite detects these
+faults.  A \emph{mutation score} is the ratio of mutants killed to the
+total number of mutants; a score of~1.0 means that all mutants are
+detected.  Mutation analysis provides a stronger measure of test
+effectiveness than coverage alone because it evaluates the
+fault-detection capability of tests.  We refer the reader to the
+mutation analysis chapter of the Fuzzing Book for a detailed
+explanation of mutation testing and its applications\cite{fuzzingbook}.
+
+\section{Stimulus--Response Matrices}
+
+The LASSO platform records test executions in \emph{Stimulus--Response
+Matrices}.  An SRM is a binary matrix $M \in \{0,1\}^{n\times m}$ where
+$n$ is the number of test cases and $m$ is the number of coverage
+requirements.  Each row of~$M$ represents a test case and each column
+represents a requirement such as a statement, branch or mutant.  An
+entry $M_{ij}=1$ indicates that test~$i$ covers requirement~$j$;
+otherwise $M_{ij}=0$.  SRMs enable coverage and mutation information to
+be stored compactly and manipulated algebraically.  For example,
+summing each column yields the number of tests covering each
+requirement, while summing each row yields the number of requirements
+covered by each test.
+
+\section{The Test-Suite Minimisation Problem}
+
+Let $T=\{t_1,\dots,t_n\}$ be a set of test cases and let $R=\{r_1,\dots,r_m\}$
+be the set of coverage requirements.  Each test~$t \in T$ covers a
+subset $C(t) \subseteq R$ corresponding to the columns in the SRM with
+value~1.  Executing the full suite~$T$ yields full coverage
+$C(T)=\bigcup_{t \in T} C(t)$.  The \emph{test-suite minimisation
+problem} asks for the smallest subset $S^* \subseteq T$ such that
+$C(S^*)=C(T)$.  This problem is an instance of the classical
+\emph{set-cover problem} and is NP-complete: no
+polynomial-time algorithm can guarantee an exact solution for
+arbitrary test suites.  Practical approaches therefore employ
+heuristics or approximations.  Existing techniques can be grouped into
+several broad categories:
+
+\begin{itemize}
+  \item \textbf{Greedy heuristics.}  These algorithms iteratively
+    choose tests based on coverage information.  Examples include the
+    classical greedy algorithm that selects the test covering the most
+    yet-uncovered requirements, and the Harrold--Gupta--Soffa (HGS)
+    algorithm that prioritises tests covering rare requirements.
+  \item \textbf{Exact optimisation.}  The minimisation problem can be
+    formulated as a weighted set-cover or integer linear programming
+    (ILP) problem.  ILP solvers can compute optimal solutions for
+    moderately sized suites but do not scale well to very large
+    matrices.
+  \item \textbf{Search-based and meta-heuristics methods.}
+    Genetic algorithms and quantum-inspired genetic algorithms treat
+    minimisation as a search problem, evolving subsets of tests using a
+    fitness function that balances size and coverage.
+  \item \textbf{Data-driven techniques.}  Approaches based on
+    clustering or similarity metrics select representative tests by
+    exploiting redundancy in the SRM.  Overlap-aware heuristics
+    consider the intersection between tests to avoid selecting tests
+    with largely duplicated coverage.
+\end{itemize}
+
+These categories provide the framework for the subsequent literature
+review and evaluation of minimisation algorithms.

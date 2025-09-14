@@ -32,15 +32,13 @@
 \usepackage{scrlayer-scrpage}           % to support headers and footers
 \pagestyle{scrheadings}                 % the header style
 
-\usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating
+\usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating% to control the how many levels of subsection nesting are shown in the table of contents
 
 \usepackage[urldate=long, dateabbrev=true]{biblatex}
 \addbibresource{literature/lit.bib}
 
-
-
 \usepackage[
-pdftitle={Integrating Test Suite Minimization into LASSO},     % the title to display for pdfs
+pdftitle={Test Suite Minimisation in LASSO Using Stimulus--Response Matrices},     % the title to display for pdfs
 pdfauthor={Laith Philipp Sandoukr},                 % set the author
 colorlinks,                             % setw link color for all links to black, i.e. invisible but working links
 citecolor=black,
@@ -58,6 +56,8 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 
 \usepackage{array}        % for table column types
 \newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\usepackage{amsmath}      % for \text command
+\usepackage{xspace}       % for better spacing
 % generates a list of abbreviations automatically: 2x latex, makeindex myfile.nlo -s nomencl.ist -o myfile.nls, 2x latex
 \usepackage{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
 
@@ -113,6 +113,10 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \mainmatter                 % main part, arabic numerals for chapters
 \input{sections/abbreviations}
 \include{sections/introduction}
+\include{sections/fundamentals}
+\include{sections/literature_review}
+\include{sections/evaluation}
+\include{sections/approach}
 \include{sections/implementation}
 \include{sections/conclusion}
 
