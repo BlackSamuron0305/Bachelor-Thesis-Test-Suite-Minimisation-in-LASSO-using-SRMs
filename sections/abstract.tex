@@ -1,32 +1,7 @@
 \chapter{Abstract}
 
-Software testing has become increasingly resource-intensive, often
-consuming a significant fraction of a software project's development
-budget\cite{boehm1981}.  Large-scale test suites may include thousands of
-automatically generated test cases and take days or even weeks to execute on
-modern projects\cite{rothermel1998}.  This escalating complexity and cost
-motivate strategies that keep the suite manageable without sacrificing
-effectiveness.  Test-suite minimisation aims to eliminate redundant
-tests to reduce execution time and maintenance overhead while preserving
-coverage and fault-detection capability.  However, naïve reduction can
-omit tests that detect faults, thereby undermining software quality\cite{yoo2012}.
+Modern software systems increasingly rely on automated test generation, resulting in test suites that may comprise thousands of cases and impose substantial costs in terms of execution time and computational resources~\cite{Boehm1981}. This complexity heightens the need for \emph{test-suite minimization}, which targets the elimination of redundant tests while preserving metrics such as fault-detection effectiveness and coverage~\cite{yoo2012,rothermel1998}. However, naive reduction strategies may discard tests crucial for revealing faults, thereby compromising software quality~\cite{yoo2012}.
 
-This thesis addresses test-suite minimisation for the LASSO
-platform using \emph{Stimulus--Response Matrices} (SRMs) that encode test
-coverage and mutant-kill information.  We survey existing minimisation
-techniques—including greedy heuristics, exact optimisation and
-search-based methods—and evaluate them against criteria such as
-coverage preservation, reduction ratio, fault-detection retention,
-computational cost and suitability for SRM data.  We also discuss why
-implementing a bespoke minimiser is preferable to relying on
-pre-existing tools that support only specific languages (for example,
-JSR): a custom implementation can operate on SRMs generated from any
-programming language supported by LASSO.
+This thesis investigates test-suite minimization within the Large-Scale Software Observatorium (LASSO)~\cite{Kessel2022}, a research platform that applies language-independent \emph{Stimulus--Response Matrices} (SRMs) to compactly encode the relationship between test cases, coverage requirements, and mutation analysis~\cite{fuzzingbook}. We present a comprehensive survey of established minimization techniques—including greedy heuristics~\cite{harrold1993,tallam2005}, exact optimization~\cite{mongiovi2020}, search-based, and overlap-aware/meta-heuristics~\cite{bach2017,hussein2020}—and critically evaluate these methods according to coverage preservation, fault-detection retention, reduction ratio, computational efficiency, and SRM compatibility.
 
-Based on the analysis, we select the Harrold–Gupta–Soffa (HGS)
-algorithm with an overlap-aware extension as the most promising
-approach.  The chosen method prioritises tests that uniquely cover rare
-requirements and accounts for overlap among test cases to avoid redundant
-selections.  The forthcoming implementation will integrate this minimiser
-into LASSO, enabling the reduction of large test suites while maintaining
-high code coverage and mutation scores.
+Drawing on empirical findings and industrial experience~\cite{shi2018,noemmer2020,bach2017}, this thesis proposes and integrates a minimization workflow tailored to LASSO and the SRM representation. The approach is designed to streamline regression testing and reduce resource costs for diverse programming environments, without sacrificing essential software quality indicators.

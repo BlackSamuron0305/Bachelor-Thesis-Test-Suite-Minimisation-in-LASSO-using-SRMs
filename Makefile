@@ -11,11 +11,16 @@ all: build clean
 # Build the PDF
 build:
 	latexmk -pdf $(MAIN).tex
+	# Generate nomenclature if .nlo file exists
+	@if [ -f $(MAIN).nlo ]; then \
+		makeindex $(MAIN).nlo -s nomencl.ist -o $(MAIN).nls; \
+		latexmk -pdf $(MAIN).tex; \
+	fi
 
 # Clean auxiliary files but keep PDF
 clean:
 	@echo "Cleaning auxiliary files..."
-	@rm -f *.aux *.bbl *.bcf *.blg *.fdb_latexmk *.fls *.lof *.log *.lot *.nlo *.out *.run.xml *.synctex.gz *.toc
+	@rm -f *.aux *.bbl *.bcf *.blg *.fdb_latexmk *.fls *.lof *.log *.lot *.out *.run.xml *.synctex.gz *.toc *.nls *.ilg
 	@rm -f sections/*.aux
 	@echo "Cleanup complete!"
 
@@ -25,4 +30,4 @@ watch:
 
 # Deep clean - removes PDF too
 distclean: clean
-	rm -f $(MAIN).pdf
+	rm -f $(MAIN).pdf $(MAIN).nlo $(MAIN).nlg
