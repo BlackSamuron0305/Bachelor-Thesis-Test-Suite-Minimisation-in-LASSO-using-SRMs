@@ -1,77 +1,65 @@
 \chapter{Fundamentals}
 
-This chapter introduces the basic concepts underlying this thesis.  It
-explains the metrics used to quantify the effectiveness of a test suite,
-describes the \emph{Stimulus--Response Matrix} (SRM) representation used in
-the LASSO platform and formalises the test-suite minimisation problem.
+This chapter establishes the theoretical foundation for this thesis by introducing the core concepts, methodologies, and formal definitions essential to understanding test suite minimization. We present the metrics employed to quantify test suite effectiveness, provide a comprehensive description of the \emph{Stimulus--Response Matrix} (SRM) representation utilized within the LASSO platform, and formally define the test suite minimization problem within the context of computational complexity theory.
 
 \section{Test Coverage and Mutation Score}
 
-\emph{Code coverage} measures the proportion of program elements
-(statements, branches, etc.) exercised by a test suite.  As additional
-test cases are generated automatically, coverage tends to plateau:
-after a certain point, adding more tests yields diminishing
-improvements.  In this work we also consider \emph{mutation testing}.
-Mutation testing introduces small syntactic changes (\emph{mutants})
-into the program and measures whether the test suite detects these
-faults.  A \emph{mutation score} is the ratio of mutants killed to the
-total number of mutants; a score of~1.0 means that all mutants are
-detected.  Mutation analysis provides a stronger measure of test
-effectiveness than coverage alone because it evaluates the
-fault-detection capability of tests.  We refer the reader to the
-mutation analysis chapter of the Fuzzing Book for a detailed
-explanation of mutation testing and its applications\cite{fuzzingbook}.
+\emph{Code coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite during execution. Coverage metrics serve as fundamental indicators of test thoroughness, though they provide limited insight into fault-detection capability. As automated test generation tools produce additional test cases, coverage typically follows a logarithmic growth pattern, eventually plateauing when marginal test additions yield diminishing coverage improvements.
+
+\emph{Mutation testing} provides a more rigorous assessment of test suite quality by evaluating fault-detection effectiveness. This technique systematically introduces small syntactic modifications (\emph{mutants}) into the program source code, simulating common programming errors. Each mutant represents a potential fault; a test suite's ability to distinguish between the original program and its mutants indicates its fault-detection capability. The \emph{mutation score} is formally defined as:
+
+\begin{equation}
+\text{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\%
+\end{equation}
+
+A mutation score of 100\% indicates that the test suite successfully detects all introduced faults. Mutation analysis provides superior insight into test effectiveness compared to coverage metrics alone, as it directly measures the test suite's ability to reveal semantic differences in program behavior. We refer readers to Zeller et al.'s comprehensive treatment of mutation analysis for detailed theoretical foundations and practical applications~\cite{fuzzingbook}.
 
 \section{Stimulus--Response Matrices}
 
-The LASSO platform records test executions in \emph{Stimulus--Response
-Matrices}.  An SRM is a binary matrix $M \in \{0,1\}^{n\times m}$ where
-$n$ is the number of test cases and $m$ is the number of coverage
-requirements.  Each row of~$M$ represents a test case and each column
-represents a requirement such as a statement, branch or mutant.  An
-entry $M_{ij}=1$ indicates that test~$i$ covers requirement~$j$;
-otherwise $M_{ij}=0$.  SRMs enable coverage and mutation information to
-be stored compactly and manipulated algebraically.  For example,
-summing each column yields the number of tests covering each
-requirement, while summing each row yields the number of requirements
-covered by each test.
+The LASSO platform employs \emph{Stimulus--Response Matrices} as a unified, language-independent representation for capturing test execution data. An SRM is formally defined as a binary matrix $M \in \{0,1\}^{n \times m}$, where $n$ represents the number of test cases and $m$ denotes the number of coverage requirements. Each matrix element $M_{ij}$ encodes the coverage relationship between test case $i$ and requirement $j$:
 
-\section{The Test-Suite Minimisation Problem}
+\begin{equation}
+M_{ij} = \begin{cases}
+1 & \text{if test case } i \text{ covers requirement } j \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
 
-Let $T=\{t_1,\dots,t_n\}$ be a set of test cases and let $R=\{r_1,\dots,r_m\}$
-be the set of coverage requirements.  Each test~$t \in T$ covers a
-subset $C(t) \subseteq R$ corresponding to the columns in the SRM with
-value~1.  Executing the full suite~$T$ yields full coverage
-$C(T)=\bigcup_{t \in T} C(t)$.  The \emph{test-suite minimisation
-problem} asks for the smallest subset $S^* \subseteq T$ such that
-$C(S^*)=C(T)$.  This problem is an instance of the classical
-\emph{set-cover problem} and is NP-complete: no
-polynomial-time algorithm can guarantee an exact solution for
-arbitrary test suites.  Practical approaches therefore employ
-heuristics or approximations.  Existing techniques can be grouped into
-several broad categories:
+Coverage requirements may encompass various program elements, including statements, branches, paths, or mutants. Each row vector $M_{i,*}$ represents the coverage profile of test case $i$, while each column vector $M_{*,j}$ indicates which test cases cover requirement $j$.
+
+The SRM representation enables efficient algebraic manipulation of coverage data. For instance, computing $\sum_{j=1}^{m} M_{ij}$ yields the total number of requirements covered by test $i$, while $\sum_{i=1}^{n} M_{ij}$ determines how many tests cover requirement $j$. This compact representation facilitates scalable analysis of large test suites while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages.
+
+\section{The Test Suite Minimization Problem}
+
+\subsection{Formal Problem Definition}
+Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases and $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$, corresponding to the set of columns in the SRM with value 1 in row $i$. The coverage achieved by the complete test suite is defined as:
+
+\begin{equation}
+C(T) = \bigcup_{i=1}^{n} C(t_i)
+\end{equation}
+
+The \emph{test suite minimization problem} seeks to find the minimum cardinality subset $S^* \subseteq T$ that preserves complete coverage:
+
+\begin{equation}
+S^* = \arg \min_{S \subseteq T} |S| \quad \text{subject to} \quad C(S) = C(T)
+\end{equation}
+
+\subsection{Computational Complexity}
+This optimization problem is equivalent to the classical \emph{minimum set cover problem}, which is known to be NP-complete~\cite{yoo2012}. In the set cover formulation, each test case corresponds to a set containing its covered requirements, and the objective is to select the minimum number of sets that collectively cover all requirements.
+
+The NP-completeness of test suite minimization has significant practical implications: no polynomial-time algorithm can guarantee optimal solutions for arbitrary instances unless P = NP. Consequently, practical approaches employ approximation algorithms, heuristic methods, or exact algorithms with exponential worst-case complexity that perform well on typical instances.
+
+\subsection{Algorithmic Categories}
+Existing approaches to test suite minimization can be taxonomically classified into several categories, each offering different trade-offs between solution quality, computational efficiency, and implementation complexity:
 
 \begin{itemize}
-  \item \textbf{Greedy heuristics.}  These algorithms iteratively
-    choose tests based on coverage information.  Examples include the
-    classical greedy algorithm that selects the test covering the most
-    yet-uncovered requirements, and the Harrold--Gupta--Soffa (HGS)
-    algorithm that prioritises tests covering rare requirements.
-  \item \textbf{Exact optimisation.}  The minimisation problem can be
-    formulated as a weighted set-cover or integer linear programming
-    (ILP) problem.  ILP solvers can compute optimal solutions for
-    moderately sized suites but do not scale well to very large
-    matrices.
-  \item \textbf{Search-based and meta-heuristics methods.}
-    Genetic algorithms and quantum-inspired genetic algorithms treat
-    minimisation as a search problem, evolving subsets of tests using a
-    fitness function that balances size and coverage.
-  \item \textbf{Data-driven techniques.}  Approaches based on
-    clustering or similarity metrics select representative tests by
-    exploiting redundancy in the SRM.  Overlap-aware heuristics
-    consider the intersection between tests to avoid selecting tests
-    with largely duplicated coverage.
+  \item \textbf{Greedy heuristics:} These polynomial-time algorithms make locally optimal choices at each step. Examples include the classical greedy algorithm that iteratively selects tests covering the maximum number of uncovered requirements, and the Harrold--Gupta--Soffa (HGS) algorithm that prioritizes tests covering rare requirements.
+  
+  \item \textbf{Exact optimization methods:} These approaches formulate minimization as integer linear programming (ILP) or constraint satisfaction problems, guaranteeing optimal solutions but with potentially exponential runtime complexity.
+  
+  \item \textbf{Search-based and metaheuristic methods:} Evolutionary algorithms, genetic algorithms, and other population-based methods explore the solution space using fitness functions that balance multiple objectives such as suite size and coverage preservation.
+  
+  \item \textbf{Data-driven and clustering techniques:} These methods exploit structural properties of the coverage matrix, using similarity measures, clustering algorithms, or machine learning techniques to identify representative test cases.
 \end{itemize}
 
-These categories provide the framework for the subsequent literature
-review and evaluation of minimisation algorithms.
+This taxonomic framework provides the organizational structure for the comprehensive literature review presented in Chapter~\ref{chap:literature-review}.

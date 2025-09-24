@@ -1,38 +1,31 @@
 \chapter{Literature Review}\label{chap:literature-review}
 
-This chapter surveys the principal test-suite minimisation (TSM)
-approaches proposed in the literature.  The techniques are grouped into
-greedy heuristics, exact optimisation, search-based methods,
-data-driven techniques and empirical evaluations.
+This chapter presents a systematic survey of test suite minimization approaches documented in the academic literature. We organize the review according to the taxonomic framework established in Chapter~2, examining greedy heuristics, exact optimization methods, search-based approaches, data-driven techniques, and empirical evaluation studies. For each category, we analyze the theoretical foundations, algorithmic characteristics, empirical performance, and practical applicability. This comprehensive review forms the basis for our comparative evaluation in Chapter~\ref{chap:evaluation}.
 
 \section{Greedy Heuristics}
 
 \subsection{Classical Greedy Algorithm}
 
-The simplest heuristic for set cover---and thus TSM---selects at each
-step the test case that covers the maximum number of yet-uncovered
-requirements.  After selecting a test, all requirements it covers are
-removed from consideration and the process repeats until all
-requirements are covered.  Although easy to implement, this algorithm
-does not consider overlap among tests and may select sub-optimal
-subsets.  Despite its simplicity, it serves as a baseline and is
-widely used in practice.
+The classical greedy algorithm represents the most straightforward heuristic approach to the set cover problem and, by extension, test suite minimization. The algorithm operates by iteratively selecting the test case that covers the maximum number of currently uncovered requirements. Upon selecting a test, all requirements it covers are marked as satisfied and removed from further consideration. This process continues until all requirements are covered.
+
+\textbf{Algorithmic Complexity:} The time complexity is $O(nm)$ where $n$ is the number of test cases and $m$ is the number of requirements. The space complexity is $O(nm)$ for storing the coverage matrix.
+
+\textbf{Approximation Quality:} While simple to implement and computationally efficient, the classical greedy algorithm provides only a logarithmic approximation ratio of $O(\ln m)$ for the set cover problem. This theoretical limitation manifests practically as potentially suboptimal reductions, particularly when the coverage matrix exhibits significant overlap between test cases.
 
 \subsection{Harrold--Gupta--Soffa Algorithm}
 
-Harrold, Gupta and Soffa proposed a variant that sorts requirements by
-the number of tests covering them\cite{harrold1993}.  The HGS algorithm
-first selects all tests that are the sole coverers of any requirement.
-It then repeatedly selects tests that cover requirements shared by
-exactly two tests, followed by those shared by three tests, and so on.
-In the case of ties, tests that appear most frequently in requirements
-of higher cardinality are chosen.  This method emphasises rare
-requirements because such tests cannot be discarded without losing
-coverage.  HGS typically produces smaller suites than classical greedy
-but can still miss the optimal solution.  Smith et al. implemented HGS
-in a call-tree-based tool and found that reduced suites
-contained 45~\% fewer tests and consumed 82~\% less execution time
-compared with the original suite\cite{harrold1993}.
+Harrold, Gupta, and Soffa proposed a refined greedy heuristic that addresses limitations of the classical approach by prioritizing requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation.
+
+\textbf{Algorithm Description:} The HGS algorithm operates in phases based on requirement cardinality:
+\begin{enumerate}
+\item \textbf{Phase 1:} Select all tests that uniquely cover any requirement (cardinality = 1)
+\item \textbf{Phase 2:} Among remaining requirements with cardinality = 2, select tests that appear most frequently
+\item \textbf{Phase k:} Continue this process for increasing cardinality values until all requirements are covered
+\end{enumerate}
+
+\textbf{Theoretical Foundation:} By prioritizing rare requirements, HGS reduces the likelihood of eliminating tests with unique coverage characteristics. This approach typically produces smaller minimized suites compared to classical greedy while maintaining superior coverage preservation.
+
+\textbf{Empirical Performance:} Smith et al.'s implementation demonstrated that HGS-based reduction achieved 45\% fewer test cases with 82\% reduction in execution time compared to the original suite, while maintaining equivalent fault detection capability~\cite{harrold1993}. The algorithm's emphasis on requirement rarity proves particularly effective in scenarios with heterogeneous coverage distributions.
 
 \subsection{Delayed Greedy (Concept Analysis)}
 

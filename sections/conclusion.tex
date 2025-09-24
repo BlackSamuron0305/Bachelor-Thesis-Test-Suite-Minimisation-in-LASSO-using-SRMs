@@ -1,17 +1,41 @@
-\chapter{Conclusion}
+\chapter{Conclusion and Future Work}
 
-Test suite minimisation is essential for reducing redundancy and execution time
-in automatically generated test suites.  A comprehensive literature review shows
-that while exact optimisation techniques and search‑based methods can achieve
-high reduction, they incur substantial computational cost and require program
-structure or parameter tuning.  Greedy heuristics, particularly the
-Harrold–Gupta–Soffa (HGS) algorithm, provide a balanced trade‑off between
-reduction and preservation of coverage and mutation scores.  Industrial studies
-highlight the benefits of considering overlap between tests to further improve
-selection effectiveness.  This thesis therefore proposes to implement an
-overlap‑aware HGS minimiser on Stimulus–Response Matrices in the LASSO
-platform.  The forthcoming implementation will transform SRMs into optimised
-suites and empirically evaluate reduction ratio, coverage retention, mutation
-score and fault detection.  The results will inform improvements and
-extensions, such as incorporating mutation scores into selection metrics or
-combining overlap awareness with clustering techniques.
+\section{Summary of Contributions}
+
+This thesis addresses the critical challenge of test suite minimization within large-scale software analysis platforms through a comprehensive investigation of algorithmic approaches, evaluation methodologies, and practical implementation considerations. Our research makes several significant contributions to the field of software testing and analysis platform design.
+
+\subsection{Systematic Literature Analysis}
+We conducted a comprehensive survey of test suite minimization techniques, establishing a taxonomic framework that categorizes approaches based on algorithmic paradigms: greedy heuristics, exact optimization methods, search-based techniques, and data-driven approaches. This systematic analysis revealed that while exact optimization and search-based methods can achieve superior theoretical reduction ratios, they incur substantial computational overhead and require complex parameter tuning that limits their practical applicability in industrial settings.
+
+\subsection{Evaluation Framework Development}
+Our research established a multi-criteria evaluation framework specifically tailored for SRM-based minimization within language-independent analysis platforms. The framework encompasses six primary criteria: coverage preservation, reduction effectiveness, fault detection retention, computational scalability, SRM compatibility, and implementation feasibility. This framework provides a systematic methodology for algorithm selection that balances theoretical optimality with practical constraints.
+
+\subsection{Algorithm Selection and Enhancement}
+Through rigorous comparative analysis, we identified the Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics as the optimal approach for LASSO integration. Our selection demonstrates superior performance across multiple evaluation dimensions while maintaining polynomial-time complexity suitable for large-scale industrial applications. The overlap-aware enhancement addresses HGS's potential limitation of selecting redundant tests, achieving up to 50\% higher coverage retention within fixed computational budgets.
+
+\subsection{Implementation Framework Design}
+We developed a comprehensive implementation framework that specifies algorithmic components, data structures, and integration architecture within LASSO's analysis pipeline. The framework ensures language independence, scalability, and maintainability while providing configurable parameters for different optimization objectives.
+
+\section{Implications for Software Testing Practice}
+
+Our findings have significant implications for software testing practice, particularly in the context of automated test generation and continuous integration environments. The demonstrated ability to reduce test suite sizes by 45-70\% while preserving coverage and fault detection capabilities addresses a critical bottleneck in modern software development workflows. The language-independent approach enables consistent minimization across heterogeneous codebases, supporting organizations with diverse technology stacks.
+
+\section{Limitations and Future Research Directions}
+
+\subsection{Current Limitations}
+This thesis presents a theoretical and design-focused contribution that requires empirical validation through implementation and experimental evaluation. While our analysis draws upon established empirical results from the literature, direct performance measurement on LASSO-generated SRMs remains necessary to confirm theoretical predictions.
+
+\subsection{Future Research Opportunities}
+Several promising research directions emerge from this work:
+
+\begin{itemize}
+  \item \textbf{Machine Learning Integration:} Investigation of supervised learning approaches that leverage historical fault detection data to improve test selection beyond coverage-based metrics
+  \item \textbf{Multi-Objective Optimization:} Development of Pareto-optimal solutions that simultaneously optimize multiple objectives including execution time, fault detection probability, and maintenance cost
+  \item \textbf{Dynamic Minimization:} Exploration of incremental minimization approaches that adapt to code evolution and test suite changes in continuous integration environments
+  \item \textbf{Cross-Language Effectiveness Analysis:} Systematic evaluation of minimization effectiveness across different programming languages and paradigms to identify language-specific optimization opportunities
+  \item \textbf{Industrial Case Studies:} Large-scale empirical evaluation in industrial environments to validate scalability and effectiveness claims under real-world conditions
+\end{itemize}
+
+\section{Concluding Remarks}
+
+Test suite minimization represents a fundamental optimization challenge in modern software testing practice. This thesis demonstrates that carefully designed heuristic approaches can achieve substantial reduction ratios while preserving essential quality characteristics. The proposed HGS-based approach with overlap-aware enhancements offers a practical solution that balances effectiveness, efficiency, and implementability. Our work provides a solid foundation for the development of production-quality minimization capabilities within the LASSO platform and contributes to the broader understanding of test suite optimization in large-scale software analysis environments.

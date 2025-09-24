@@ -1,62 +1,80 @@
-\chapter{Selected Approach and Workflow}
+\chapter{Selected Approach and Implementation Framework}
 
-Based on the comparative analysis in Chapter~\ref{chap:evaluation}, this
-chapter motivates the choice of a Harrold–Gupta–Soffa (HGS)
-algorithm augmented with overlap-aware heuristics for use in
-LASSO.  It also outlines a workflow for minimising test suites
-represented as stimulus–response matrices.
+This chapter presents the algorithmic approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
 
-\section{Rationale for Selection}
+\section{Algorithm Selection Rationale}
 
-The evaluation criteria highlight the need for a technique that balances
-reduction ratio, coverage preservation, fault detection retention,
-computational cost and ease of integration.  Among the candidate
-algorithms, HGS excels in prioritising tests covering rare
-requirements, thereby preserving both coverage and mutation score.
-Empirical studies report reduction ratios between 45 and 70~\% with
-minimal execution overhead.  Incorporating overlap-aware heuristics
-addresses the limitation that HGS alone may select tests with
-substantial duplicated coverage.  Overlap-aware selection
-considers the size of the intersection between tests and avoids
-redundant selections, achieving up to 50~\% higher coverage within a
-fixed time budget\cite{bach2017}.  These qualities make an
-HGS-based, overlap-aware approach the most suitable choice for
-integration into LASSO.
+The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies the HGS algorithm augmented with overlap-aware heuristics as the optimal choice for LASSO integration based on the following considerations:
 
-\section{Minimisation Workflow}
+\subsection{Superior Coverage Preservation}
+HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This characteristic addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Empirical studies consistently report that HGS maintains higher coverage ratios compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%~\cite{harrold1993}.
 
-The proposed minimisation workflow comprises the following steps:
+\subsection{Enhanced Fault Detection Through Overlap Awareness}
+The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}, suggesting superior fault detection retention.
 
+\subsection{Computational Efficiency and Scalability}
+HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications within LASSO.
+
+\subsection{SRM Compatibility and Language Independence}
+Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis), our selected approach operates exclusively on binary matrix data, ensuring compatibility with LASSO's language-independent analysis paradigm. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
+
+\section{Implementation Framework}
+
+This section presents a detailed specification of the proposed test suite minimization framework, including algorithmic components, data structures, and integration points within LASSO's analysis pipeline.
+
+\subsection{Algorithm Specification}
+
+\textbf{Algorithm 1: Enhanced HGS with Overlap-Aware Selection}
 \begin{enumerate}
-  \item \textbf{Pre-processing.}  Represent the SRM as a binary
-    matrix where each row corresponds to a test case and each column
-    corresponds to a coverage element (statement or mutant).  Compute
-    for each coverage element the number of tests that cover it.  If
-    available, record the execution time of each test as a weight.
-  \item \textbf{Identify unique coverage.}  Select all tests that
-    uniquely cover any element (that is, columns with coverage count of
-    one).  These tests form the initial reduced suite and mark the
-    corresponding elements as covered.  This ensures that no unique
-    requirement is lost.
-  \item \textbf{Overlap-aware greedy selection.}  While
-    uncovered elements remain, iteratively select the test that
-    maximises the ratio of newly covered elements to execution time or
-    another hybrid cost metric.  Recalculate cost effectiveness after
-    each selection to account for overlaps.  This step generalises the
-    HGS strategy by emphasising both rarity and minimal overlap.
-  \item \textbf{Redundancy check.}  After constructing a reduced suite,
-    optionally perform a redundancy check: for each test in the reduced
-    suite, determine whether its removal would leave some coverage
-    element uncovered.  Remove redundant tests to further reduce the
-    suite.
-  \item \textbf{Mutation score verification.}  Evaluate the mutation
-    score of the reduced suite using existing mutation-analysis tools.
-    If the score drops below an acceptable threshold, reconsider
-    dropping tests that kill rare mutants.
-  \item \textbf{Output.}  Produce an optimised SRM containing only the
-    selected test cases and update the LASSO pipeline to use this suite
-    for further analysis or execution.
+  \item \textbf{Initialization Phase:}
+  \begin{itemize}
+    \item Input: SRM $M \in \{0,1\}^{n \times m}$, optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
+    \item Initialize reduced suite $S = \emptyset$, covered requirements $R_{covered} = \emptyset$
+    \item Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ for all $j \in \{1, \ldots, m\}$
+  \end{itemize}
+  
+  \item \textbf{Unique Coverage Selection:}
+  \begin{itemize}
+    \item $\forall j$ where $card_j = 1$: Select test $t_i$ such that $M_{ij} = 1$
+    \item Add selected tests to $S$, mark corresponding requirements as covered
+    \item Update cardinalities for remaining requirements
+  \end{itemize}
+  
+  \item \textbf{Overlap-Aware Greedy Selection:}
+  \begin{itemize}
+    \item While uncovered requirements remain:
+    \item For each uncovered test $t_i$, compute effectiveness ratio:
+    \begin{equation}
+    effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}
+    \end{equation}
+    where $new\_coverage_i$ represents requirements covered by $t_i$ but not by $S$, and $overlap\_penalty_i$ quantifies redundancy with previously selected tests
+    \item Select test with maximum effectiveness ratio
+    \item Update coverage tracking and requirement cardinalities
+  \end{itemize}
+  
+  \item \textbf{Post-Processing Optimization:}
+  \begin{itemize}
+    \item Perform redundancy elimination: remove tests from $S$ whose requirements are covered by remaining tests
+    \item Optional: Verify mutation score preservation and adjust selection if necessary
+  \end{itemize}
+  
+  \item \textbf{Output Generation:}
+  \begin{itemize}
+    \item Generate minimized SRM $M' \subseteq M$ containing only selected test cases
+    \item Produce analysis report including reduction metrics and coverage preservation statistics
+  \end{itemize}
 \end{enumerate}
+
+\subsection{Integration Architecture}
+
+The minimization framework integrates into LASSO's analysis pipeline through the following components:
+
+\begin{itemize}
+  \item \textbf{SRM Preprocessor:} Validates input matrix format, handles missing data, and computes auxiliary data structures
+  \item \textbf{Minimization Engine:} Implements the core algorithm with configurable parameters for overlap sensitivity and effectiveness weighting
+  \item \textbf{Quality Assessor:} Evaluates reduction quality using metrics including coverage retention, mutation score preservation, and fault detection estimation
+  \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports
+\end{itemize}
 
 \section{Planned Evaluation}
 
