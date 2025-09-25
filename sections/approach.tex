@@ -1,13 +1,18 @@
 \chapter{Selected Approach and Implementation Framework}
 
-This chapter presents the algorithmic approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
+This chapter presents the algo\subsection{Evaluation Datasets}
+\begin{itemize}
+  \item \textbf{Benchmark Projects:} 10-15 open-source Java projects from the Defects4J dataset~\cite{just2014}
+  \item \textbf{LASSO-Generated SRMs:} Real coverage matrices from projects analyzed within LASSO
+  \item \textbf{Synthetic Data:} Controlled SRMs with varying sparsity and overlap characteristics
+\end{itemize}c approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
 
 \section{Algorithm Selection Rationale}
 
 The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies the HGS algorithm augmented with overlap-aware heuristics as the optimal choice for LASSO integration based on the following considerations:
 
 \subsection{Superior Coverage Preservation}
-HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This characteristic addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Empirical studies consistently report that HGS maintains higher coverage ratios compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%~\cite{harrold1993}.
+HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This characteristic addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Harrold et al.~\cite{harrold1993} demonstrated that HGS maintains higher coverage ratios compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%. Subsequent studies have corroborated these findings across different testing contexts~\cite{noemmer2020}.
 
 \subsection{Enhanced Fault Detection Through Overlap Awareness}
 The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}, suggesting superior fault detection retention.
@@ -16,7 +21,7 @@ The integration of overlap-aware heuristics addresses HGS's potential limitation
 HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications within LASSO.
 
 \subsection{SRM Compatibility and Language Independence}
-Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis), our selected approach operates exclusively on binary matrix data, ensuring compatibility with LASSO's language-independent analysis paradigm. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
+Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on binary matrix data, ensuring compatibility with LASSO's language-independent analysis paradigm. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
 
 \section{Implementation Framework}
 
@@ -47,9 +52,15 @@ This section presents a detailed specification of the proposed test suite minimi
     \begin{equation}
     effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}
     \end{equation}
-    where $new\_coverage_i$ represents requirements covered by $t_i$ but not by $S$, and $overlap\_penalty_i$ quantifies redundancy with previously selected tests
-    \item Select test with maximum effectiveness ratio
-    \item Update coverage tracking and requirement cardinalities
+    where:
+    \begin{itemize}
+      \item $new\_coverage_i = \{j : M_{ij} = 1 \text{ and } j \notin R_{covered}\}$
+      \item $w_i$ represents the execution weight of test $t_i$ (default: 1.0)
+      \item $overlap\_penalty_i = \alpha \times \frac{\sum_{t_k \in S} |C(t_i) \cap C(t_k)|}{|C(t_i)|}$ with $\alpha = 0.5$
+    \end{itemize}
+    \item Select test with maximum effectiveness ratio: $t^* = \arg\max_{t_i} effectiveness_i$
+    \item Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$
+    \item Recalculate requirement cardinalities for remaining tests
   \end{itemize}
   
   \item \textbf{Post-Processing Optimization:}
@@ -76,24 +87,33 @@ The minimization framework integrates into LASSO's analysis pipeline through the
   \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports
 \end{itemize}
 
-\section{Planned Evaluation}
+\section{Evaluation Methodology}
 
-After implementation, the proposed approach will be evaluated on
-benchmark projects and real SRMs generated by LASSO.  Key metrics will
-include:
+After implementation, the proposed approach will undergo rigorous empirical evaluation using both benchmark datasets and real SRMs generated by LASSO.
 
+\subsection{Evaluation Datasets}
 \begin{itemize}
-  \item \textbf{Reduction Ratio:} Percentage of tests removed.
-  \item \textbf{Coverage Retention:} Statement/branch coverage and
-    mutation score of the reduced suite relative to the original.
-  \item \textbf{Fault Detection Retention:} Ability to detect seeded
-    faults or real defects.
-  \item \textbf{Execution Time:} Time taken by the minimisation
-    algorithm and the reduced suite.
+  \item \textbf{Benchmark Projects:} 10-15 open-source Java projects from the Defects4J dataset
+  \item \textbf{LASSO-Generated SRMs:} Real coverage matrices from projects analyzed within LASSO
+  \item \textbf{Synthetic Data:} Controlled SRMs with varying sparsity and overlap characteristics
 \end{itemize}
 
-The results will be compared with classical greedy, delayed greedy and
-ILP-based baselines to validate the effectiveness of the chosen
-approach.  Depending on the findings, further enhancements—such as
-incorporating mutation scores into the cost metric or combining
-overlap awareness with clustering—may be explored.
+\subsection{Performance Metrics}
+\begin{itemize}
+  \item \textbf{Reduction Ratio:} $RR = \frac{|T| - |S^*|}{|T|} \times 100\%$
+  \item \textbf{Coverage Retention:} $CR = \frac{|C(S^*)|}{|C(T)|} \times 100\%$
+  \item \textbf{Mutation Score Preservation:} $MSP = \frac{MS(S^*)}{MS(T)} \times 100\%$
+  \item \textbf{Fault Detection Loss:} Percentage of seeded faults missed by reduced suite
+  \item \textbf{Algorithm Runtime:} Wall-clock time for minimization process
+\end{itemize}
+
+\subsection{Success Criteria}
+\begin{itemize}
+  \item Achieve $\geq 45\%$ reduction ratio while maintaining $\geq 95\%$ coverage retention
+  \item Preserve $\geq 90\%$ of mutation score
+  \item Runtime complexity remains $O(nm \log m)$ for matrices with $n \leq 10,000$ tests
+  \item Outperform classical greedy by $\geq 10\%$ in fault detection retention
+\end{itemize}
+
+\subsection{Statistical Analysis}
+Results will be analyzed using repeated measures ANOVA with significance level $\alpha = 0.05$. Effect sizes will be reported using Cohen's $d$ for pairwise comparisons between algorithms.
