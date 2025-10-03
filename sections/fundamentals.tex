@@ -16,35 +16,43 @@ A mutation score of 100\% indicates that the test suite successfully detects all
 
 \section{Stimulus-Response Matrices}
 
-The LASSO platform employs \emph{Stimulus-Response Matrices} as a unified, language-independent representation for capturing test execution data~\cite{Kessel2022}. An SRM is formally defined as a binary matrix $M \in \{0,1\}^{n \times m}$, where $n$ represents the number of test cases and $m$ denotes the number of coverage requirements. Each matrix element $M_{ij}$ encodes the coverage relationship between test case $i$ and requirement $j$:
+The LASSO platform employs \emph{Stimulus-Response Matrices} (SRMs) as a unified, language-independent representation for capturing behavioral execution data across multiple software systems~\cite{Kessel2022}. An SRM, also known as an actuation matrix, is a two-dimensional matrix $M$ where rows represent stimuli (test sequences or method invocations), columns represent systems being tested, and each matrix element $M_{ij}$ contains the recorded response (actuation) of system $j$ to stimulus $i$:
 
 \begin{equation}
-M_{ij} = \begin{cases}
-1 & \text{if test case } i \text{ covers requirement } j \\
-0 & \text{otherwise}
-\end{cases}
+M_{ij} = \text{response of system } j \text{ to stimulus } i
 \end{equation}
 
-Coverage requirements may encompass various program elements, including statements, branches, paths, or mutants. Each row vector $M_{i,*}$ represents the coverage profile of test case $i$, while each column vector $M_{*,j}$ indicates which test cases cover requirement $j$.
+SRMs are derived from Stimulus Matrices (SMs), which specify the input stimuli to be applied to systems. After executing the SM in LASSO's arena, an SRM is produced that records the observed outputs and behaviors. SRMs can be represented at two levels of abstraction: (1) \emph{black box view}, which records only the sequence invocation with input/output parameters, and (2) \emph{white box view}, which records the full method invocation sequence including all intermediate inputs and outputs—essentially a detailed execution trace. Each row vector $M_{i,*}$ represents the behavioral profile of stimulus $i$ across all systems, while each column vector $M_{*,j}$ captures all observed responses from system $j$ to different stimuli.
 
-\textbf{Example:} Consider a simple SRM with 4 test cases and 6 requirements:
+\textbf{Example:} Consider a simple SRM with 4 stimuli (test sequences) and 6 systems:
 \begin{equation}
 M = \begin{pmatrix}
-1 & 1 & 0 & 1 & 0 & 0 \\
-1 & 0 & 1 & 0 & 1 & 0 \\
-0 & 1 & 1 & 1 & 0 & 1 \\
-1 & 0 & 0 & 0 & 1 & 1
+r_{11} & r_{12} & r_{13} & r_{14} & r_{15} & r_{16} \\
+r_{21} & r_{22} & r_{23} & r_{24} & r_{25} & r_{26} \\
+r_{31} & r_{32} & r_{33} & r_{34} & r_{35} & r_{36} \\
+r_{41} & r_{42} & r_{43} & r_{44} & r_{45} & r_{46}
 \end{pmatrix}
 \end{equation}
 
-In this example, test case 1 covers requirements 1, 2, and 4, while requirement 6 is covered only by test cases 3 and 4. Such unique coverage relationships are critical for minimization algorithms.
+In this example, stimulus 1 produces responses $r_{11}$ through $r_{16}$ across the six systems, while system 6 produces responses $r_{16}$, $r_{26}$, $r_{36}$, and $r_{46}$ to the four different stimuli. Such behavioral profiles enable large-scale behavioral analysis including similarity measurements, code clone detection, and functional equivalence analysis across multiple systems.
 
-The SRM representation enables efficient algebraic manipulation of coverage data. For instance, computing $\sum_{j=1}^{m} M_{ij}$ yields the total number of requirements covered by test $i$, while $\sum_{i=1}^{n} M_{ij}$ determines how many tests cover requirement $j$. This compact representation facilitates scalable analysis of large test suites while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages.
+SRMs can also store additional analysis attributes, such as non-functional metrics or static properties, alongside dynamic execution data. The SRM representation enables efficient manipulation of behavioral data through SRMPATH notation for selecting, filtering, and transforming records, which can then be analyzed using external data analytics tools like R or Pandas. This compact representation facilitates scalable analysis of large system populations while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages and enable systematic, scalable behavioral comparison across many systems.
+
+\subsection{Adapting SRMs for Test Suite Minimization}
+
+While SRMs in their canonical form capture system responses to stimuli for behavioral comparison, LASSO's test generation and analysis pipeline produces a specialized view of SRMs for test suite minimization. In this adapted context:
+\begin{itemize}
+  \item Each \emph{stimulus} (row) corresponds to a generated test case or test sequence
+  \item Each \emph{system} (column) represents a coverage requirement (statement, branch, path, or mutant) within a single target system under test
+  \item Each \emph{response} (cell) is typically binary: 1 if the test (stimulus) covers the requirement (system attribute), 0 otherwise
+\end{itemize}
+
+This adaptation transforms the multi-system behavioral analysis matrix into a test-coverage matrix for a single system. Formally, we map the general SRM structure $f: M_{SM} \rightarrow M_{SRM}$ (where a Stimulus Matrix maps to a Stimulus-Response Matrix through execution) to a specialized form where stimuli are test cases and responses are coverage indicators. This enables us to apply test suite minimization algorithms—originally designed for coverage matrices—directly within LASSO's SRM-based infrastructure while maintaining the platform's language-independent analysis capabilities and unified data representation.
 
 \section{The Test Suite Minimization Problem}
 
 \subsection{Formal Problem Definition}
-Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases and $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$, corresponding to the set of columns in the SRM with value 1 in row $i$. The coverage achieved by the complete test suite is defined as:
+Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases and $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$. Note that while LASSO's SRM structure captures system responses to stimuli, for test suite minimization purposes within LASSO's test generation pipeline, we adapt the SRM representation to encode coverage relationships: we treat each generated test as a stimulus and each coverage requirement (statement, branch, or mutant) as a system attribute, allowing us to apply minimization algorithms to the resulting coverage matrix. The coverage achieved by the complete test suite is defined as:
 
 \begin{equation}
 C(T) = \bigcup_{i=1}^{n} C(t_i)

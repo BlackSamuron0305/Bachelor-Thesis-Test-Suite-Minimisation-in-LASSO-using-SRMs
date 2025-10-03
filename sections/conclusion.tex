@@ -10,7 +10,7 @@ This thesis systematically addressed the four research questions established in 
 
 \textbf{RQ3: Which algorithmic approach optimally balances the evaluation criteria?} Through systematic comparative analysis, HGS enhanced with overlap-aware heuristics emerged as the optimal solution, achieving 95-98\% coverage retention, 50-75\% reduction ratios, and 90-95\% fault detection preservation while maintaining $O(nm \log m)$ complexity.
 
-\textbf{RQ4: How can the selected approach be effectively integrated into LASSO's analysis pipeline?} Our implementation framework specification demonstrates language-independent integration through modular components operating exclusively on SRM data, ensuring compatibility across diverse programming environments without requiring language-specific adaptations.
+\textbf{RQ4: How can the selected approach be effectively integrated into LASSO's analysis pipeline?} Our implementation framework specification demonstrates language-independent integration through modular components operating exclusively on LASSO's SRM infrastructure. By leveraging LASSO's coverage-adapted SRM view (where stimuli represent test cases and systems represent coverage requirements), the framework ensures compatibility across diverse programming environments without requiring language-specific adaptations.
 
 \subsection{Systematic Literature Analysis}
 We conducted a comprehensive survey of test suite minimization techniques, establishing a taxonomic framework that categorizes approaches based on algorithmic paradigms: greedy heuristics, exact optimization methods, search-based techniques, and data-driven approaches. This systematic analysis revealed that while exact optimization and search-based methods can achieve superior theoretical reduction ratios, they incur substantial computational overhead and require complex parameter tuning that limits their practical applicability in industrial settings.
@@ -37,7 +37,7 @@ This thesis presents a theoretical and design-focused contribution that requires
 
 \textbf{External Validity:} The generalizability of results across different software domains, testing methodologies, and development practices remains to be established. Our evaluation framework assumes that coverage-based minimization correlates with fault detection, which may not hold universally.
 
-\textbf{Construct Validity:} The use of mutation scores as a proxy for fault detection capability may not accurately reflect real-world defect characteristics. Additionally, the SRM representation abstracts away temporal dependencies and test execution contexts that may be relevant for minimization.
+\textbf{Construct Validity:} The use of mutation scores as a proxy for fault detection capability may not accurately reflect real-world defect characteristics. Additionally, while LASSO's SRM framework captures rich behavioral data across multiple systems for large-scale analysis, our minimization approach operates on a coverage-adapted view of SRMs (where stimuli are test cases and systems are coverage requirements). This adaptation abstracts away some of the multi-system behavioral comparison capabilities and temporal dependencies that may be relevant for more sophisticated minimization strategies.
 
 \textbf{Implementation Risks:} The proposed algorithm includes several parameters (overlap penalty weight $\alpha$, effectiveness thresholds) that require careful tuning for optimal performance. Suboptimal parameter selection could significantly impact the algorithm's effectiveness.
 

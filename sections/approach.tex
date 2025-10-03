@@ -21,7 +21,7 @@ The integration of overlap-aware heuristics addresses HGS's potential limitation
 HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications within LASSO.
 
 \subsection{SRM Compatibility and Language Independence}
-Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on binary matrix data, ensuring compatibility with LASSO's language-independent analysis paradigm. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
+Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on the SRM representation. While LASSO's SRMs canonically capture system responses to stimuli for multi-system behavioral analysis, our minimization approach leverages LASSO's adapted SRM view where stimuli represent test cases and systems represent coverage requirements within a single target system. This enables our algorithm to operate on the resulting coverage matrix while maintaining compatibility with LASSO's language-independent analysis paradigm and unified SRM infrastructure. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
 
 \section{Implementation Framework}
 
@@ -33,9 +33,9 @@ This section presents a detailed specification of the proposed test suite minimi
 \begin{enumerate}
   \item \textbf{Initialization Phase:}
   \begin{itemize}
-    \item Input: SRM $M \in \{0,1\}^{n \times m}$, optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
+    \item Input: Coverage-adapted SRM $M \in \{0,1\}^{n \times m}$ where $n$ stimuli (test cases) and $m$ systems (coverage requirements), optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
     \item Initialize reduced suite $S = \emptyset$, covered requirements $R_{covered} = \emptyset$
-    \item Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ for all $j \in \{1, \ldots, m\}$
+    \item Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ for all $j \in \{1, \ldots, m\}$ (number of tests covering each requirement)
   \end{itemize}
   
   \item \textbf{Unique Coverage Selection:}
@@ -71,20 +71,20 @@ This section presents a detailed specification of the proposed test suite minimi
   
   \item \textbf{Output Generation:}
   \begin{itemize}
-    \item Generate minimized SRM $M' \subseteq M$ containing only selected test cases
+    \item Generate minimized SRM $M' \subseteq M$ containing only selected test cases (stimuli)
     \item Produce analysis report including reduction metrics and coverage preservation statistics
   \end{itemize}
 \end{enumerate}
 
 \subsection{Integration Architecture}
 
-The minimization framework integrates into LASSO's analysis pipeline through the following components:
+The minimization framework integrates into LASSO's analysis pipeline through the following components, operating on LASSO's coverage-adapted SRM representation:
 
 \begin{itemize}
-  \item \textbf{SRM Preprocessor:} Validates input matrix format, handles missing data, and computes auxiliary data structures
-  \item \textbf{Minimization Engine:} Implements the core algorithm with configurable parameters for overlap sensitivity and effectiveness weighting
+  \item \textbf{SRM Preprocessor:} Validates input SRM format from LASSO's test generation pipeline, handles missing data, and computes auxiliary data structures while maintaining compatibility with LASSO's unified SRM infrastructure
+  \item \textbf{Minimization Engine:} Implements the core algorithm with configurable parameters for overlap sensitivity and effectiveness weighting, operating on the adapted SRM where rows represent test stimuli and columns represent coverage requirements
   \item \textbf{Quality Assessor:} Evaluates reduction quality using metrics including coverage retention, mutation score preservation, and fault detection estimation
-  \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports
+  \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports that can be further processed through LASSO's SRMPATH notation and external analytics tools
 \end{itemize}
 
 \section{Evaluation Methodology}
