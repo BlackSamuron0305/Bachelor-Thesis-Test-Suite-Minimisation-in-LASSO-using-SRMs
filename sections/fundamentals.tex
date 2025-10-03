@@ -34,7 +34,21 @@ r_{41} & r_{42} & r_{43} & r_{44} & r_{45} & r_{46}
 \end{pmatrix}
 \end{equation}
 
-In this example, stimulus 1 produces responses $r_{11}$ through $r_{16}$ across the six systems, while system 6 produces responses $r_{16}$, $r_{26}$, $r_{36}$, and $r_{46}$ to the four different stimuli. Such behavioral profiles enable large-scale behavioral analysis including similarity measurements, code clone detection, and functional equivalence analysis across multiple systems.
+In this example, stimulus 1 produces responses $r_{11}$ through $r_{16}$ across the six systems, while system 6 produces responses $r_{16}$, $r_{26}$, $r_{36}$, and $r_{46}$ to the four different stimuli. Such behavioral profiles enable large-scale behavioral analysis including similarity measurements, code clone detection, and functional equivalence analysis across multiple systems. Figure~\ref{fig:srm-structure} illustrates the canonical SRM structure used for multi-system behavioral comparison.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|cccccc}
+    & \textbf{System 1} & \textbf{System 2} & \textbf{System 3} & \textbf{System 4} & \textbf{System 5} & \textbf{System 6} \\
+    \hline
+    \textbf{Stimulus 1} & $r_{11}$ & $r_{12}$ & $r_{13}$ & $r_{14}$ & $r_{15}$ & $r_{16}$ \\
+    \textbf{Stimulus 2} & $r_{21}$ & $r_{22}$ & $r_{23}$ & $r_{24}$ & $r_{25}$ & $r_{26}$ \\
+    \textbf{Stimulus 3} & $r_{31}$ & $r_{32}$ & $r_{33}$ & $r_{34}$ & $r_{35}$ & $r_{36}$ \\
+    \textbf{Stimulus 4} & $r_{41}$ & $r_{42}$ & $r_{43}$ & $r_{44}$ & $r_{45}$ & $r_{46}$ \\
+  \end{tabular}
+  \caption{Canonical SRM structure: rows represent stimuli (test sequences or method invocations), columns represent different software systems, and cells contain observed responses enabling behavioral comparison across systems.}
+  \label{fig:srm-structure}
+\end{figure}
 
 SRMs can also store additional analysis attributes, such as non-functional metrics or static properties, alongside dynamic execution data. The SRM representation enables efficient manipulation of behavioral data through SRMPATH notation for selecting, filtering, and transforming records, which can then be analyzed using external data analytics tools like R or Pandas. This compact representation facilitates scalable analysis of large system populations while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages and enable systematic, scalable behavioral comparison across many systems.
 
@@ -47,7 +61,44 @@ While SRMs in their canonical form capture system responses to stimuli for behav
   \item Each \emph{response} (cell) is typically binary: 1 if the test (stimulus) covers the requirement (system attribute), 0 otherwise
 \end{itemize}
 
-This adaptation transforms the multi-system behavioral analysis matrix into a test-coverage matrix for a single system. Formally, we map the general SRM structure $f: M_{SM} \rightarrow M_{SRM}$ (where a Stimulus Matrix maps to a Stimulus-Response Matrix through execution) to a specialized form where stimuli are test cases and responses are coverage indicators. This enables us to apply test suite minimization algorithms—originally designed for coverage matrices—directly within LASSO's SRM-based infrastructure while maintaining the platform's language-independent analysis capabilities and unified data representation.
+This adaptation transforms the multi-system behavioral analysis matrix into a test-coverage matrix for a single system. Formally, we map the general SRM structure $f: M_{SM} \rightarrow M_{SRM}$ (where a Stimulus Matrix maps to a Stimulus-Response Matrix through execution) to a specialized form where stimuli are test cases and responses are coverage indicators. This enables us to apply test suite minimization algorithms—originally designed for coverage matrices—directly within LASSO's SRM-based infrastructure while maintaining the platform's language-independent analysis capabilities and unified data representation. Figure~\ref{fig:srm-adaptation} illustrates this transformation from canonical to coverage-adapted SRM representation.
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \textbf{(a) Canonical SRM}\\
+    \vspace{0.3cm}
+    \begin{tabular}{c|ccc}
+      & \textbf{Sys1} & \textbf{Sys2} & \textbf{Sys3} \\
+      \hline
+      \textbf{Stim1} & pass & fail & pass \\
+      \textbf{Stim2} & pass & pass & pass \\
+      \textbf{Stim3} & fail & pass & fail \\
+    \end{tabular}
+    \vspace{0.2cm}
+    
+    \small Multi-system behavioral comparison
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.45\textwidth}
+    \centering
+    \textbf{(b) Adapted SRM for TSM}\\
+    \vspace{0.3cm}
+    \begin{tabular}{c|ccc}
+      & \textbf{Req1} & \textbf{Req2} & \textbf{Req3} \\
+      \hline
+      \textbf{Test1} & 1 & 0 & 1 \\
+      \textbf{Test2} & 1 & 1 & 0 \\
+      \textbf{Test3} & 0 & 1 & 1 \\
+    \end{tabular}
+    \vspace{0.2cm}
+    
+    \small Single-system coverage matrix
+  \end{minipage}
+  \caption{SRM representation transformation: (a) canonical form captures behavioral responses across multiple systems; (b) adapted form for test suite minimization represents binary coverage relationships between test cases and requirements within a single target system.}
+  \label{fig:srm-adaptation}
+\end{figure}
 
 \section{The Test Suite Minimization Problem}
 
@@ -82,4 +133,28 @@ Existing approaches to test suite minimization can be taxonomically classified i
   \item \textbf{Data-driven and clustering techniques:} These methods exploit structural properties of the coverage matrix, using similarity measures, clustering algorithms, or machine learning techniques to identify representative test cases~\cite{bach2017}.
 \end{itemize}
 
-This taxonomic framework provides the organizational structure for the comprehensive literature review presented in Chapter~\ref{chap:literature-review}.
+This taxonomic framework provides the organizational structure for the comprehensive literature review presented in Chapter~\ref{chap:literature-review}. Figure~\ref{fig:algorithm-taxonomy} illustrates the hierarchical classification of test suite minimization approaches.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Category} & \textbf{Approaches} & \textbf{Complexity} \\
+    \hline
+    \multirow{3}{*}{\textbf{Greedy Heuristics}} & Classical Greedy & $O(nm)$ \\
+    & Harrold--Gupta--Soffa (HGS) & $O(nm \log m)$ \\
+    & Delayed Greedy (Concept Analysis) & $O(n^2m)$ \\
+    \hline
+    \multirow{2}{*}{\textbf{Exact Optimization}} & Integer Linear Programming & Exponential \\
+    & REDUNET (ILP + CFG) & Exponential \\
+    \hline
+    \multirow{2}{*}{\textbf{Search-Based}} & Genetic Algorithms & $O(gnm)$ \\
+    & Quantum-Inspired GA & $O(gnm)$ \\
+    \hline
+    \multirow{2}{*}{\textbf{Data-Driven}} & Overlap-Aware Selection & $O(n^2m)$ \\
+    & Clustering-Based & $O(n^2 + nm)$ \\
+    \hline
+  \end{tabular}
+  \caption{Taxonomic classification of test suite minimization algorithms showing representative approaches and their computational complexity. Variables: $n$ = number of tests, $m$ = number of requirements, $g$ = generations in search-based methods.}
+  \label{fig:algorithm-taxonomy}
+\end{figure}

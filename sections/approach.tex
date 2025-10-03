@@ -25,7 +25,45 @@ Unlike approaches requiring program structural information (e.g., REDUNET's CFG 
 
 \section{Implementation Framework}
 
-This section presents a detailed specification of the proposed test suite minimization framework, including algorithmic components, data structures, and integration points within LASSO's analysis pipeline.
+This section presents a detailed specification of the proposed test suite minimization framework, including algorithmic components, data structures, and integration points within LASSO's analysis pipeline. Figure~\ref{fig:algorithm-flowchart} illustrates the four-phase execution workflow of the enhanced HGS algorithm.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{|p{14cm}|}
+    \hline
+    \textbf{Phase 1: Initialization} \\
+    $\bullet$ Input: Coverage-adapted SRM $M \in \{0,1\}^{n \times m}$ \\
+    $\bullet$ Initialize: $S = \emptyset$, $R_{covered} = \emptyset$ \\
+    $\bullet$ Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ \\
+    \hline
+    $\downarrow$ \\
+    \hline
+    \textbf{Phase 2: Unique Coverage Selection} \\
+    $\bullet$ For each requirement $j$ where $card_j = 1$: \\
+    \quad -- Select test $t_i$ such that $M_{ij} = 1$ \\
+    \quad -- Add $t_i$ to $S$, mark $j$ as covered \\
+    $\bullet$ Update cardinalities for remaining requirements \\
+    \hline
+    $\downarrow$ \\
+    \hline
+    \textbf{Phase 3: Overlap-Aware Greedy Selection} \\
+    $\bullet$ While uncovered requirements remain: \\
+    \quad -- For each candidate test $t_i$, compute: \\
+    \quad \quad $effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}$ \\
+    \quad -- Select $t^* = \arg\max_{t_i} effectiveness_i$ \\
+    \quad -- Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$ \\
+    \hline
+    $\downarrow$ \\
+    \hline
+    \textbf{Phase 4: Post-Processing Optimization} \\
+    $\bullet$ Perform redundancy elimination on $S$ \\
+    $\bullet$ Verify coverage and mutation score preservation \\
+    $\bullet$ Generate minimized SRM $M'$ and analysis report \\
+    \hline
+  \end{tabular}
+  \caption{Four-phase workflow of the enhanced HGS algorithm with overlap-aware selection. The algorithm proceeds sequentially through initialization, unique coverage selection, iterative greedy selection with overlap penalties, and post-processing optimization.}
+  \label{fig:algorithm-flowchart}
+\end{figure}
 
 \subsection{Algorithm Specification}
 
@@ -86,6 +124,69 @@ The minimization framework integrates into LASSO's analysis pipeline through the
   \item \textbf{Quality Assessor:} Evaluates reduction quality using metrics including coverage retention, mutation score preservation, and fault detection estimation
   \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports that can be further processed through LASSO's SRMPATH notation and external analytics tools
 \end{itemize}
+
+Figure~\ref{fig:integration-architecture} depicts the integration of these components within LASSO's existing analysis infrastructure.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c}
+    \fbox{\begin{minipage}{13cm}
+      \centering
+      \textbf{LASSO Platform} \\[0.3cm]
+      
+      \begin{tabular}{|c|}
+        \hline
+        Test Generation Pipeline \\
+        \hline
+      \end{tabular} \\
+      $\downarrow$ Coverage-adapted SRM \\[0.2cm]
+      
+      \fbox{\begin{minipage}{12cm}
+        \centering
+        \textbf{Test Suite Minimization Framework} \\[0.2cm]
+        
+        \begin{tabular}{|c|}
+          \hline
+          SRM Preprocessor \\
+          \hline
+        \end{tabular} \\
+        $\downarrow$ Validated SRM + Auxiliary Data \\[0.2cm]
+        
+        \begin{tabular}{|c|}
+          \hline
+          Minimization Engine \\
+          (Enhanced HGS Algorithm) \\
+          \hline
+        \end{tabular} \\
+        $\downarrow$ Reduced Test Suite $S^*$ \\[0.2cm]
+        
+        \begin{tabular}{|c|}
+          \hline
+          Quality Assessor \\
+          \hline
+        \end{tabular} \\
+        $\downarrow$ Quality Metrics \\[0.2cm]
+        
+        \begin{tabular}{|c|}
+          \hline
+          Results Exporter \\
+          \hline
+        \end{tabular}
+      \end{minipage}} \\[0.3cm]
+      
+      $\downarrow$ Minimized SRM $M'$ + Analysis Report \\[0.2cm]
+      
+      \begin{tabular}{|c|}
+        \hline
+        LASSO Analysis Pipeline \\
+        (SRMPATH / External Tools) \\
+        \hline
+      \end{tabular}
+    \end{minipage}}
+  \end{tabular}
+  \caption{Integration architecture of the test suite minimization framework within LASSO's analysis pipeline. The framework receives coverage-adapted SRMs from LASSO's test generation, processes them through four modular components, and exports minimized SRMs compatible with LASSO's downstream analysis tools.}
+  \label{fig:integration-architecture}
+\end{figure}
 
 \section{Evaluation Methodology}
 

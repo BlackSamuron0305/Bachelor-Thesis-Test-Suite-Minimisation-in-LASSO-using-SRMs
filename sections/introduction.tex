@@ -17,6 +17,49 @@ Although LASSO provides powerful capabilities for observing, analysing, and comp
 
 Let $T = \{t_1, t_2, \ldots, t_n\}$ be a set of test cases and let $R = \{r_1, r_2, \ldots, r_m\}$ be the set of coverage requirements. Each test $t_i \in T$ covers a subset $C(t_i) \subseteq R$. Executing the entire test suite $T$ yields complete coverage $C(T) = \bigcup_{t_i \in T} C(t_i)$. The \emph{test suite minimization problem} seeks the smallest subset $S^* \subseteq T$ such that $C(S^*) = C(T)$. This optimization problem is equivalent to the classical set cover problem and is therefore NP-complete~\cite{yoo2012}. Consequently, practical approaches rely on heuristic algorithms and approximation techniques~\cite{harrold1993} that balance reduction effectiveness, coverage preservation, and computational efficiency.
 
+Figure~\ref{fig:problem-statement} illustrates the test suite minimization problem as a set-theoretic optimization, where the goal is to find the minimum cardinality subset $S^*$ of the original test suite $T$ that preserves complete coverage of all requirements $R$.
+
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{cc}
+    \textbf{Original Test Suite} & \textbf{Minimized Test Suite} \\[0.3cm]
+    \begin{tabular}{c}
+      \fbox{\begin{minipage}{5cm}
+        \centering
+        $T = \{t_1, t_2, \ldots, t_n\}$ \\[0.2cm]
+        $|T| = n$ tests \\[0.2cm]
+        $C(T) = \bigcup_{i=1}^{n} C(t_i)$ \\[0.2cm]
+        Complete coverage
+      \end{minipage}}
+    \end{tabular}
+    &
+    \begin{tabular}{c}
+      \fbox{\begin{minipage}{5cm}
+        \centering
+        $S^* \subseteq T$ \\[0.2cm]
+        $|S^*| < n$ tests \\[0.2cm]
+        $C(S^*) = C(T)$ \\[0.2cm]
+        Preserved coverage
+      \end{minipage}}
+    \end{tabular}
+  \end{tabular}
+  
+  \vspace{0.5cm}
+  
+  \begin{tabular}{c}
+    \textbf{Optimization Goal} \\[0.2cm]
+    \fbox{\begin{minipage}{11cm}
+      \centering
+      Minimize: $|S^*|$ \\[0.1cm]
+      Subject to: $C(S^*) = C(T)$ \\[0.1cm]
+      Complexity: NP-complete (equivalent to set cover)
+    \end{minipage}}
+  \end{tabular}
+  
+  \caption{Test suite minimization as a set-theoretic optimization problem. The objective is to find the smallest subset $S^*$ of the original test suite $T$ that maintains complete coverage $C(T)$ of all requirements. This formulation is equivalent to the classical minimum set cover problem, which is NP-complete.}
+  \label{fig:problem-statement}
+\end{figure}
+
 \section{Research Objectives and Questions}
 
 This thesis aims to design and implement an SRM-based test suite minimization framework for the LASSO platform. To achieve this objective, we address the following research questions:

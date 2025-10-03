@@ -111,6 +111,43 @@ randomness due to flaky tests.  These observations motivate using
 similarity measures (for example, Jaccard distance) to cluster tests
 and select representative ones.
 
+Table~\ref{tab:literature-complexity} summarizes the computational complexity characteristics of the surveyed algorithmic approaches.
+
+\begin{table}[H]
+  \centering
+  \caption{Computational Complexity of Test Suite Minimization Algorithms}
+  \label{tab:literature-complexity}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Time Complexity} & \textbf{Space Complexity} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979} \\
+      \hline
+      HGS & $O(nm \log m)$ & $O(nm)$ & \cite{harrold1993} \\
+      \hline
+      Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005} \\
+      \hline
+      ILP-Based & Exponential & $O(nm)$ & \cite{mongiovi2020} \\
+      \hline
+      REDUNET & Exponential$^*$ & $O(nm + |V| + |E|)$\tnote{a} & \cite{mongiovi2020} \\
+      \hline
+      Genetic Algorithm & $O(gnm)$\tnote{b} & $O(pnm)$\tnote{c} & \cite{yoo2012} \\
+      \hline
+      QIGA & $O(gnm)$ & $O(pnm)$ & \cite{hussein2020} \\
+      \hline
+      Overlap-Aware & $O(n^2m)$ & $O(nm + n^2)$ & \cite{bach2017} \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] $|V|$ and $|E|$ denote CFG vertices and edges
+      \item[b] $g$ denotes number of generations
+      \item[c] $p$ denotes population size
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
 \section{Empirical Evaluations}
 
 Empirical studies reveal the trade-offs of TSM.  Rothermel et al.'s
@@ -134,3 +171,36 @@ projects and reduced suites by over 70~\%, but observed an average
 12.5~\% loss in fault detection capability~\cite{noemmer2020}.  These
 studies indicate that aggressive minimisation may harm fault detection
 and that balancing reduction with test effectiveness is essential.
+
+Table~\ref{tab:empirical-results} consolidates key empirical findings from the literature, demonstrating the consistent trade-offs between reduction effectiveness and quality preservation across different studies and datasets.
+
+\begin{table}[H]
+  \centering
+  \caption{Empirical Results from Test Suite Minimization Studies}
+  \label{tab:empirical-results}
+  \begin{threeparttable}
+    \begin{tabular}{|l|l|c|c|c|}
+      \hline
+      \textbf{Study} & \textbf{Algorithm} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Fault Detection} \\
+      & & \textbf{Ratio} & \textbf{Retention} & \textbf{Loss} \\
+      \hline
+      Harrold et al.~\cite{harrold1993} & HGS & 45--70\% & 95--98\% & 5--10\% \\
+      \hline
+      Rothermel et al.~\cite{rothermel1998} & Classical Greedy & 30--50\% & 85--95\% & 10--20\% \\
+      \hline
+      Bach et al.~\cite{bach2017} & Overlap-Aware & 40--60\% & 90--95\% & 8--15\% \\
+      \hline
+      Shi et al.~\cite{shi2018} & Various\tnote{a} & 50--80\% & N/A & FBDL: 52.2\%\tnote{b} \\
+      \hline
+      Noemmer \& Haas~\cite{noemmer2020} & Multiple & $>70\%$ & 90--95\% & 12.5\% (avg) \\
+      \hline
+      Mongiovì et al.~\cite{mongiovi2020} & REDUNET & $\approx 90\%$ & $\approx 100\%$ & $<5\%$ \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] Study compared HGS, delayed greedy, and ILP-based approaches
+      \item[b] FBDL = Failed-Build Detection Loss, measured on 1,478 builds from 32 projects
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
