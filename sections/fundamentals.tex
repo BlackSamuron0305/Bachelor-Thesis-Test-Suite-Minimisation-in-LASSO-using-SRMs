@@ -1,6 +1,6 @@
 \chapter{Fundamentals}
 
-This chapter establishes the theoretical foundation for this thesis by introducing the core concepts, methodologies, and formal definitions essential to understanding test suite minimization. We present the metrics employed to quantify test suite effectiveness, provide a comprehensive description of the \emph{Stimulus--Response Matrix} (SRM) representation utilized within the LASSO platform, and formally define the test suite minimization problem within the context of computational complexity theory.
+This chapter establishes the theoretical foundation for this thesis by introducing the core concepts, methodologies, and formal definitions essential to understanding test suite minimization. We present the metrics employed to quantify test suite effectiveness, provide a comprehensive description of the \emph{Stimulus-Response Matrix} (SRM) representation utilized within the LASSO platform, and formally define the test suite minimization problem within the context of computational complexity theory.
 
 \section{Test Coverage and Mutation Score}
 
@@ -14,9 +14,9 @@ This chapter establishes the theoretical foundation for this thesis by introduci
 
 A mutation score of 100\% indicates that the test suite successfully detects all introduced faults. Mutation analysis provides superior insight into test effectiveness compared to coverage metrics alone, as it directly measures the test suite's ability to reveal semantic differences in program behavior. We refer readers to Zeller et al.'s comprehensive treatment of mutation analysis for detailed theoretical foundations and practical applications~\cite{fuzzingbook}.
 
-\section{Stimulus--Response Matrices}
+\section{Stimulus-Response Matrices}
 
-The LASSO platform employs \emph{Stimulus--Response Matrices} as a unified, language-independent representation for capturing test execution data~\cite{Kessel2022}. An SRM is formally defined as a binary matrix $M \in \{0,1\}^{n \times m}$, where $n$ represents the number of test cases and $m$ denotes the number of coverage requirements. Each matrix element $M_{ij}$ encodes the coverage relationship between test case $i$ and requirement $j$:
+The LASSO platform employs \emph{Stimulus-Response Matrices} as a unified, language-independent representation for capturing test execution data~\cite{Kessel2022}. An SRM is formally defined as a binary matrix $M \in \{0,1\}^{n \times m}$, where $n$ represents the number of test cases and $m$ denotes the number of coverage requirements. Each matrix element $M_{ij}$ encodes the coverage relationship between test case $i$ and requirement $j$:
 
 \begin{equation}
 M_{ij} = \begin{cases}
