@@ -28,12 +28,15 @@
 \usepackage{multirow}                   % to support complex tables
 \usepackage{longtable}	                % to support complex tables
 \usepackage{threeparttable}             % for table notes
+\usepackage{booktabs}                   % improved tables
+\usepackage{adjustbox}                  % fit tables/figures to width
 \usepackage{rotating}	                % to enable landscape pages
 \usepackage{framed}
 \usepackage{scrlayer-scrpage}           % to support headers and footers
 \pagestyle{scrheadings}                 % the header style
 
 \usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating% to control the how many levels of subsection nesting are shown in the table of contents
+\usepackage{scrhack}                    % fixes deprecated float addtolist warnings with KOMA-Script
 
 \usepackage[urldate=long, dateabbrev=true]{biblatex}
 \addbibresource{literature/lit.bib}
@@ -61,6 +64,9 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \usepackage{xspace}       % for better spacing
 % generates a list of abbreviations automatically: 2x latex, makeindex myfile.nlo -s nomencl.ist -o myfile.nls, 2x latex
 \usepackage{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
+
+% Helper: fit content to text width while keeping aspect ratio
+\newenvironment{fitcenter}{\begin{center}\begin{adjustbox}{max width=\textwidth}}{\end{adjustbox}\end{center}}
 
 
 \let\abbrev\nomenclature

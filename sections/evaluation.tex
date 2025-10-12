@@ -51,6 +51,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
 
 \begin{figure}[H]
   \centering
+  \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Algorithm} & \textbf{Reduction Ratio (\%)} & \textbf{Coverage Retention (\%)} \\
@@ -72,6 +73,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
     Genetic Algorithm & 50--75 & 80--95 \\
     \hline
   \end{tabular}
+  \end{adjustbox}
   
   \vspace{0.5cm}
   
@@ -84,7 +86,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
       where both metrics exceed minimum acceptability thresholds.
     \end{minipage}}
   \end{tabular}
-  
+
   \caption{Trade-off analysis between reduction effectiveness and coverage preservation across candidate algorithms. Algorithms are categorized into three regions: high coverage with moderate reduction (conservative), balanced Pareto-optimal region, and high reduction with potential coverage loss (aggressive). Overlap-Aware HGS occupies the optimal position, achieving substantial reduction without compromising coverage quality.}
   \label{fig:tradeoff-analysis}
 \end{figure}
@@ -94,6 +96,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
   \caption{Comparative Analysis of Test Suite Minimization Algorithms}
   \label{tab:comparison}
   \begin{threeparttable}
+    \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{|l|c|c|c|c|c|l|}
       \hline
       \textbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault} & \textbf{Time} & \textbf{SRM} & \textbf{Key Characteristics} \\
@@ -111,7 +114,8 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
       \hline
       \textbf{Overlap-Aware HGS} & \textbf{95-98\%} & \textbf{50-75\%} & \textbf{90-95\%} & $\mathbf{O(nm \log m)}$ & \textbf{Yes} & \textbf{Optimal balance for LASSO} \\
       \hline
-    \end{tabular}
+  \end{tabular}
+  \end{adjustbox}
     \begin{tablenotes}
       \small
       \item[a] Polynomial-time approximations available but may sacrifice optimality
@@ -122,6 +126,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
 
 \begin{figure}[H]
   \centering
+  \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{|l|c|c|c|c|c|c|c|}
     \hline
     \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
@@ -140,6 +145,7 @@ Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between 
     \textbf{Overlap-Aware HGS} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{4/5} & \textbf{29/30} \\
     \hline
   \end{tabular}
+  \end{adjustbox}
   \caption{Multi-criteria scoring of test suite minimization algorithms across six evaluation dimensions (C1--C6). Scores range from 1 (poor) to 5 (excellent). Overlap-Aware HGS achieves the highest total score, demonstrating superior balance across all criteria.}
   \label{fig:algorithm-radar}
 \end{figure}

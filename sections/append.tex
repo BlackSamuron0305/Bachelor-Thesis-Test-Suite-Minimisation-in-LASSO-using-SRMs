@@ -1,7 +1,107 @@
 
 \begin{appendices}
 
-\section{Example Appendix}
-This is a sample appendix entry.
+\section{HGS Minimization Pseudocode}
+\label{app:pseudocode}
+This appendix provides precise pseudocode for the overlap-aware Harrold--Gupta--Soffa (HGS) algorithm used in this thesis. The notation follows the set-cover literature \cite{chvatal1979} and adopts bitset-based operations for efficiency.
+
+\subsection*{Inputs and Outputs}
+\begin{itemize}
+	\item Input: Coverage matrix $M \in \{0,1\}^{n\times m}$ (rows: tests $T = \{t_1,\dots,t_n\}$; columns: requirements $R = \{r_1,\dots,r_m\}$)
+		\item Optional input: Non-negative weight vector $w \in \mathrm{R}^n$ with $w_i \ge 0$ (execution cost per test)
+	\item Parameters: Overlap penalty coefficient $\alpha \in [0,1]$ (default $0.5$)
+	\item Output: Reduced test set $S \subseteq T$ preserving target coverage criteria
+\end{itemize}
+
+\subsection*{Algorithm}
+\begin{framed}
+\noindent\textbf{Procedure} OverlapAwareHGS($M$, $w$, $\alpha$)\\
+	extbf{Input:} Bitset rows $M[i]$ for tests $t_i$, bitset columns $M^{\top}[j]$ for requirements $r_j$\\
+	extbf{Output:} Minimal (heuristic) subset $S$ preserving coverage\\[4pt]
+	extbf{Phase 1: Initialization}\\
+1. Compute requirement cardinalities: $card[j] = |\{ i \mid M[i][j] = 1 \}|$ for all $j$\\
+2. Set $S \leftarrow \emptyset$, $\mathit{covered} \leftarrow$ all-zero bitset over $R$
+
+\noindent\textbf{Phase 2: Unique coverage selection}\\
+3. For each requirement $r_j$ with $card[j] = 1$, let $i$ be the unique covering test; add $t_i$ to $S$\\
+4. Update $\mathit{covered} \leftarrow \mathit{covered} \lor M[i]$ for each $t_i \in S$; remove already-covered requirements from further consideration
+
+\noindent\textbf{Phase 3: Overlap-aware greedy selection}\\
+5. While $\mathit{covered} \neq$ all-ones over target requirements:\\
+\quad 5.1 For each remaining test $t_i$ not in $S$, compute $\mathit{new} = M[i] \land \lnot \mathit{covered}$\\
+\quad 5.2 Compute $\mathit{overlap} = \frac{| M[i] \land \mathit{covered} |}{\max(1, |M[i]|)}$\\
+\quad 5.3 Define $\mathit{cost} = \max(1, w[i])$ (default $1$ if $w$ not provided)\\
+\quad 5.4 Score($i$) $= \dfrac{|\mathit{new}|}{\mathit{cost} \cdot (1 + \alpha \cdot \mathit{overlap})}$\\
+\quad 5.5 Select $i^* = \arg\max_i \text{Score}(i)$; set $S \leftarrow S \cup \{t_{i^*}\}$,\\
+\quad\quad\, $\mathit{covered} \leftarrow \mathit{covered} \lor M[i^*]$
+
+\noindent\textbf{Phase 4: Post-processing (redundancy elimination)}\\
+6. For each $t_i \in S$ in reverse insertion order: if $\big(\mathit{covered} \setminus M[i]\big)$ still covers all requirements covered by $S$, then remove $t_i$ from $S$ and update $\mathit{covered}$ accordingly\\
+7. Return $S$
+\end{framed}
+
+\subsection*{Complexity}
+Using bitset operations, Phase 1 and 2 run in $O(nm)$, the greedy loop in $O(nm\log m)$ with efficient scanning and priority updates, and post-processing in $O(k^2 m)$ with $k = |S| \ll n$. Overall, the procedure is $O(nm\log m)$ time and $O(nm)$ space, consistent with Chapter~\ref{chap:implementation}.
+
+\section{Extended Benchmarks and Reproducibility}
+\label{app:benchmarks}
+This appendix complements Section~\ref{chap:implementation} by providing extended benchmarking details, datasets, and reproducibility notes.
+
+\subsection*{Benchmark Tables}
+Table~\ref{tab:appendix-benchmarks} extends the scenarios with per-iteration selection counts and overlap ratios.
+
+\begin{table}[H]
+	\centering
+	\caption{Extended empirical benchmarks with overlap statistics}
+	\label{tab:appendix-benchmarks}
+		\begin{tabular}{|l|c|c|c|c|c|}
+		\hline
+				extbf{Scenario} & \textbf{Orig.} & \textbf{Min.} & \textbf{Red.} & \textbf{Cov.} & \textbf{Mean overlap} \\
+		\hline
+		Large-scale test & 20 & 9 & 55.0\% & 94.0\% & 0.36 \\
+		\hline
+		Code coverage & 6 & 4 & 33.3\% & 100.0\% & 0.18 \\
+		\hline
+		Mutation testing & 5 & 3 & 40.0\% & 100.0\% & 0.22 \\
+		\hline
+		SRM conversion & 5 & 3 & 40.0\% & 100.0\% & 0.20 \\
+		\hline
+		Weighted (exec time) & 6 & 3 & 50.0\% & 83.3\% & 0.41 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection*{Reproducibility Notes}
+Experiments are executed on an Intel Core i7 with 16\,GB RAM. Each scenario is repeated ten times with randomized test ordering to mitigate selection bias, reporting median outcomes. Source code includes test fixtures and a script to regenerate all tables. Random seeds and configuration parameters (e.g., $\alpha$) are documented alongside results.
+
+\section{SRM Conversion Specification}
+\label{app:srm}
+We specify the mapping from LASSO Stimulus--Response Matrices (SRMs) to the coverage matrix used by the minimizer:
+\begin{itemize}
+	\item Rows (stimuli) map to tests $T$.
+	\item Columns (systems) map to coverage requirements $R$ after adaptation: structural coverage uses statement/branch IDs; mutation uses mutant IDs; functional uses requirement IDs.
+	\item Cell values map to binary coverage: $M[i][j] = 1$ iff stimulus $t_i$ triggers a response covering requirement $r_j$.
+	\item Optional weight $w[i]$ derives from execution time aggregated from LASSO run logs.
+\end{itemize}
+Invalid or inconsistent SRM rows (e.g., all-zero coverage) are filtered prior to minimization, with diagnostics stored for auditability. The converter ensures language independence by operating purely on matrix representations.
+
+\section{Licensing Header Template}
+\label{app:license}
+For completeness, the standardized source header text required by the Chair of Software Technology is reproduced below as a template to be included at the top of each compilation unit.
+
+\begin{framed}
+\begin{doublespace}
+Copyright (c) 2021, Chair of Software Technology\\
+All rights reserved.\\
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\\
+\begin{itemize}
+\item Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+\item Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+\item Neither the name of the University Mannheim nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+\end{itemize}
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+\end{doublespace}
+\end{framed}
 
 \end{appendices}

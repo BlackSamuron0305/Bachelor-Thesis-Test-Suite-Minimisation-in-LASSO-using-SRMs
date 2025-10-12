@@ -25,6 +25,8 @@ Unlike traditional greedy algorithms, the HGS approach penalizes tests with high
 \]
 where $\alpha \in [0, 1]$ controls overlap penalization (default $\alpha = 0.5$).
 
+For a concise, implementation-agnostic description, refer to the pseudocode in Appendix~\ref{app:pseudocode}.
+
 \subsection{Phase 4: Post-Processing}
 
 A final pass removes redundant tests (coverage fully contained in other selected tests), typically eliminating 2--5\% of Phase 3 selections in $O(n^2 \cdot m)$ time.
@@ -62,34 +64,13 @@ The implementation supports weighted minimization by incorporating execution cos
 
 \section{Empirical Validation}
 
-We developed 13 unit tests validating coverage preservation, minimality, unique coverage handling, overlap penalty behavior, and weight sensitivity. All tests pass in 2.790 seconds (Intel Core i7, 16GB RAM). Benchmark results across five scenarios demonstrate effectiveness:
-
-\begin{table}[H]
-  \centering
-  \caption{Empirical performance benchmarks from implementation testing}
-  \label{tab:implementation-benchmarks}
-  \begin{tabular}{|l|c|c|c|c|}
-    \hline
-    \textbf{Scenario} & \textbf{Original} & \textbf{Minimized} & \textbf{Reduction} & \textbf{Coverage} \\
-    \hline
-    Large-scale test & 20 tests & 9 tests & 55.0\% & 94.0\% \\
-    \hline
-    Code coverage & 6 tests & 4 tests & 33.3\% & 100.0\% \\
-    \hline
-    Mutation testing & 5 tests & 3 tests & 40.0\% & 100.0\% (8/8 mutants) \\
-    \hline
-    SRM conversion & 5 tests & 3 tests & 40.0\% & 100.0\% \\
-    \hline
-    Weighted (exec time) & 6 tests & 3 tests & 50.0\% & 83.3\% \\
-    \hline
-  \end{tabular}
-\end{table}
+We developed 13 unit tests validating coverage preservation, minimality, unique coverage handling, overlap penalty behavior, and weight sensitivity. All tests pass in 2.790 seconds (Intel Core i7, 16GB RAM). Representative benchmark results across five scenarios demonstrate effectiveness (see extended results including overlap statistics and reproducibility notes in Appendix~\ref{app:benchmarks}).
 
 The large-scale test (20 tests → 9 tests, 55\% reduction, 94\% coverage) aligns with theoretical expectations \cite{chvatal1979}. Compared to basic greedy ($O(n \cdot m)$ time, 40--60\% reduction, 90--95\% coverage), HGS achieves 5--10\% better reduction and 3--5\% higher coverage retention at $O(n \cdot m \cdot \log m)$ complexity.
 
 \section{Integration with LASSO Platform}
 
-The implementation includes an SRM-to-TestCase converter enabling direct application to LASSO's existing test execution data. Integration via LASSO's LSL (LASSO Specification Language) supports declarative minimization policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting.
+The implementation includes an SRM-to-TestCase converter enabling direct application to LASSO's existing test execution data. Integration via LASSO's LSL (LASSO Specification Language) supports declarative minimization policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting. A formal specification of the SRM conversion is provided in Appendix~\ref{app:srm}.
 
 \section{Documentation and Demonstration}
 
@@ -97,26 +78,4 @@ The \texttt{HGSMinimizerDemo} class provides five executable examples: code cove
 
 \section{Licensing and Copyright}
 
-All software developed during this project is licensed under the GNU General Public License version 3 (GPL3), consistent with LASSO's existing licensing framework. Each compilation unit includes the following copyright notice:
-
-\subsection{Header Text}
-
-All software (i.e. compilation units) created during the course of the project should have the following header information at the top.
-\\
-
-\centerline{\rule{15cm}{0.4pt}}
-
-\begin{doublespace}
-Copyright (c) 2021, Chair of Software Technology
-All rights reserved.
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-\begin{itemize}
-\item Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. 
-
-\item Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-\item Neither the name of the University Mannheim nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission. 
-\end{itemize}
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-\end{doublespace}
+All software developed during this project is licensed under the GNU General Public License version 3 (GPL3), consistent with LASSO's existing licensing framework. The standardized source header template required by the Chair of Software Technology is reproduced in Appendix~\ref{app:license} for reuse in each compilation unit.
