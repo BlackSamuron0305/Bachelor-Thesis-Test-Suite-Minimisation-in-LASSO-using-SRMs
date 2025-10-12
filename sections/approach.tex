@@ -1,27 +1,22 @@
 \chapter{Selected Approach and Implementation Framework}
 
-This chapter presents the algo\subsection{Evaluation Datasets}
-\begin{itemize}
-  \item \textbf{Benchmark Projects:} 10-15 open-source Java projects from the Defects4J dataset~\cite{just2014}
-  \item \textbf{LASSO-Generated SRMs:} Real coverage matrices from projects analyzed within LASSO
-  \item \textbf{Synthetic Data:} Controlled SRMs with varying sparsity and overlap characteristics
-\end{itemize}c approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
+This chapter presents the algorithmic approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
 
 \section{Algorithm Selection Rationale}
 
 The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies the HGS algorithm augmented with overlap-aware heuristics as the optimal choice for LASSO integration based on the following considerations:
 
 \subsection{Superior Coverage Preservation}
-HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This characteristic addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Harrold et al.~\cite{harrold1993} demonstrated that HGS maintains higher coverage ratios compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%. Subsequent studies have corroborated these findings across different testing contexts~\cite{noemmer2020}.
+HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Harrold et al.~\cite{harrold1993} demonstrated that HGS maintains higher coverage ratios (95--98\%) compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%.
 
 \subsection{Enhanced Fault Detection Through Overlap Awareness}
-The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}, suggesting superior fault detection retention.
+The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}.
 
 \subsection{Computational Efficiency and Scalability}
-HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications within LASSO.
+HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications.
 
 \subsection{SRM Compatibility and Language Independence}
-Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on the SRM representation. While LASSO's SRMs canonically capture system responses to stimuli for multi-system behavioral analysis, our minimization approach leverages LASSO's adapted SRM view where stimuli represent test cases and systems represent coverage requirements within a single target system. This enables our algorithm to operate on the resulting coverage matrix while maintaining compatibility with LASSO's language-independent analysis paradigm and unified SRM infrastructure. This characteristic enables consistent minimization across diverse programming languages without requiring language-specific adaptations.
+Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on LASSO's coverage-adapted SRM representation where stimuli represent test cases and systems represent coverage requirements. This ensures language independence without requiring language-specific adaptations or additional structural data.
 
 \section{Implementation Framework}
 
@@ -116,13 +111,13 @@ This section presents a detailed specification of the proposed test suite minimi
 
 \subsection{Integration Architecture}
 
-The minimization framework integrates into LASSO's analysis pipeline through the following components, operating on LASSO's coverage-adapted SRM representation:
+Four modular components integrate into LASSO's pipeline:
 
 \begin{itemize}
-  \item \textbf{SRM Preprocessor:} Validates input SRM format from LASSO's test generation pipeline, handles missing data, and computes auxiliary data structures while maintaining compatibility with LASSO's unified SRM infrastructure
-  \item \textbf{Minimization Engine:} Implements the core algorithm with configurable parameters for overlap sensitivity and effectiveness weighting, operating on the adapted SRM where rows represent test stimuli and columns represent coverage requirements
-  \item \textbf{Quality Assessor:} Evaluates reduction quality using metrics including coverage retention, mutation score preservation, and fault detection estimation
-  \item \textbf{Results Exporter:} Generates optimized SRMs in LASSO-compatible formats and produces comprehensive analysis reports that can be further processed through LASSO's SRMPATH notation and external analytics tools
+  \item \textbf{SRM Preprocessor:} Validates inputs, handles missing data, computes auxiliary structures
+  \item \textbf{Minimization Engine:} Core HGS implementation with configurable overlap/weighting parameters
+  \item \textbf{Quality Assessor:} Evaluates coverage retention, mutation preservation, fault detection
+  \item \textbf{Results Exporter:} Generates LASSO-compatible optimized SRMs and analysis reports
 \end{itemize}
 
 Figure~\ref{fig:integration-architecture} depicts the integration of these components within LASSO's existing analysis infrastructure.

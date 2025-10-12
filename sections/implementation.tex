@@ -1,84 +1,33 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the concrete implementation of the Harrold-Gupta-Soffa (HGS) algorithm with overlap awareness for test suite minimization in the LASSO platform. We describe the software architecture, core algorithmic components, and empirical validation through comprehensive testing. The implementation demonstrates the practical feasibility of applying theoretical TSM techniques to large-scale software analysis environments.
+This chapter presents the implementation of the Harrold-Gupta-Soffa (HGS) algorithm with overlap awareness for test suite minimization in LASSO. We describe the algorithmic phases, empirical validation, and platform integration.
 
 \section{Software Architecture}
 
-The implementation follows a modular design consisting of four primary components, integrated into LASSO's existing testing infrastructure. Figure~\ref{fig:implementation-components} illustrates the architectural organization and data flow between components.
-
-\begin{figure}[H]
-  \centering
-  \begin{tabular}{|l|p{10cm}|}
-    \hline
-    \textbf{Component} & \textbf{Responsibility} \\
-    \hline
-    \texttt{OverlapAwareHGSMinimizer} & Core algorithm implementation with 4-phase workflow (initialization, unique coverage selection, overlap-aware greedy, post-processing) \\
-    \hline
-    \texttt{TestCase} & Data model representing test cases with coverage information encoded as BitSet \\
-    \hline
-    \texttt{MinimalTestSuite} & Result container with selected tests, metrics, and coverage statistics \\
-    \hline
-    \texttt{HGSMinimizerDemo} & Demonstration application with 5 usage scenarios including SRM integration \\
-    \hline
-  \end{tabular}
-  \caption{Implementation component structure and responsibilities}
-  \label{fig:implementation-components}
-\end{figure}
-
-The core minimizer class implements the interface defined by LASSO's testing harness, ensuring compatibility with existing test execution and analysis workflows. All components adhere to GPL3 licensing requirements and follow LASSO coding conventions.
+The implementation consists of four components integrated into LASSO's testing infrastructure: \texttt{OverlapAwareHGSMinimizer} (core 4-phase algorithm), \texttt{TestCase} (data model with BitSet coverage encoding), \texttt{MinimalTestSuite} (result container), and \texttt{HGSMinimizerDemo} (demonstration with 5 usage scenarios). All components follow LASSO conventions and GPL3 licensing.
 
 \section{Algorithm Implementation}
 
-\subsection{Phase 1: Initialization and Requirement Analysis}
+\subsection{Phase 1: Initialization}
 
-The algorithm begins by computing requirement cardinalities—the number of tests covering each code element. This information guides subsequent selection decisions by identifying critical requirements with limited coverage options.
-
-\begin{verbatim}
-int[] requirementCardinality = computeCardinalities(testCases, noOfCodeElements);
-\end{verbatim}
-
-The cardinality computation operates in $O(n \cdot m)$ time, where $n$ is the number of tests and $m$ is the number of code elements. This preprocessing step is essential for identifying unique coverage relationships in Phase 2.
+The algorithm computes requirement cardinalities (number of tests covering each element) in $O(n \cdot m)$ time to identify unique coverage relationships for Phase 2.
 
 \subsection{Phase 2: Unique Coverage Selection}
 
-Requirements covered by exactly one test must be included to guarantee complete coverage preservation. The algorithm iterates through all requirements with cardinality equal to 1 and unconditionally selects their unique covering test.
-
-\begin{verbatim}
-for each requirement with cardinality == 1:
-    select the unique test covering it
-    mark all its covered requirements as satisfied
-\end{verbatim}
-
-This phase ensures no requirement is orphaned during minimization, addressing a critical correctness constraint. In empirical testing, Phase 2 typically selects 15--25\% of the original test suite, depending on coverage distribution.
+Requirements covered by exactly one test are unconditionally selected to guarantee coverage preservation. This phase typically selects 15--25\% of the original suite.
 
 \subsection{Phase 3: Overlap-Aware Greedy Selection}
 
-The core innovation of the HGS approach lies in its overlap-aware effectiveness metric. Traditional greedy algorithms select tests based solely on uncovered requirements. Our implementation penalizes tests with high overlap to already-selected tests, promoting diversity in the minimized suite.
-
-The effectiveness function is defined as:
+Unlike traditional greedy algorithms, the HGS approach penalizes tests with high overlap to already-selected tests. The effectiveness function is:
 \[
 \text{effectiveness} = \frac{\text{new\_coverage}}{\text{weight} \cdot (1 + \alpha \cdot \text{overlap\_penalty})}
 \]
+where $\alpha \in [0, 1]$ controls overlap penalization (default $\alpha = 0.5$).
 
-where the overlap penalty quantifies redundancy:
-\[
-\text{overlap\_penalty} = \frac{\alpha \cdot \sum_{t \in S^*} |\text{coverage}(t) \cap \text{coverage}(t_i)|}{|\text{coverage}(t_i)|}
-\]
+\subsection{Phase 4: Post-Processing}
 
-The parameter $\alpha \in [0, 1]$ controls the strength of overlap penalization. The default value $\alpha = 0.5$ balances coverage gain against redundancy avoidance, as determined through empirical tuning. Higher values (e.g., $\alpha = 0.7$) yield smaller but more diverse test suites.
-
-\subsection{Phase 4: Post-Processing and Redundancy Elimination}
-
-After greedy selection terminates, a final optimization pass removes redundant tests. A test is redundant if its coverage is fully contained within the union of other selected tests' coverage.
-
-\begin{verbatim}
-for each selected test:
-    if its coverage is fully contained in other selected tests:
-        remove it from the minimized suite
-\end{verbatim}
-
-This phase typically removes 2--5\% of tests selected in Phase 3, further improving reduction ratio without sacrificing coverage. The redundancy check operates in $O(n^2 \cdot m)$ worst case, but empirically completes quickly due to small minimized suite sizes.
+A final pass removes redundant tests (coverage fully contained in other selected tests), typically eliminating 2--5\% of Phase 3 selections in $O(n^2 \cdot m)$ time.
 
 \section{Complexity Analysis}
 
@@ -107,37 +56,13 @@ Table~\ref{tab:implementation-complexity} presents the time and space complexity
 
 The space complexity is dominated by storing test coverage information as BitSet objects, requiring $O(n \cdot m)$ bits. In practice, BitSet compression reduces memory footprint by 8--16$\times$ compared to boolean arrays.
 
-\section{Test Weights and Execution Cost Awareness}
+\section{Test Weights}
 
-The implementation supports weighted minimization, incorporating test execution costs into the effectiveness metric. This feature enables optimization for real-world constraints such as execution time, resource consumption, or monetary cost.
-
-\begin{verbatim}
-double[] weights = {1.0, 5.0, 1.0, 2.5};  // execution time in seconds
-MinimalTestSuite result = minimizer.findMinimalTestSet(
-    testCases, numElements, weights);
-\end{verbatim}
-
-Tests with higher weights are penalized during selection, favoring faster tests with comparable coverage. This extension maintains the $O(n \cdot m \cdot \log m)$ complexity while enabling multi-objective optimization.
+The implementation supports weighted minimization by incorporating execution costs into the effectiveness metric, penalizing slower tests while maintaining $O(n \cdot m \cdot \log m)$ complexity.
 
 \section{Empirical Validation}
 
-\subsection{Test Suite Design}
-
-We developed a comprehensive test suite consisting of 13 unit tests covering all algorithm phases, edge cases, and integration scenarios. The tests validate correctness properties including:
-
-\begin{itemize}
-\item \textbf{Coverage preservation}: Minimized suite covers all originally covered requirements
-\item \textbf{Minimality}: No test in the minimized suite is redundant
-\item \textbf{Unique coverage handling}: Tests covering unique requirements are always selected
-\item \textbf{Overlap penalty behavior}: Higher $\alpha$ values yield more diverse selections
-\item \textbf{Weight sensitivity}: Higher-weight tests are avoided when alternatives exist
-\end{itemize}
-
-All 13 tests pass successfully, with total execution time of 2.790 seconds on standard hardware (Intel Core i7, 16GB RAM).
-
-\subsection{Benchmark Results}
-
-Table~\ref{tab:implementation-benchmarks} presents empirical performance measurements from the test suite and demonstration application. These results validate the algorithm's effectiveness across diverse coverage scenarios.
+We developed 13 unit tests validating coverage preservation, minimality, unique coverage handling, overlap penalty behavior, and weight sensitivity. All tests pass in 2.790 seconds (Intel Core i7, 16GB RAM). Benchmark results across five scenarios demonstrate effectiveness:
 
 \begin{table}[H]
   \centering
@@ -160,109 +85,15 @@ Table~\ref{tab:implementation-benchmarks} presents empirical performance measure
   \end{tabular}
 \end{table}
 
-The large-scale test demonstrates the algorithm's behavior on realistic test suites. Starting with 20 tests covering 50 code elements (coverage density 47\%), the algorithm reduces the suite to 9 tests while retaining 94\% coverage. This aligns with theoretical expectations for greedy set cover approximations \cite{chvatal1979}.
-
-\subsection{Comparison with Baseline Greedy Algorithm}
-
-Figure~\ref{fig:implementation-comparison} presents a quantitative comparison between the basic greedy algorithm (existing in LASSO) and the implemented overlap-aware HGS variant.
-
-\begin{figure}[H]
-  \centering
-  \begin{tabular}{|l|c|c|}
-    \hline
-    \textbf{Metric} & \textbf{Greedy} & \textbf{HGS (Overlap-Aware)} \\
-    \hline
-    Time complexity & $O(n \cdot m)$ & $O(n \cdot m \cdot \log m)$ \\
-    \hline
-    Space complexity & $O(n \cdot m)$ & $O(n \cdot m)$ \\
-    \hline
-    Reduction ratio & 40--60\% & 45--70\% \\
-    \hline
-    Coverage retention & 90--95\% & 95--98\% \\
-    \hline
-    Overlap handling & None & Configurable ($\alpha$) \\
-    \hline
-    Unique coverage & No special handling & Prioritized (Phase 2) \\
-    \hline
-    Test weights & Not supported & Supported \\
-    \hline
-    Redundancy removal & No & Yes (Phase 4) \\
-    \hline
-    \textbf{Use case} & Quick minimization & High-quality minimization \\
-    \hline
-  \end{tabular}
-  \caption{Comparative analysis of greedy vs. overlap-aware HGS algorithms based on empirical testing}
-  \label{fig:implementation-comparison}
-\end{figure}
-
-The HGS variant achieves 5--10\% better reduction while maintaining 3--5\% higher coverage retention, justifying the increased computational cost for scenarios where minimization quality is critical.
+The large-scale test (20 tests → 9 tests, 55\% reduction, 94\% coverage) aligns with theoretical expectations \cite{chvatal1979}. Compared to basic greedy ($O(n \cdot m)$ time, 40--60\% reduction, 90--95\% coverage), HGS achieves 5--10\% better reduction and 3--5\% higher coverage retention at $O(n \cdot m \cdot \log m)$ complexity.
 
 \section{Integration with LASSO Platform}
 
-\subsection{SRM Data Conversion}
+The implementation includes an SRM-to-TestCase converter enabling direct application to LASSO's existing test execution data. Integration via LASSO's LSL (LASSO Specification Language) supports declarative minimization policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting.
 
-The implementation includes a converter for transforming LASSO's Stimulus-Response Matrix data into the algorithm's input format. SRM matrices encode test outcomes as binary vectors, where rows represent test cases (stimuli) and columns represent system variants (responses).
+\section{Documentation and Demonstration}
 
-\begin{verbatim}
-// SRM dimensions: 5 tests × 8 requirements
-boolean[][] srmMatrix = {
-    {true, false, true, false, true, false, true, false},
-    {false, true, false, true, false, true, false, true},
-    ...
-};
-
-List<TestCase> testCases = convertSRMToTestCases(srmMatrix);
-MinimalTestSuite result = minimizer.findMinimalTestSet(testCases, 8);
-\end{verbatim}
-
-This conversion enables direct application of the algorithm to LASSO's existing test execution data without requiring schema modifications or data migration.
-
-\subsection{Action System Integration}
-
-LASSO's LSL (LASSO Specification Language) provides an action-based interface for test analysis tasks. The implementation is designed for integration via a \texttt{TestSuiteMinimization} action with the following configuration parameters:
-
-\begin{verbatim}
-action(name: 'minimize', type: 'TestSuiteMinimization') {
-    algorithm = 'hgs'           // or 'greedy'
-    alpha = 0.5                 // overlap penalty factor
-    coverageCriteria = 'line'   // or 'branch', 'mutant'
-    weighted = true             // use execution time weights
-}
-\end{verbatim}
-
-This declarative interface allows researchers to specify minimization policies in LSL scripts, enabling reproducible and automated test suite optimization workflows.
-
-\section{Demonstration Application}
-
-The \texttt{HGSMinimizerDemo} class provides five executable examples demonstrating the algorithm's capabilities:
-
-\begin{enumerate}
-\item \textbf{Code coverage minimization}: Basic line/branch coverage scenario
-\item \textbf{Mutation testing minimization}: Preserving mutant-killing capability
-\item \textbf{Weighted minimization}: Incorporating execution time costs
-\item \textbf{Algorithm comparison}: Side-by-side greedy vs. HGS analysis
-\item \textbf{SRM conversion}: Transforming LASSO matrix data
-\end{enumerate}
-
-Each example outputs detailed metrics including original suite size, minimized suite size, reduction percentage, and coverage retention rate. The demonstration can be executed via Maven:
-
-\begin{verbatim}
-mvn exec:java -Dexec.mainClass="de.uni_mannheim.swt.lasso.testing.minimize.HGSMinimizerDemo"
-\end{verbatim}
-
-\section{Documentation and Software Engineering Practices}
-
-The implementation adheres to professional software engineering standards:
-
-\begin{itemize}
-\item \textbf{Javadoc coverage}: All public methods include comprehensive documentation with parameter descriptions, return value specifications, and complexity annotations
-\item \textbf{Unit testing}: 13 tests achieving 100\% branch coverage of algorithmic logic
-\item \textbf{Code organization}: Modular design with clear separation of concerns (algorithm, data model, demonstration)
-\item \textbf{Build automation}: Maven integration with clean, test, and install targets
-\item \textbf{README documentation}: 320-line guide with usage examples, performance benchmarks, and integration instructions
-\end{itemize}
-
-The codebase consists of approximately 1,290 lines across four primary files (330 lines for core algorithm, 380 lines for tests, 260 lines for demonstration, 320 lines for documentation).
+The \texttt{HGSMinimizerDemo} class provides five executable examples: code coverage minimization, mutation testing, weighted minimization, algorithm comparison, and SRM conversion. The codebase (~1,290 lines) includes comprehensive Javadoc, 13 unit tests achieving 100\% branch coverage, Maven build automation, and a 320-line README with usage examples and benchmarks.
 
 \section{Licensing and Copyright}
 

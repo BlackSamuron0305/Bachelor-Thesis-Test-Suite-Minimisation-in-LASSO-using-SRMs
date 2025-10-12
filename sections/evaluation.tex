@@ -1,159 +1,51 @@
 \chapter{Evaluation Criteria and Comparative Analysis}\label{chap:evaluation}
 
-Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter establishes a comprehensive evaluation framework derived from the literature and tailored to LASSO's specific requirements, followed by a rigorous comparative analysis of candidate algorithms.
+Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter establishes a comprehensive evaluation framework derived from the literature and tailored to LASSO's specific requirements, followed by rigorous comparative analysis of candidate algorithms.
 
 \section{Evaluation Framework}
 
-Our evaluation framework incorporates both quantitative metrics and qualitative assessments derived from established software engineering research methodologies and industrial best practices. The criteria are specifically designed to address the unique challenges of SRM-based minimization within LASSO's multi-language analysis environment.
+Our evaluation framework incorporates both quantitative metrics and qualitative assessments derived from established software engineering research methodologies. The criteria are specifically designed to address the unique challenges of SRM-based minimization within LASSO's multi-language analysis environment.
 
 \subsection{Primary Evaluation Criteria}
 
 \begin{description}
-  \item[\textbf{C1: Coverage Preservation}] The algorithm must maintain code coverage and mutation scores that closely approximate those of the original test suite. This criterion encompasses both structural coverage (statement, branch, path coverage) and semantic coverage (mutation score). Algorithms that prioritize rare requirements (e.g., HGS) or employ context reduction techniques (e.g., delayed greedy) demonstrate superior performance in this dimension.
+  \item[\textbf{C1: Coverage Preservation}] The algorithm must maintain code coverage and mutation scores that closely approximate those of the original test suite. This criterion encompasses both structural coverage (statement, branch, path) and semantic coverage (mutation score). Algorithms that prioritize rare requirements (e.g., HGS) demonstrate superior performance in this dimension. Target: $\geq$95\% retention.
   
-  \item[\textbf{C2: Reduction Effectiveness}] Quantified as the percentage of test cases eliminated from the original suite. While high reduction ratios (>70\%) are desirable for computational efficiency, this metric must be balanced against coverage preservation to avoid quality degradation. The relationship between reduction effectiveness and coverage preservation often exhibits diminishing returns beyond certain thresholds.
+  \item[\textbf{C2: Reduction Effectiveness}] Quantified as the percentage of test cases eliminated from the original suite. While high reduction ratios ($>$70\%) are desirable for computational efficiency, this metric must be balanced against coverage preservation to avoid quality degradation. Target: $>$45\% reduction.
   
-  \item[\textbf{C3: Fault Detection Retention}] The algorithm's ability to preserve tests capable of detecting real software defects. Empirical studies demonstrate that minimization can result in significant fault detection loss, with Failed-Build Detection Loss (FBDL) values reaching 52.2\%~\cite{shi2018}. This criterion is paramount for maintaining software quality assurance standards.
+  \item[\textbf{C3: Fault Detection Retention}] The algorithm's ability to preserve tests capable of detecting real software defects. Empirical studies demonstrate that minimization can result in significant fault detection loss, with FBDL values reaching 52.2\%~\cite{shi2018}. This criterion is paramount for maintaining software quality. Target: $\geq$90\% retention.
   
-  \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. This includes both time complexity (algorithm runtime) and space complexity (memory requirements). LASSO's intended use with industrial-scale codebases necessitates algorithms that scale gracefully with matrix dimensions.
+  \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. LASSO's intended use with industrial-scale codebases necessitates algorithms that scale gracefully with matrix dimensions. Target: $O(nm \log m)$ or better.
   
-  \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on binary matrix representations without requiring additional program structural information (e.g., control-flow graphs, call trees). This requirement ensures language independence and compatibility with LASSO's unified representation scheme.
+  \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on binary matrix representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation.
   
-  \item[\textbf{C6: Implementation Feasibility}] Assessment of algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's existing architecture.
+  \item[\textbf{C6: Implementation Feasibility}] Assessment of algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's architecture.
 \end{description}
 
 \section{Comparative Analysis of Candidate Algorithms}
 
-This section qualitatively assesses candidate minimisation algorithms
-against the criteria defined above.  Table~\ref{tab:comparison} summarises
-the comparison, while Figure~\ref{fig:algorithm-radar} provides a visual comparison of the six evaluation criteria across selected algorithms.
+Table~\ref{tab:comparison} and Figure~\ref{fig:algorithm-radar} summarize the analysis.
 
 \subsection{Classical Greedy}
-
-\textbf{Coverage and Mutation Preservation:} Classical greedy algorithms achieve moderate coverage preservation (typically 85-95\% of original coverage) but do not consider requirement rarity or test overlap, which can lead to suboptimal selections and coverage loss. Empirical studies show that simple greedy approaches often produce larger minimized suites than specialized heuristics~\cite{yoo2012}.
-
-\textbf{Reduction Effectiveness:} Moderate reduction ratios, typically ranging from 30-50\% depending on coverage distribution characteristics~\cite{elbaum2002}. The algorithm may fail to achieve optimal reduction due to its local optimization strategy.
-
-\textbf{Fault Detection Retention:} Relatively high fault detection preservation (80-90\%) because redundant test selection tends to maintain diverse fault-revealing capabilities, though it may still eliminate tests with unique mutation coverage~\cite{rothermel1998}.
-
-\textbf{Computational Cost:} Excellent scalability with time complexity $O(nm)$ for $n$ test cases and $m$ requirements. Minimal memory overhead beyond storage of the coverage matrix.
-
-\textbf{LASSO Suitability:} Straightforward implementation on SRM representation using basic matrix operations. However, superior alternatives exist that better balance reduction and preservation objectives.
+Achieves 85--95\% coverage, 30--50\% reduction, 80--90\% fault detection with $O(nm)$ complexity~\cite{chvatal1979}. SRM-compatible but suboptimal due to ignoring requirement rarity and test overlap.
 
 \subsection{Harrold--Gupta--Soffa Algorithm}
-
-\textbf{Coverage and Mutation Preservation:} Excellent preservation (95-98\% of original coverage and mutation scores) achieved by prioritizing tests that cover rare requirements, thereby avoiding elimination of tests with unique coverage characteristics.
-
-\textbf{Reduction Effectiveness:} High reduction ratios between 45-70\% as demonstrated in empirical studies~\cite{harrold1993}. The algorithm's emphasis on requirement rarity leads to more effective test selection compared to classical greedy approaches.
-
-\textbf{Fault Detection Retention:} Superior retention (90-95\%) because preservation of unique requirements correlates strongly with maintaining fault-revealing capabilities. Overlap-aware variants demonstrate even better performance.
-
-\textbf{Computational Cost:} Efficient scalability with time complexity $O(nm \log m)$ due to requirement cardinality sorting and processing. Memory requirements remain linear in matrix size.
-
-\textbf{LASSO Suitability:} Excellent fit for SRM-based processing. Requires only coverage matrix data without additional program structural information. Implementation complexity remains manageable using standard sorting and matrix operations.
+Prioritizes rare requirements, achieving 95--98\% coverage, 45--70\% reduction, 90--95\% fault detection with $O(nm \log m)$ complexity~\cite{harrold1993}. Excellent SRM compatibility and straightforward implementation.
 
 \subsection{Delayed Greedy (Concept Analysis)}
-
-\textbf{Coverage and Mutation.}  By removing implied tests and
-requirements using concept lattice reductions, delayed greedy reduces
-context size and eliminates redundancy~\cite{tallam2005}.  It generally produces smaller
-suites than HGS.
-
-\textbf{Reduction Ratio.}  High; often achieves near-optimal
-reduction~\cite{tallam2005}.  However, context reduction may remove tests that provide
-unique mutant coverage if implication relations are computed solely on
-structural coverage.
-
-\textbf{Fault Detection.}  May risk greater fault detection loss if
-coverage relations do not reflect mutation information.  Additional
-analysis is required to ensure mutation preservation.
-
-\textbf{Cost.}  Higher than HGS because building and analysing
-concept lattices is computationally expensive, especially for large
-SRMs~\cite{tallam2005}.
-
-\textbf{Suitability for LASSO.}  Implementation complexity is higher.
-May be challenging to integrate concept-analysis libraries and
-maintain performance.
+Uses concept lattices to eliminate implied redundancies~\cite{tallam2005}, achieving 60--80\% reduction but 75--85\% fault detection due to potential loss of unique mutation coverage. $O(n^2m)$ complexity and higher implementation complexity reduce LASSO suitability.
 
 \subsection{ILP-Based Optimisation / REDUNET}
-
-\textbf{Coverage and Mutation.}  Can provide optimal reduction for
-coverage.  REDUNET integrates CFG analysis and ILP to maintain code
-coverage and minimise execution time\cite{mongiovi2020}.  ILP can
-incorporate cost and weighting (for example, mutation score) directly.
-
-\textbf{Reduction Ratio.}  High; often achieving reductions of 90~\%
-or more.
-
-\textbf{Fault Detection.}  Optimal coverage does not necessarily
-imply optimal fault detection.  Without weighting mutants explicitly,
-ILP may remove tests that kill rare mutants.
-
-\textbf{Cost.}  Highest among candidates.  Solving an ILP scales
-poorly; although REDUNET mitigates this via CFG analysis, it requires
-program structure and specialised solvers.
-
-\textbf{Suitability for LASSO.}  SRMs do not include CFG information.
-Adapting ILP requires mapping SRM entries to requirements and test
-costs; solving large ILPs may be infeasible within LASSO's time
-constraints.
+Optimal $>$95\% coverage with 70--90\% reduction~\cite{mongiovi2020}, but 70--80\% fault detection and exponential complexity. Requires CFG data unavailable in SRMs, limiting LASSO compatibility.
 
 \subsection{Search-Based Methods}
-
-\textbf{Coverage and Mutation.}  Genetic algorithms can optimise
-multiple objectives (size, coverage, mutation score)~\cite{yoo2012}.  Quantum-inspired
-genetic algorithms further use quantum operators to improve
-convergence\cite{hussein2020}.
-
-\textbf{Reduction Ratio.}  Potentially high; search can find
-near-optimal solutions.
-
-\textbf{Fault Detection.}  Adjustable fitness functions allow
-weighting mutation score, but appropriate tuning is necessary~\cite{yoo2012}.
-
-\textbf{Cost.}  Typically expensive due to iterative evaluations.
-Parameter tuning affects performance and solution quality~\cite{yoo2012}.  Not
-guaranteed to converge to optimal solutions.
-
-\textbf{Suitability for LASSO.}  Implementation complexity and
-computational cost make GA less attractive for routine SRM processing.
+Genetic algorithms offer multi-objective optimization (50--75\% reduction, 80--95\% coverage)~\cite{yoo2012} but require parameter tuning and have $O(gnm)$ complexity. Variable fault detection and high computational cost reduce LASSO suitability.
 
 \subsection{Overlap-Aware and Similarity-Based Techniques}
-
-\textbf{Coverage and Mutation.}  By considering overlap between tests,
-these methods select tests that cover as many unique elements as
-possible and avoid those that mostly duplicate coverage\cite{bach2017}.
-Overlap-aware selection has been shown to achieve up to 50~\%
-higher coverage within a time budget compared with traditional greedy
-approaches.  Such heuristics often preserve fault detection because
-tests with unique coverage are preferred.
-
-\textbf{Reduction Ratio.}  Moderate to high; depends on the overlap
-distribution in the SRM.
-
-\textbf{Fault Detection.}  Overlap-aware methods often preserve
-fault detection because tests with unique coverage are preferred.
-However, high redundancy must be carefully handled to avoid dropping
-tests with unique mutation coverage.
-
-\textbf{Cost.}  Requires computing similarity measures (for example,
-Jaccard distance) between test rows; this is feasible for medium-sized
-SRMs but may be expensive for very large suites.
-
-\textbf{Suitability for LASSO.}  The SRM representation naturally
-supports computing overlaps and distances between test coverage rows.
-Implementation is manageable using matrix operations.
+Considers test overlaps to maximize unique coverage, achieving 40--60\% reduction, 90--95\% coverage, and 50\% higher effectiveness than traditional greedy~\cite{bach2017}. SRM-compatible with manageable $O(n^2m)$ overhead for similarity computation.
 
 \subsection*{Summary}
-
-Overall, HGS augmented with overlap-aware heuristics strikes a
-favourable balance between reduction, coverage retention, computational
-efficiency and ease of implementation.  Exact optimisation and
-search-based methods offer higher theoretical reduction but are
-unlikely to scale for routine use in LASSO.  The next chapter
-therefore describes the rationale for selecting an HGS-based
-approach and outlines a workflow for its implementation on SRMs.
+HGS augmented with overlap-aware heuristics optimally balances reduction, coverage, efficiency, and implementability for LASSO integration.
 
 Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between reduction effectiveness and coverage preservation across different algorithmic approaches, demonstrating that Overlap-Aware HGS achieves an optimal balance in the Pareto-efficient region.
 

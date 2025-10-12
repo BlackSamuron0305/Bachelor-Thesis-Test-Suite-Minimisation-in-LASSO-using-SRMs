@@ -4,15 +4,15 @@ This chapter establishes the theoretical foundation for this thesis by introduci
 
 \section{Test Coverage and Mutation Score}
 
-\emph{Code coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite during execution~\cite{zhu1997}. Coverage metrics serve as fundamental indicators of test thoroughness, though they provide limited insight into fault-detection capability. As automated test generation tools produce additional test cases, coverage typically follows a logarithmic growth pattern, eventually plateauing when marginal test additions yield diminishing coverage improvements~\cite{bach2017}.
+\emph{Code coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite~\cite{zhu1997}. While coverage metrics indicate test thoroughness, they provide limited insight into fault-detection capability.
 
-\emph{Mutation testing} provides a more rigorous assessment of test suite quality by evaluating fault-detection effectiveness~\cite{jia2011}. This technique systematically introduces small syntactic modifications (\emph{mutants}) into the program source code, simulating common programming errors. Each mutant represents a potential fault; a test suite's ability to distinguish between the original program and its mutants indicates its fault-detection capability. The \emph{mutation score} is formally defined as:
+\emph{Mutation testing} evaluates test suite quality by introducing small syntactic modifications (\emph{mutants}) into program source code~\cite{jia2011}. The \emph{mutation score} measures the percentage of mutants detected (killed) by the test suite:
 
 \begin{equation}
 \text{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\%
 \end{equation}
 
-A mutation score of 100\% indicates that the test suite successfully detects all introduced faults. Mutation analysis provides superior insight into test effectiveness compared to coverage metrics alone, as it directly measures the test suite's ability to reveal semantic differences in program behavior. We refer readers to Zeller et al.'s comprehensive treatment of mutation analysis for detailed theoretical foundations and practical applications~\cite{fuzzingbook}.
+Mutation analysis provides superior insight into test effectiveness compared to coverage alone, as it directly measures fault-detection capability~\cite{fuzzingbook}.
 
 \section{Stimulus-Response Matrices}
 
