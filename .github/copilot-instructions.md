@@ -1,156 +1,191 @@
 # GitHub Copilot Instructions
 
 ## Project Overview
-Bachelor thesis on **Test Suite Minimization in LASSO Using Stimulus-Response Matrices**. This is a LaTeX academic paper about implementing the Harrold-Gupta-Soffa (HGS) algorithm for test suite reduction in the LASSO platform.
+Bachelor thesis: **Test Suite Minimization in LASSO Using Stimulus-Response Matrices**. LaTeX academic paper implementing the Harrold-Gupta-Soffa (HGS) algorithm with overlap-aware heuristics for test suite reduction in the LASSO platform. Language-independent approach operating on SRM representations.
 
 ## Critical Rules
-1. **NEVER provide summaries of changes** - Always make edits directly using tools, never describe what was changed
-2. **Maintain highest academic standards** - All content must meet rigorous academic writing standards with proper citations, formal tone, and precise technical language
-3. **No placeholder content** - Never use "TODO", "coming soon", or incomplete implementations
+1. **Always make direct edits using tools** - Never provide summaries or descriptions of changes
+2. **Academic rigor required** - Formal tone, proper citations (`\cite{}`), precise technical language, evidence-based assertions
+3. **No placeholders** - Never use "TODO", "coming soon", or incomplete content
+4. **Section files are content-only** - No preamble/`\begin{document}` in `sections/*.tex` files
+5. **NEVER create .md files** - Do not create summary.md, notes.md, or any other markdown files in this workspace. This is a LaTeX project only.
 
-## Document Structure
-- **Main file**: `paper.tex` - imports all sections via `\include{}`/`\input{}` from `sections/`
-- **Section order**: title → abstract → introduction → fundamentals → literature_review → evaluation → approach → implementation → conclusion → appendix → authorship/usage rights
-- **Graphics**: Store all images in `graphics/` directory
-- **Bibliography**: `literature/lit.bib` using BibLaTeX with `\cite{}` command
+## Architecture
 
-## Build System
+### Document Structure
+```
+paper.tex              # Main: \documentclass, packages, \begin{document}
+├─ sections/title.tex          # Front page (custom geometry)
+├─ sections/abstract.tex       # Abstract
+├─ sections/introduction.tex   # RQ1-RQ4 definition, problem statement
+├─ sections/fundamentals.tex   # Coverage, mutation testing, SRM formalization
+├─ sections/literature_review.tex  # Survey of TSM techniques
+├─ sections/evaluation.tex     # C1-C6 criteria, algorithm comparison
+├─ sections/approach.tex       # HGS+overlap selection rationale
+├─ sections/implementation.tex # Implementation details
+├─ sections/conclusion.tex     # Summary, future work
+├─ sections/append.tex         # Appendix content
+└─ sections/Authorship.tex / UsageRights.tex  # Legal declarations
 
-### Standard Workflow
-```bash
-make all        # Build PDF + clean auxiliary files (default)
-make build      # Build PDF only (includes nomenclature generation)
-make clean      # Remove auxiliary files, keep PDF
-make watch      # Auto-rebuild on file changes (latexmk -pvc)
-make distclean  # Remove everything including PDF
+literature/lit.bib     # BibLaTeX database (author-year style)
+sections/abbreviations.tex  # \abbrev{} definitions (LASSO, SRM, HGS, etc.)
+graphics/              # Figures (diagram.pdf, unilogo.*)
 ```
 
-### Build Process Details
-1. `latexmk -pdf paper.tex` compiles with automatic multi-pass handling
-2. If `paper.nlo` exists: runs `makeindex paper.nlo -s nomencl.ist -o paper.nls` for abbreviations
-3. Re-runs `latexmk` to incorporate nomenclature
-4. Auto-cleans auxiliary files after successful build
+### Page Numbering Flow
+- `\frontmatter` → Roman numerals (title, abstract, TOC, lists, abbreviations)
+- `\mainmatter` → Arabic numerals (introduction through conclusion)
+- `\backmatter` → Roman numerals reset (bibliography, appendix, authorship)
 
-### Auxiliary Files (Auto-Cleaned)
-`.aux`, `.bbl`, `.bcf`, `.blg`, `.fdb_latexmk`, `.fls`, `.lof`, `.log`, `.lot`, `.out`, `.run.xml`, `.synctex.gz`, `.toc`, `.nls`, `.ilg`
+### Build System
+**Primary workflow**: `make all` (builds PDF + auto-cleans auxiliary files)
+
+**Build internals** (latexmk + makeindex):
+1. `latexmk -pdf paper.tex` (multi-pass: pdflatex → biber → pdflatex×2)
+2. If `paper.nlo` exists: `makeindex paper.nlo -s nomencl.ist -o paper.nls` (generates abbreviation list)
+3. Re-run `latexmk` to incorporate nomenclature
+4. Auto-clean: `.aux .bbl .bcf .blg .fdb_latexmk .fls .lof .log .lot .out .run.xml .synctex.gz .toc .nls .ilg`
+
+**Other targets**:
+- `make build` - Compile only, keep auxiliary files
+- `make watch` - Auto-rebuild on changes (`latexmk -pvc`)
+- `make clean` - Remove auxiliary files, keep PDF
+- `make distclean` - Remove everything including PDF
+- `./cleanup.sh` - Alternative cleanup script
 
 ## LaTeX Conventions
 
-### Document Class & Settings
-- **Class**: `scrbook` (KOMA-Script) with 12pt, one-sided, headsepline
-- **Margins**: left=4cm, right=2.5cm, top=3.7cm, bottom=4cm
-- **Language**: English (primary), German (secondary hyphenation)
-- **Spacing**: 1.5 line spacing (`\onehalfspacing`), no paragraph indentation
-- **Page numbering**: Roman (frontmatter/backmatter), Arabic (mainmatter)
+### KOMA-Script (scrbook) Configuration
+- **Geometry**: `left=4cm, right=2.5cm, top=3.7cm, bottom=4cm` (except title page uses `margin=3cm`)
+- **Font**: 12pt, one-sided printing (`twoside=off`)
+- **Spacing**: `\onehalfspacing` (1.5), no paragraph indentation (`\parindent=0pt`)
+- **Headers**: Chapter/section marks, bold page numbers (`\ohead{\pagemark}`)
 
-### Section Files
-Each major chapter is a separate `.tex` file in `sections/`:
-- Use `\chapter{}` for top-level sections (auto-numbered)
-- Use `\section{}` and `\subsection{}` for subdivisions
-- NO document preamble/`\begin{document}` in section files—only content
-
-### Citations
-- **Command**: `\cite{key}` or `\cite{key1,key2}` for multiple sources
-- **Format**: Author-year style with natbib compatibility
-- **Adding sources**: Edit `literature/lit.bib` in BibTeX format
-- **Rebuilding**: `make all` automatically handles bibliography compilation
+### Citations & Bibliography
+**Command**: `\cite{key}` (multiple: `\cite{key1,key2}`)  
+**Adding sources**: Edit `literature/lit.bib` in BibTeX format  
+**Existing keys**: `pacheco2007` (Randoop), `fraser2011` (EvoSuite), `harrold1993` (HGS), `yoo2012` (TSM survey), `Kessel2022` (LASSO), `bach2017` (overlap-aware), `mongiovi2020` (REDUNET), `just2014` (Defects4J), etc.  
+**Rebuild**: `make all` handles biber automatically; run twice if references show "??"
 
 ### Abbreviations
-Define in `sections/abbreviations.tex` using:
+Define once in `sections/abbreviations.tex` using `\abbrev{ACRONYM}{Full Expansion}`:
 ```latex
-\abbrev{ACRONYM}{Full Expansion}
+\abbrev{LASSO}{Large-Scale Software Observatorium}
+\abbrev{SRM}{Stimulus-Response Matrix}
+\abbrev{HGS}{Harrold--Gupta--Soffa algorithm}
+\abbrev{TSM}{Test Suite Minimisation}
+\abbrev{ILP}{Integer Linear Programming}
+\abbrev{CFG}{Control Flow Graph}
 ```
-Examples: `\abbrev{LASSO}{Large-Scale Software Observatorium}`, `\abbrev{HGS}{Harrold--Gupta--Soffa algorithm}`
+Note: Use `--` for en-dash in names (e.g., `Harrold--Gupta--Soffa`)
 
-### Figures
+### Figures & Tables
+**Placement**: Use `[H]` from `float` package to force exact location (prevents floating)
 ```latex
-\begin{figure}[H]  % H forces exact placement (requires float package)
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{graphics/diagram.pdf}
-  \caption{Description of figure}
-  \label{fig:diagram}
+  \caption{Description with proper academic phrasing}
+  \label{fig:diagram}  % Reference with \ref{fig:diagram}
 \end{figure}
 ```
-Reference with `\ref{fig:diagram}` or `Figure~\ref{fig:diagram}`
+**Graphics path**: `graphics/` (no need for full path in `\includegraphics`)  
+**Aspect ratio helper**: `\begin{fitcenter}...\end{fitcenter}` (custom environment using `adjustbox`)
 
-### Tables
+### Math & Algorithms
+**Inline**: `$T = \{t_1, t_2, \ldots, t_n\}$`  
+**Display**: `\[ C(S^*) = C(T) \]` or `\begin{equation}...\end{equation}` for numbered  
+**Complexity**: `$O(nm \log m)$` (standard notation)  
+**Set notation**: `$S^* \subseteq T$`, `$C(T) = \bigcup_{t_i \in T} C(t_i)$`
+
+**Algorithm flowcharts**: Use tabular with `\hline` separators (see `sections/approach.tex` Phase 1-4 example)
+
+## Domain-Specific Content
+
+### Core Terminology (Must Use Correctly)
+- **LASSO**: Large-Scale Software Observatorium - platform for execution-based analysis at scale
+- **SRM**: Stimulus-Response Matrix - $M_{ij}$ = response of system $j$ to stimulus $i$
+  - Rows = stimuli (test sequences), Columns = systems, Cells = responses
+  - Black-box view: I/O only; White-box view: full execution traces
+- **Coverage-adapted SRM**: Binary matrix $M \in \{0,1\}^{n \times m}$ where rows=tests, columns=requirements
+- **HGS algorithm**: Prioritizes rare requirements ($card_j = 1$), then overlap-aware greedy selection
+- **Overlap-aware heuristics**: Penalizes tests with high coverage intersection to maximize unique coverage
+- **Arena**: LASSO component for executing tests across multiple systems
+
+### Research Questions (sections/introduction.tex)
+- **RQ1**: Most effective minimization techniques (literature)
+- **RQ2**: Evaluation criteria for SRM environment
+- **RQ3**: Optimal algorithmic approach (HGS+overlap)
+- **RQ4**: Integration into LASSO pipeline
+
+### Evaluation Criteria (sections/evaluation.tex)
+- **C1**: Coverage Preservation (≥95% target)
+- **C2**: Reduction Effectiveness (>45% target)
+- **C3**: Fault Detection Retention (≥90% target)
+- **C4**: Computational Scalability (O(nm log m) or better)
+- **C5**: SRM Compatibility (no CFG/structural info required)
+- **C6**: Implementation Feasibility (maintainability, parameter sensitivity)
+
+### Algorithm Comparison (Key Findings)
+- **Classical Greedy**: 85-95% coverage, 30-50% reduction, O(nm) - ignores rarity
+- **HGS**: 95-98% coverage, 45-70% reduction, O(nm log m) - optimal for LASSO
+- **Delayed Greedy**: 60-80% reduction but 75-85% fault detection - too aggressive
+- **ILP/REDUNET**: Optimal but exponential complexity, requires CFG - incompatible
+- **GA/QIGA**: 80-90% coverage, stochastic, parameter-sensitive - poor repeatability
+
+## Writing Style Requirements
+
+### Tense & Voice
+- Present tense for general statements: "SRMs represent behavioral data"
+- Past tense for study contributions: "We implemented the HGS algorithm"
+- Passive acceptable: "The algorithm is evaluated using six criteria"
+- "We" for author actions: "We address this limitation by..."
+
+### Citation Discipline
+**Every claim needs evidence**: Statistics, algorithms, techniques, findings ALL require `\cite{}`
 ```latex
-\begin{table}[H]
-  \centering
-  \caption{Description of table}
-  \label{tab:results}
-  \begin{tabular}{|l|c|r|}
-    \hline
-    Left & Center & Right \\
-    \hline
-    Data & Data & Data \\
-    \hline
-  \end{tabular}
-\end{table}
+% WRONG: Test suite minimization reduces execution time.
+% RIGHT: Test suite minimization reduces execution time while preserving fault detection~\cite{yoo2012}.
 ```
 
-### Math Notation
-- Inline: `$T = \{t_1, t_2, \ldots, t_n\}$`
-- Display: `\[ C(S^*) = C(T) \]` or `equation` environment
-- Complexity: `$O(nm \log m)$`
+**Multi-citation format**: `\cite{harrold1993, bach2017, shi2018}` for related work
 
-## Content Guidelines
-
-### Thesis-Specific Terminology
-- **LASSO**: Large-Scale Software Observatorium (platform for software analysis)
-- **SRM**: Stimulus-Response Matrix (2D matrix: rows=stimuli, columns=systems, cells=responses)
-- **TSM**: Test Suite Minimization
-- **HGS algorithm**: Greedy set-cover approach with overlap-aware heuristics
-- **Coverage preservation**: Maintaining code coverage/fault detection while reducing test suite size
-
-### Writing Style
-- **Tense**: Present tense for general statements, past for specific contributions
-- **Voice**: Passive voice acceptable in academic context; use "we" for author contributions
-- **Formality**: Academic formal English, avoid contractions, maintain rigorous scholarly tone
-- **Citations**: Support ALL claims with `\cite{}`, especially for statistics/algorithms/techniques
-- **Precision**: Use exact technical terminology, define all specialized terms on first use
-- **Evidence-based**: Every assertion must be backed by literature or empirical data
-
-### Research Questions (RQ1-RQ4)
-When discussing methodology, reference the four research questions defined in `sections/introduction.tex`:
-1. RQ1: Most effective minimization techniques
-2. RQ2: Evaluation criteria for SRM environment
-3. RQ3: Optimal algorithmic approach
-4. RQ4: Integration into LASSO pipeline
+### Technical Precision
+- Define terms on first use: "Stimulus-Response Matrix (SRM)"
+- Use exact terminology: "statement coverage" not "code coverage" when specific
+- Quantify: "45-70% reduction" not "significant reduction"
+- Formal phrasing: "demonstrates superior performance" not "works better"
 
 ## Common Tasks
 
-### Adding a New Section
-1. Create `sections/newsection.tex` (content only, no preamble)
-2. Add `\include{sections/newsection}` to `paper.tex` in appropriate order
-3. Run `make all`
+### Adding Content to Existing Section
+1. Identify target file in `sections/`
+2. Maintain chapter structure: `\section{}` → `\subsection{}` → `\subsubsection{}`
+3. Add citations for new claims
+4. Run `make all` to check for errors
 
-### Adding Citations
-1. Add BibTeX entry to `literature/lit.bib`
-2. Use `\cite{citationkey}` in text
-3. Rebuild: `make all` (automatically runs BibLaTeX)
+### Adding New References
+1. Open `literature/lit.bib`
+2. Add BibTeX entry (use existing entries as templates)
+3. Use descriptive keys: `author2024` or `author2024topic`
+4. Cite in text with `\cite{newkey}`
+5. Rebuild: `make all` (biber runs automatically)
 
-### Fixing Compilation Errors
-1. Check `paper.log` for detailed error messages
-2. Common issues: missing `}`, undefined references, missing packages
-3. For undefined references: Run `make all` twice (first pass collects, second resolves)
-4. For nomenclature issues: Ensure `makeindex` step completes in Makefile
+### Creating Tables/Figures
+1. Store images in `graphics/` directory
+2. Use `[H]` placement for predictable positioning
+3. Caption structure: "Description explaining what is shown and why it matters"
+4. Label format: `fig:descriptive-name` or `tab:descriptive-name`
+5. Reference in text: "Figure~\ref{fig:name} illustrates..."
 
-### Version Control
-- **Current branch**: `Version_1.4`
-- **Keep tracked**: `.tex`, `.bib`, `Makefile`, `cleanup.sh`, graphics sources
-- **Ignore**: All auxiliary files (listed in build system section)
+### Debugging Compilation
+**Check `paper.log` first** - LaTeX error messages include line numbers
+- **"Undefined control sequence"**: Typo or missing `\usepackage{}` in `paper.tex`
+- **"??" in references**: Run `make all` twice (first pass collects, second resolves)
+- **Missing nomenclature**: Verify `makeindex` step in Makefile succeeded
+- **Compilation hangs**: Missing `$` or unbalanced `{}` - terminal shows last line processed
 
-## Troubleshooting
-
-### "Undefined control sequence"
-Missing `\usepackage{}` in preamble or typo in command name. Check `paper.tex` package list.
-
-### References showing as "??"
-Run `make all` twice to resolve forward references.
-
-### Nomenclature not appearing
-Ensure `makeindex paper.nlo -s nomencl.ist -o paper.nls` runs successfully. Check for `paper.nlo` file existence.
-
-### Compilation hangs
-Likely missing `$` or unbalanced brackets. Check terminal output for line number before hang.
+## Version Control
+- **Current branch**: `Version_2.2` (check with `git branch`)
+- **Track**: `.tex`, `.bib`, `Makefile`, `cleanup.sh`, original graphics (not generated PDFs)
+- **Ignore**: All auxiliary files (see Build System section for complete list)
