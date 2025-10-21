@@ -1,8 +1,8 @@
-\chapter{Evaluation Criteria and Comparative Analysis}\label{chap:evaluation}
+\chapter{Evaluation Criteria and Scoring Framework}\label{chap:evaluation}
 
-Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter establishes a comprehensive evaluation framework derived from the literature and tailored to LASSO's specific requirements, followed by rigorous comparative analysis of candidate algorithms.
+Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter presents the criteria (C1--C6) and a formal scoring framework to support consistent, evidence-based ranking of candidate algorithms under LASSO's SRM-only constraints.
 
-\section{Evaluation Framework}
+\section{Evaluation Criteria (C1--C6)}
 
 Our evaluation framework incorporates both quantitative metrics and qualitative assessments derived from established software engineering research methodologies. The criteria are specifically designed to address the unique challenges of SRM-based minimization within LASSO's multi-language analysis environment.
 
@@ -22,130 +22,42 @@ Our evaluation framework incorporates both quantitative metrics and qualitative 
   \item[\textbf{C6: Implementation Feasibility}] Assessment of algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's architecture.
 \end{description}
 
-\section{Comparative Analysis of Candidate Algorithms}
+\subsection{Justification of Criteria}
 
-Table~\ref{tab:comparison} and Figure~\ref{fig:algorithm-radar} summarize the analysis.
+The evaluation criteria (C1--C6) are derived directly from the research questions formulated in Section~\ref{sec:rq}. Specifically, RQ1 motivates criteria C1--C3 (coverage, reduction, and fault detection) by emphasizing the need to preserve test effectiveness; RQ2 motivates C4--C5 (scalability and SRM compatibility) as preconditions for LASSO integration; and RQ3 motivates C6 (implementation feasibility) by addressing the engineering effort required for practical adoption. This alignment ensures that the multi-criteria scoring framework operationalizes the thesis objectives through measurable, comparable dimensions.
 
-\subsection{Classical Greedy}
-Achieves 85--95\% coverage, 30--50\% reduction, 80--90\% fault detection with $O(nm)$ complexity~\cite{chvatal1979}. SRM-compatible but suboptimal due to ignoring requirement rarity and test overlap.
+\label{sec:criteria-justification}
 
-\subsection{Harrold--Gupta--Soffa Algorithm}
-Prioritizes rare requirements, achieving 95--98\% coverage, 45--70\% reduction, 90--95\% fault detection with $O(nm \log m)$ complexity~\cite{harrold1993}. Excellent SRM compatibility and straightforward implementation.
 
-\subsection{Delayed Greedy (Concept Analysis)}
-Uses concept lattices to eliminate implied redundancies~\cite{tallam2005}, achieving 60--80\% reduction but 75--85\% fault detection due to potential loss of unique mutation coverage. $O(n^2m)$ complexity and higher implementation complexity reduce LASSO suitability.
+\section{Scoring Model}
 
-\subsection{ILP-Based Optimisation / REDUNET}
-Optimal $>$95\% coverage with 70--90\% reduction~\cite{mongiovi2020}, but 70--80\% fault detection and exponential complexity. Requires CFG data unavailable in SRMs, limiting LASSO compatibility.
+We adopt a weighted multi-criteria scoring model to aggregate performance across the six criteria~\cite{yoo2012}. Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalized score on criterion $C_i$ for $i \in \{1,\ldots,6\}$. Let $w_i \ge 0$ denote the criterion weights with $\sum_{i=1}^{6} w_i = 1$. The total score is
+\begin{equation}
+  \mathrm{Score}(A) = \sum_{i=1}^{6} w_i \cdot s_i(A).
+\end{equation}
+Normalization maps heterogeneous measures (e.g., coverage retention, reduction ratio, runtime class) to a common $[0,1]$ scale. We use monotonically increasing mappings for benefit criteria (C1--C3, C5--C6) and decreasing mappings for cost criteria (C4 when expressed as asymptotic class), with piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}.
 
-\subsection{Search-Based Methods}
-Genetic algorithms offer multi-objective optimization (50--75\% reduction, 80--95\% coverage)~\cite{yoo2012} but require parameter tuning and have $O(gnm)$ complexity. Variable fault detection and high computational cost reduce LASSO suitability.
+Weights reflect LASSO's priorities: coverage and fault preservation receive higher emphasis than marginal reduction gains (C1,C3 > C2), followed by scalability and SRM compatibility (C4,C5), with implementation feasibility (C6) moderating engineering risk~\cite{Kessel2022,yoo2012}. Sensitivity analysis assesses robustness to perturbations in $w_i$.
 
-\subsection{Overlap-Aware and Similarity-Based Techniques}
-Considers test overlaps to maximize unique coverage, achieving 40--60\% reduction, 90--95\% coverage, and 50\% higher effectiveness than traditional greedy~\cite{bach2017}. SRM-compatible with manageable $O(n^2m)$ overhead for similarity computation.
+\section{Feasibility Constraints (SRM-only)}
 
-\subsection*{Summary}
-HGS augmented with overlap-aware heuristics optimally balances reduction, coverage, efficiency, and implementability for LASSO integration.
+The scoring applies only to algorithms satisfying LASSO's feasibility constraints:
+\begin{itemize}
+  \item \textbf{SRM Compatibility (C5):} Operate directly on binary coverage-adapted SRMs $M \in \{0,1\}^{n\times m}$ without requiring language-specific structure such as CFGs~\cite{Kessel2022}.
+  \item \textbf{Computational Scalability (C4):} Polynomial-time behavior suitable for large $n,m$ with targets of $O(nm)$ to $O(nm\log m)$~\cite{yoo2012}.
+  \item \textbf{Engineering Feasibility (C6):} Bounded parameterization and maintainable integration within LASSO's pipeline.
+\end{itemize}
+Algorithms violating these constraints (e.g., ILP pipelines requiring CFGs~\cite{mongiovi2020}) are excluded from primary ranking but may be considered in offline analyses where inputs and solver budgets permit.
 
-Figure~\ref{fig:tradeoff-analysis} visualizes the fundamental trade-off between reduction effectiveness and coverage preservation across different algorithmic approaches, demonstrating that Overlap-Aware HGS achieves an optimal balance in the Pareto-efficient region.
+\section{Evaluation Procedure}
 
-\begin{figure}[H]
-  \centering
-  \begin{adjustbox}{max width=\textwidth}
-  \begin{tabular}{|c|c|c|}
-    \hline
-    \textbf{Algorithm} & \textbf{Reduction Ratio (\%)} & \textbf{Coverage Retention (\%)} \\
-    \hline
-    \multicolumn{3}{|c|}{\textbf{High Coverage, Moderate Reduction}} \\
-    \hline
-    Classical Greedy & 30--50 & 85--95 \\
-    HGS & 45--70 & 95--98 \\
-    \textbf{Overlap-Aware HGS} & \textbf{50--75} & \textbf{95--98} \\
-    \hline
-    \multicolumn{3}{|c|}{\textbf{Balanced Region (Pareto-Optimal)}} \\
-    \hline
-    Overlap-Aware & 40--60 & 90--95 \\
-    Delayed Greedy & 60--80 & 90--95 \\
-    \hline
-    \multicolumn{3}{|c|}{\textbf{High Reduction, Risk of Coverage Loss}} \\
-    \hline
-    ILP/REDUNET & 70--90 & $>$95 \\
-    Genetic Algorithm & 50--75 & 80--95 \\
-    \hline
-  \end{tabular}
-  \end{adjustbox}
-  
-  \vspace{0.5cm}
-  
-  \begin{tabular}{c}
-    \fbox{\begin{minipage}{12cm}
-      \centering
-      \textbf{Key Insight} \\[0.2cm]
-      Overlap-Aware HGS achieves 50--75\% reduction while maintaining \\
-      95--98\% coverage retention, positioning it in the optimal trade-off region \\
-      where both metrics exceed minimum acceptability thresholds.
-    \end{minipage}}
-  \end{tabular}
-
-  \caption{Trade-off analysis between reduction effectiveness and coverage preservation across candidate algorithms. Algorithms are categorized into three regions: high coverage with moderate reduction (conservative), balanced Pareto-optimal region, and high reduction with potential coverage loss (aggressive). Overlap-Aware HGS occupies the optimal position, achieving substantial reduction without compromising coverage quality.}
-  \label{fig:tradeoff-analysis}
-\end{figure}
-
-\begin{table}[ht]
-  \centering
-  \caption{Comparative Analysis of Test Suite Minimization Algorithms}
-  \label{tab:comparison}
-  \begin{threeparttable}
-    \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{|l|c|c|c|c|c|l|}
-      \hline
-      \textbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault} & \textbf{Time} & \textbf{SRM} & \textbf{Key Characteristics} \\
-      & \textbf{Retention} & \textbf{Ratio} & \textbf{Detection} & \textbf{Complexity} & \textbf{Compatible} & \\
-      \hline
-      Classical Greedy & 85-95\% & 30-50\% & 80-90\% & $O(nm)$ & Yes & Simple baseline approach \\
-      \hline
-      HGS & 95-98\% & 45-70\% & 90-95\% & $O(nm \log m)$ & Yes & Emphasizes rare requirements \\
-      \hline
-      Delayed Greedy & 90-95\% & 60-80\% & 75-85\% & $O(n^2m)$ & Yes & Concept lattice analysis \\
-      \hline
-      ILP/REDUNET & $>95\%$ & 70-90\% & 70-80\% & Exponential\tnote{a} & Limited & Requires program structure \\
-      \hline
-      Genetic Algorithm & 80-95\% & 50-75\% & Variable & $O(gnm)$\tnote{b} & Yes & Parameter-dependent \\
-      \hline
-      \textbf{Overlap-Aware HGS} & \textbf{95-98\%} & \textbf{50-75\%} & \textbf{90-95\%} & $\mathbf{O(nm \log m)}$ & \textbf{Yes} & \textbf{Optimal balance for LASSO} \\
-      \hline
-  \end{tabular}
-  \end{adjustbox}
-    \begin{tablenotes}
-      \small
-      \item[a] Polynomial-time approximations available but may sacrifice optimality
-      \item[b] Where $g$ represents number of generations; actual complexity depends on population size and genetic operators
-    \end{tablenotes}
-  \end{threeparttable}
-\end{table}
-
-\begin{figure}[H]
-  \centering
-  \begin{adjustbox}{max width=\textwidth}
-  \begin{tabular}{|l|c|c|c|c|c|c|c|}
-    \hline
-    \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
-    & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Scalability} & \textbf{SRM} & \textbf{Implement.} & \textbf{Score} \\
-    \hline
-    Classical Greedy & 3/5 & 3/5 & 3/5 & 5/5 & 5/5 & 5/5 & 24/30 \\
-    \hline
-    HGS & 5/5 & 4/5 & 5/5 & 5/5 & 5/5 & 4/5 & 28/30 \\
-    \hline
-    Delayed Greedy & 4/5 & 4/5 & 3/5 & 3/5 & 5/5 & 3/5 & 22/30 \\
-    \hline
-    ILP/REDUNET & 5/5 & 5/5 & 3/5 & 2/5 & 2/5 & 2/5 & 19/30 \\
-    \hline
-    Genetic Algorithm & 3/5 & 4/5 & 2/5 & 2/5 & 5/5 & 2/5 & 18/30 \\
-    \hline
-    \textbf{Overlap-Aware HGS} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{4/5} & \textbf{29/30} \\
-    \hline
-  \end{tabular}
-  \end{adjustbox}
-  \caption{Multi-criteria scoring of test suite minimization algorithms across six evaluation dimensions (C1--C6). Scores range from 1 (poor) to 5 (excellent). Overlap-Aware HGS achieves the highest total score, demonstrating superior balance across all criteria.}
-  \label{fig:algorithm-radar}
-\end{figure}
+We apply the framework as follows:
+\begin{enumerate}
+  \item \textbf{Candidate Set:} Enumerate SRM-compatible algorithms from Chapter~\ref{chap:literature-review} (greedy, overlap-aware, similarity, selected metaheuristics).
+  \item \textbf{Evidence Collection:} Extract literature-reported ranges for coverage retention, reduction, and fault detection, together with asymptotic complexity classes~\cite{harrold1993,rothermel1998,bach2017,shi2018,yoo2012}.
+  \item \textbf{Normalization:} Map each metric to $s_i(A) \in [0,1]$ using calibrated functions consistent with LASSO targets (e.g., $\ge 95\%$ coverage retention for C1).
+  \item \textbf{Weighting:} Set $w_i$ to reflect organizational priorities; verify stability with local sensitivity analysis.
+  \item \textbf{Aggregation and Ranking:} Compute Score$(A)$ and produce a strict or partial order; apply tie-breakers favoring higher C1/C3.
+  \item \textbf{Selection:} Carry forward the top-ranked algorithm(s) to Chapter~5 for comparative presentation and final selection for LASSO integration.
+\end{enumerate}
+This separation of concerns ensures that Chapter~\ref{chap:evaluation} states the criteria and scoring method, while Chapter~5 reports the comparative tables, trade-offs, and the resulting selection decision.

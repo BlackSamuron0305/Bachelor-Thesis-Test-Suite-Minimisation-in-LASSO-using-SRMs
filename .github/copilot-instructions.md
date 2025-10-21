@@ -128,64 +128,43 @@ Note: Use `--` for en-dash in names (e.g., `Harrold--Gupta--Soffa`)
 
 ### Algorithm Comparison (Key Findings)
 - **Classical Greedy**: 85-95% coverage, 30-50% reduction, O(nm) - ignores rarity
-- **HGS**: 95-98% coverage, 45-70% reduction, O(nm log m) - optimal for LASSO
-- **Delayed Greedy**: 60-80% reduction but 75-85% fault detection - too aggressive
-- **ILP/REDUNET**: Optimal but exponential complexity, requires CFG - incompatible
-- **GA/QIGA**: 80-90% coverage, stochastic, parameter-sensitive - poor repeatability
+# Copilot instructions — concise, repo-specific
 
-## Writing Style Requirements
+Purpose: help AI coding agents edit this LaTeX thesis repo safely and productively.
 
-### Tense & Voice
-- Present tense for general statements: "SRMs represent behavioral data"
-- Past tense for study contributions: "We implemented the HGS algorithm"
-- Passive acceptable: "The algorithm is evaluated using six criteria"
-- "We" for author actions: "We address this limitation by..."
+Core rules
 
-### Citation Discipline
-**Every claim needs evidence**: Statistics, algorithms, techniques, findings ALL require `\cite{}`
-```latex
-% WRONG: Test suite minimization reduces execution time.
-% RIGHT: Test suite minimization reduces execution time while preserving fault detection~\cite{yoo2012}.
-```
+- Edit files directly with repository tooling (no pasted diffs in chat). Keep commits small and focused.
+- Maintain academic tone: formal phrasing, present tense for facts, "We" for author actions. Every factual claim in text must cite using `\cite{}`.
+- Do not introduce placeholder markers ("TODO", "TBD"). Sections in `sections/*.tex` must be content-only (no `\begin{document}` or preamble).
+- Do not add new top-level markdown documentation files in the repo; this project is LaTeX-first. Updating this file is the only exception.
 
-**Multi-citation format**: `\cite{harrold1993, bach2017, shi2018}` for related work
+Quick workspace map (important files)
 
-### Technical Precision
-- Define terms on first use: "Stimulus-Response Matrix (SRM)"
-- Use exact terminology: "statement coverage" not "code coverage" when specific
-- Quantify: "45-70% reduction" not "significant reduction"
-- Formal phrasing: "demonstrates superior performance" not "works better"
+- `paper.tex` — main document and global package setup (KOMA-Script, geometry, biblatex).
+- `Makefile` — primary developer commands: `make all` (build+clean), `make build` (build), `make watch` (latexmk -pvc), `make clean`, `make distclean`.
+- `sections/` — chapter content, one file per chapter (e.g. `sections/approach.tex`, `sections/implementation.tex`). Edit these directly.
+- `literature/lit.bib` — BibTeX database. Add entries here and cite with `\cite{key}` in the .tex files.
+- `graphics/` — figures used by `\includegraphics{...}`.
 
-## Common Tasks
+Build & verification
 
-### Adding Content to Existing Section
-1. Identify target file in `sections/`
-2. Maintain chapter structure: `\section{}` → `\subsection{}` → `\subsubsection{}`
-3. Add citations for new claims
-4. Run `make all` to check for errors
+- Primary: `make all` (invokes `latexmk -pdf paper.tex`, runs biber, runs makeindex if `paper.nlo` exists). If references display `??`, run `make all` twice.
+- For quick iteration use `make build` to keep aux files, or `make watch` for auto-rebuilds.
+- Check `paper.log` for LaTeX errors and line numbers. Common fixes: missing package in `paper.tex`, unbalanced braces, or stray `$`.
 
-### Adding New References
-1. Open `literature/lit.bib`
-2. Add BibTeX entry (use existing entries as templates)
+Editing conventions & examples
+
+- Abbreviations: define once in `sections/abbreviations.tex` with `\abbrev{ACRONYM}{Full Expansion}`; use `--` for en-dash (e.g., `Harrold--Gupta--Soffa`).
+- Figures: put files in `graphics/` and insert with `\begin{figure}[H] ... \includegraphics{graphics/diagram.pdf} ...`.
+- Citations: add BibTeX to `literature/lit.bib` and reference keys such as `harrold1993`, `yoo2012`, `Kessel2022` are already present and used.
+
+When to ask before changing
+
+- Structural changes (Makefile, `paper.tex` packages, bibliography backend) — ask the repo owner.
+- Adding new LaTeX packages or altering geometry/margins — notify before committing.
+
+If something is unclear, ask: give the file path and the precise change you want to make (one-line summary + intended verification step, e.g. "Edit `sections/approach.tex` to add a paragraph and run `make build` to verify no compilation errors").
+
+— End of concise instructions —
 3. Use descriptive keys: `author2024` or `author2024topic`
-4. Cite in text with `\cite{newkey}`
-5. Rebuild: `make all` (biber runs automatically)
-
-### Creating Tables/Figures
-1. Store images in `graphics/` directory
-2. Use `[H]` placement for predictable positioning
-3. Caption structure: "Description explaining what is shown and why it matters"
-4. Label format: `fig:descriptive-name` or `tab:descriptive-name`
-5. Reference in text: "Figure~\ref{fig:name} illustrates..."
-
-### Debugging Compilation
-**Check `paper.log` first** - LaTeX error messages include line numbers
-- **"Undefined control sequence"**: Typo or missing `\usepackage{}` in `paper.tex`
-- **"??" in references**: Run `make all` twice (first pass collects, second resolves)
-- **Missing nomenclature**: Verify `makeindex` step in Makefile succeeded
-- **Compilation hangs**: Missing `$` or unbalanced `{}` - terminal shows last line processed
-
-## Version Control
-- **Current branch**: `Version_2.2` (check with `git branch`)
-- **Track**: `.tex`, `.bib`, `Makefile`, `cleanup.sh`, original graphics (not generated PDFs)
-- **Ignore**: All auxiliary files (see Build System section for complete list)

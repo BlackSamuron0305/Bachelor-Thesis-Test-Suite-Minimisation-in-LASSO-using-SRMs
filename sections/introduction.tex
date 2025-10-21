@@ -3,13 +3,13 @@
 Software testing is fundamental to ensuring that program modifications do not introduce new defects. As software systems grow in complexity, their associated test suites can become extremely large—automated test generation tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} may produce thousands of test cases, with execution times potentially requiring days or weeks in large industrial projects~\cite{bach2017}. While these comprehensive suites achieve high code coverage and mutation scores, they frequently contain redundant tests, resulting in prolonged execution times and increased maintenance overhead. Test suite minimization addresses this challenge by systematically removing redundant tests while preserving the test suite's fault-detection effectiveness~\cite{yoo2012}. This thesis investigates how to perform test suite minimization directly on \emph{Stimulus-Response Matrices} (SRMs) within the LASSO platform.
 
 \section{Background and Motivation}
-Regression testing verifies that software modifications do not compromise existing functionality. Software testing has emerged as a significant cost factor in development: early studies estimate that testing activities can consume nearly half of a software system's development budget~\cite{boehm1981}. Large-scale test suites in contemporary projects may contain thousands of automatically generated test cases, requiring days or weeks to execute completely~\cite{rothermel1998}. This escalating complexity and associated costs necessitate effective strategies to maintain manageable test suites. Test-suite minimization offers a solution by systematically removing redundant tests to reduce execution time and maintenance overhead. However, naive reduction approaches risk eliminating tests that detect critical faults, thereby undermining software quality assurance~\cite{yoo2012}. Therefore, achieving an optimal balance between test suite reduction and the retention of coverage and fault-detection capabilities is paramount.
+Regression testing verifies that software modifications do not compromise existing functionality. Software testing has emerged as a significant cost factor in development: early studies estimate that testing activities can consume nearly half of a software system's development budget~\cite{Boehm1981}. Large-scale test suites in contemporary projects may contain thousands of automatically generated test cases, requiring days or weeks to execute completely~\cite{rothermel1998}. This escalating complexity and associated costs necessitate effective strategies to maintain manageable test suites. Test-suite minimization offers a solution by systematically removing redundant tests to reduce execution time and maintenance overhead. However, naive reduction approaches risk eliminating tests that detect critical faults, thereby undermining software quality assurance~\cite{yoo2012}. Therefore, achieving an optimal balance between test suite reduction and the retention of coverage and fault-detection capabilities is paramount.
 
 \section{LASSO Context}
 
 Mining software repositories at the scale of ``big code'' presents significant challenges: establishing programmatically accessible software corpora, building efficient analysis infrastructures, and defining precise metrics and extraction approaches that achieve statistical significance and repeatability. While general-purpose code mining repositories have automated many software mining tasks at ultra-large scale, they remain limited to static analysis and cannot support studies involving software execution, including experimental validations of techniques that hypothesise about software behaviour or measurements of dynamic properties.
 
-The Large-Scale Software Observatorium (LASSO)~\cite{Kessel2022} addresses this limitation by automating the collection of both dynamic (execution-based) and static information about software at scale. Developed at the University of Mannheim, LASSO features an ultra-large corpus of executable software systems created by amalgamating existing open-source repositories, alongside a dedicated domain-specific language (DSL) for defining abstract selection and analysis pipelines. Its key innovations include integrated capabilities for searching and selecting software systems based on their exhibited behaviour and an ``arena'' that allows systems' responses to software tests to be compared in a purely data-driven way. LASSO records these execution behaviours in \emph{Stimulus-Response Matrices}~\cite{Kessel2022}. An SRM (also called an actuation matrix) is a two-dimensional matrix where rows represent stimuli (e.g., test sequences or method invocations), columns represent systems being tested, and each cell contains the recorded response (actuation) of a particular system to a particular stimulus. SRMs are derived from Stimulus Matrices (SMs), which specify the input stimuli to be applied. After execution in LASSO's arena, the SM produces an SRM that records the observed outputs and behaviors. SRMs can be represented at two levels of abstraction: black box (recording only sequence invocations with input/output parameters) or white box (recording full method invocation sequences including all intermediate inputs and outputs).
+The Large-Scale Software Observatorium (LASSO)~\cite{Kessel2022} addresses this limitation by automating the collection of both dynamic (execution-based) and static information about software at scale. Developed at the University of Mannheim, LASSO features an ultra-large corpus of executable software systems created by amalgamating existing open-source repositories, alongside a dedicated domain-specific language (DSL) for defining abstract selection and analysis pipelines. Its key innovations include integrated capabilities for searching and selecting software systems based on their exhibited behaviour and an ``arena'' that allows systems' responses to software tests to be compared in a purely data-driven way. LASSO records these execution behaviours in \emph{Stimulus--Response Matrices} (SRMs)~\cite{Kessel2022}. A formal definition and the coverage-adapted variant used for minimisation are provided in Section~\ref{sec:srm}; here we emphasise that SRMs enable language-independent, execution-based comparison at scale within LASSO.
 
 Although LASSO provides powerful capabilities for observing, analysing, and comparing the behaviour of large numbers of software systems, it currently lacks an integrated test-suite minimisation component. Adding minimisation would reduce redundant test execution and improve pipeline throughput, particularly important given LASSO's focus on large-scale execution-based analysis.
 
@@ -61,6 +61,7 @@ Figure~\ref{fig:problem-statement} illustrates the test suite minimization probl
 \end{figure}
 
 \section{Research Objectives and Questions}
+\label{sec:rq}
 
 This thesis aims to design and implement an SRM-based test suite minimization framework for the LASSO platform. To achieve this objective, we address the following research questions:
 \begin{enumerate}
@@ -78,18 +79,12 @@ Existing test suite reduction frameworks typically support only specific program
 
 The remainder of this thesis is organised as follows:
 \begin{description}
-  \item[Chapter~2] introduces the fundamentals of code coverage, mutation
-    testing, SRMs and formalises the test-suite minimisation problem.
-  \item[Chapter~3] provides a comprehensive literature review of existing
-    minimisation techniques, grouped into greedy heuristics, exact
-    optimisation, search-based methods, data-driven approaches and empirical
-    evaluations.
-  \item[Chapter~4] defines evaluation criteria and compares candidate
-    algorithms using these criteria.
-  \item[Chapter~5] presents the rationale for selecting the Harrold–Gupta–Soffa
-    algorithm with overlap-aware heuristics and outlines the proposed
-    minimisation workflow.
-  \item[Chapter~6] concludes the thesis and discusses future work.
+  \item[Chapter~2] introduces the fundamentals of code coverage, mutation testing, and SRMs, and formalises the test-suite minimisation problem (cf. Section~\ref{sec:srm}).
+  \item[Chapter~3] surveys the literature using the taxonomy introduced in Chapter~2, covering greedy heuristics, exact optimisation, search-based methods, and data-driven approaches.
+  \item[Chapter~4] defines evaluation criteria (C1--C6) and presents a formal scoring framework to support systematic algorithm ranking under LASSO's SRM-only constraints.
+  \item[Chapter~5] applies the scoring model to rank candidate algorithms, presents comparative analysis of literature-reported performance, and justifies the selection decision based on evidence across all evaluation dimensions.
+  \item[Chapter~6] describes the software architecture, algorithm implementation, empirical validation methodology, and integration with the LASSO platform.
+  \item[Chapter~7] concludes the thesis and discusses future work.
 \end{description}
 
 

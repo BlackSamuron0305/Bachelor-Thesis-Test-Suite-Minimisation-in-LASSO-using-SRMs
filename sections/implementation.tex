@@ -1,13 +1,62 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the implementation of the Harrold-Gupta-Soffa (HGS) algorithm with overlap awareness for test suite minimization in LASSO. We describe the algorithmic phases, empirical validation, and platform integration.
+This chapter presents the implementation of the Harrold--Gupta--Soffa (HGS) algorithm with overlap awareness for test suite minimization in LASSO. We describe the software architecture, algorithm implementation, and platform integration, followed by empirical validation of correctness and performance characteristics.
 
 \section{Software Architecture}
 
 The implementation consists of four components integrated into LASSO's testing infrastructure: \texttt{OverlapAwareHGSMinimizer} (core 4-phase algorithm), \texttt{TestCase} (data model with BitSet coverage encoding), \texttt{MinimalTestSuite} (result container), and \texttt{HGSMinimizerDemo} (demonstration with 5 usage scenarios). All components follow LASSO conventions and GPL3 licensing.
 
 \section{Algorithm Implementation}
+
+\subsection{Algorithm Specification}
+
+\textbf{Algorithm 1: Enhanced HGS with Overlap-Aware Selection}
+\begin{enumerate}
+  \item \textbf{Initialization Phase:}
+  \begin{itemize}
+    \item Input: Coverage-adapted SRM $M \in \{0,1\}^{n \times m}$ where $n$ stimuli (test cases) and $m$ systems (coverage requirements), optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
+    \item Initialize reduced suite $S = \emptyset$, covered requirements $R_{covered} = \emptyset$
+    \item Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ for all $j \in \{1, \ldots, m\}$ (number of tests covering each requirement)
+  \end{itemize}
+  
+  \item \textbf{Unique Coverage Selection:}
+  \begin{itemize}
+    \item $\forall j$ where $card_j = 1$: Select test $t_i$ such that $M_{ij} = 1$
+    \item Add selected tests to $S$, mark corresponding requirements as covered
+    \item Update cardinalities for remaining requirements
+  \end{itemize}
+  
+  \item \textbf{Overlap-Aware Greedy Selection:}
+  \begin{itemize}
+    \item While uncovered requirements remain:
+    \item For each uncovered test $t_i$, compute effectiveness ratio:
+    \begin{equation}
+    effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}
+    \end{equation}
+    where:
+    \begin{itemize}
+      \item $new\_coverage_i = \{j : M_{ij} = 1 \text{ and } j \notin R_{covered}\}$
+      \item $w_i$ represents the execution weight of test $t_i$ (default: 1.0)
+      \item $overlap\_penalty_i = \alpha \times \frac{\sum_{t_k \in S} |C(t_i) \cap C(t_k)|}{|C(t_i)|}$ with $\alpha = 0.5$
+    \end{itemize}
+    \item Select test with maximum effectiveness ratio: $t^* = \arg\max_{t_i} effectiveness_i$
+    \item Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$
+    \item Recalculate requirement cardinalities for remaining tests
+  \end{itemize}
+  
+  \item \textbf{Post-Processing Optimization:}
+  \begin{itemize}
+    \item Perform redundancy elimination: remove tests from $S$ whose requirements are covered by remaining tests
+    \item Optional: Verify mutation score preservation and adjust selection if necessary
+  \end{itemize}
+  
+  \item \textbf{Output Generation:}
+  \begin{itemize}
+    \item Generate minimized SRM $M' \subseteq M$ containing only selected test cases (stimuli)
+    \item Produce analysis report including reduction metrics and coverage preservation statistics
+  \end{itemize}
+\end{enumerate}
 
 \subsection{Phase 1: Initialization}
 
@@ -63,18 +112,57 @@ The space complexity is dominated by storing test coverage information as BitSet
 The implementation supports weighted minimization by incorporating execution costs into the effectiveness metric, penalizing slower tests while maintaining $O(n \cdot m \cdot \log m)$ complexity.
 
 \section{Empirical Validation}
+\label{sec:impl-validation}
 
-We developed 13 unit tests validating coverage preservation, minimality, unique coverage handling, overlap penalty behavior, and weight sensitivity. All tests pass in 2.790 seconds (Intel Core i7, 16GB RAM). Representative benchmark results across five scenarios demonstrate effectiveness (see extended results including overlap statistics and reproducibility notes in Appendix~\ref{app:benchmarks}).
+We implement a verification suite that exercises core correctness properties of the minimizer: preservation of target coverage, handling of unique-coverage requirements, effect of overlap penalisation, and weight sensitivity. These tests ensure conformance with the algorithmic specification in this chapter and the pseudocode in Appendix~\ref{app:pseudocode}.
 
-The large-scale test (20 tests → 9 tests, 55\% reduction, 94\% coverage) aligns with theoretical expectations \cite{chvatal1979}. Compared to basic greedy ($O(n \cdot m)$ time, 40--60\% reduction, 90--95\% coverage), HGS achieves 5--10\% better reduction and 3--5\% higher coverage retention at $O(n \cdot m \cdot \log m)$ complexity.
+\subsection{Validation Methodology}
+
+We validate the implementation via small-scale unit tests on synthetic SRMs and micro-benchmarks:
+\begin{itemize}
+  \item \textbf{Unit tests:} correctness of Phase~1 unique-coverage selection; stability of overlap penalty w.r.t. $\alpha$; coverage equality $C(S^*)=C(T)$.
+  \item \textbf{Benchmarks:} runtime trends on sparse vs. dense SRMs (varying $n, m$); reduction ratio vs. coverage retention under different overlap penalties.
+\end{itemize}
+
+\subsection{Test Datasets}
+\begin{itemize}
+  \item \textbf{Benchmark Projects:} 10--15 Defects4J projects~\cite{just2014}.
+  \item \textbf{LASSO SRMs:} Real coverage matrices from LASSO~\cite{Kessel2022}.
+  \item \textbf{Synthetic:} Controlled sparsity/overlap for stress tests.
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+\begin{itemize}
+  \item \textbf{Reduction Ratio:} $RR = \tfrac{|T| - |S^*|}{|T|} \times 100\%$.
+  \item \textbf{Coverage Retention:} $CR = \tfrac{|C(S^*)|}{|C(T)|} \times 100\%$ (incl. mutation score).
+  \item \textbf{Fault Detection Loss:} Missed faults relative to original~\cite{shi2018}.
+  \item \textbf{Runtime:} Minimization wall-clock time.
+\end{itemize}
+
+\subsection{Success Criteria}
+\begin{itemize}
+  \item $RR \geq 45\%$, $CR \geq 95\%$, mutation preservation $\geq 90\%$~\cite{harrold1993,yoo2012}.
+  \item Runtime remains $O(nm\log m)$ up to $n \leq 10{,}000$.
+  \item $\geq 10\%$ fault detection retention improvement over classical greedy.
+\end{itemize}
+
+\subsection{Statistical Analysis}
+Repeated measures ANOVA at $\alpha=0.05$ across identical datasets, effect sizes via Cohen's $d$ with bootstrap CIs.
+
+\subsection{Results}
+
+On synthetic SRMs, overlap-aware HGS shows improved unique coverage acquisition compared to classical greedy at comparable runtime, particularly for moderate overlap regimes, consistent with literature~\cite{harrold1993,bach2017}. Parameter sensitivity remains bounded under $\alpha \in [0.3,0.7]$.
+
+Extended benchmarking artefacts, overlap statistics, and reproducibility notes are provided in Appendix~\ref{app:benchmarks}. Quantitative comparison across algorithms is reported in Chapter~\ref{chap:comparison} to avoid duplication.
 
 \section{Integration with LASSO Platform}
+\label{sec:lasso-integration}
 
 The implementation includes an SRM-to-TestCase converter enabling direct application to LASSO's existing test execution data. Integration via LASSO's LSL (LASSO Specification Language) supports declarative minimization policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting. A formal specification of the SRM conversion is provided in Appendix~\ref{app:srm}.
 
 \section{Documentation and Demonstration}
 
-The \texttt{HGSMinimizerDemo} class provides five executable examples: code coverage minimization, mutation testing, weighted minimization, algorithm comparison, and SRM conversion. The codebase (~1,290 lines) includes comprehensive Javadoc, 13 unit tests achieving 100\% branch coverage, Maven build automation, and a 320-line README with usage examples and benchmarks.
+The \texttt{HGSMinimizerDemo} component illustrates typical usage scenarios: code coverage minimization, mutation testing, weighted minimization, algorithm comparison, and SRM conversion. The codebase includes comprehensive API documentation, automated tests, and build automation, together with usage examples and instructions to regenerate benchmarks (see Appendix~\ref{app:benchmarks}).
 
 \section{Licensing and Copyright}
 

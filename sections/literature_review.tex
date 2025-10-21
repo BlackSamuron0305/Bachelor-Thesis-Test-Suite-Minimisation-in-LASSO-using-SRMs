@@ -1,18 +1,18 @@
-\chapter{Literature Review}\label{chap:literature-review}
+\chapter{Minimization Algorithms}\label{chap:literature-review}
 
-This chapter presents a systematic survey of test suite minimization approaches documented in the academic literature. Our review methodology involved searching major computer science databases (IEEE Xplore, ACM Digital Library, SpringerLink) using keywords including "test suite minimization," "test suite reduction," and "regression testing optimization." We identified 47 relevant papers published between 1993 and 2024, focusing on algorithmic approaches, empirical evaluations, and industrial applications.
+This chapter presents a systematic survey of test suite minimization approaches documented in the academic literature. Our review methodology involved searching major computer science databases (IEEE Xplore, ACM Digital Library, SpringerLink) using keywords including ``test suite minimization,'' ``test suite reduction,'' and ``regression testing optimization.'' We identified 47 relevant papers published between 1993 and 2024, focusing on algorithmic approaches, empirical evaluations, and industrial applications.
 
-We organize the review according to the taxonomic framework established in Chapter~2, examining greedy heuristics, exact optimization methods, search-based approaches, and empirical evaluation studies. This systematic analysis forms the basis for our comparative evaluation in Chapter~\ref{chap:evaluation}.
+We organize the review according to the taxonomic framework established in Chapter~2, examining greedy heuristics, exact optimization methods, search-based approaches, and data-driven techniques. This systematic analysis forms the basis for our criteria-based comparative evaluation in Chapter~\ref{chap:evaluation}.
 
 \section{Greedy Heuristics}
 
-\subsection{Classical Greedy Algorithm}
+\subsection{Classical Greedy}
 
 The classical greedy algorithm represents the most straightforward heuristic approach to test suite minimization~\cite{chvatal1979}. The algorithm operates by iteratively selecting the test case that covers the maximum number of currently uncovered requirements. Upon selecting a test, all requirements it covers are marked as satisfied. This process continues until all requirements are covered.
 
 The time complexity is $O(nm)$ where $n$ is the number of test cases and $m$ is the number of requirements, making it computationally efficient. However, the algorithm provides only a logarithmic approximation ratio of $O(\ln m)$ for the set cover problem. This theoretical limitation manifests as suboptimal reductions when coverage exhibits significant overlap between test cases.
 
-\subsection{Harrold--Gupta--Soffa Algorithm}
+\subsection{Harrold--Gupta--Soffa}
 
 Harrold, Gupta, and Soffa proposed a refined greedy heuristic that addresses limitations of the classical approach by prioritizing requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation.
 
@@ -20,31 +20,36 @@ The algorithm operates in phases based on requirement cardinality: Phase 1 selec
 
 Empirical studies demonstrate that HGS produces smaller minimized suites compared to classical greedy (45--70\% reduction) while maintaining superior coverage preservation (95--98\% retention)~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting.
 
-\subsection{Delayed Greedy (Concept Analysis)}
+\subsection{Delayed Greedy}
 
 Tallam and Gupta's delayed greedy~\cite{tallam2005} uses concept lattices to eliminate implied redundancies before greedy selection, achieving smaller suites than HGS but with $O(n^2m)$ complexity due to lattice analysis overhead.
 
-\section{Exact Optimisation Techniques}
+\section{Exact Optimization Approaches}
 
-TSM formulated as weighted set-cover ILP minimizes test costs while covering all requirements. REDUNET~\cite{mongiovi2020} combines ILP with CFG analysis, achieving 90\% reduction but requiring exponential time and program structure unavailable in SRMs.
+\subsection{ILP and REDUNET}
+TSM formulated as (weighted) set-cover ILP minimizes test costs while covering all requirements. Exact formulations can produce optimal or near-optimal reduced suites but are NP-hard in general, often requiring solver time that grows exponentially with problem size~\cite{yoo2012}. REDUNET~\cite{mongiovi2020} integrates CFG analysis into an ILP pipeline, reporting reductions around 90\% with near-complete coverage, but it requires program structure that is unavailable in SRM-only settings and exhibits exponential worst-case runtime.
 
-\section{Search-Based and Meta-Heuristic Methods}
+\subsection{Constraint / Graph Extensions}
+Approaches that enrich the optimization with structural constraints (e.g., control-flow or dependency graphs) can improve faithfulness of the objective but at the cost of additional inputs that are not available in SRM-only scenarios.
 
-Search-based software engineering treats TSM as a search problem.
-Genetic algorithms (GAs) and other meta-heuristics explore the solution
-space by evolving subsets of tests based on a fitness function (for
-example, maximising coverage retention and minimising suite size).
-Hussein et al. summarise the history of these methods and note that
-TSM is NP-complete; they propose a quantum-inspired genetic
-algorithm (QIGA) that uses quantum superposition and rotation
-operators to improve convergence\cite{hussein2020}.  Search-based
-methods can find near-optimal solutions but require careful
-parameter tuning (population size, mutation rates) and may converge
-slowly for large SRMs.
+\section{Search-Based and Metaheuristic Approaches}
 
-\section{Data-Driven Techniques and Clustering}
+\subsection{Genetic Algorithms}
+Search-based software engineering treats TSM as a search problem. Genetic algorithms (GAs) evolve subsets of tests according to a fitness function that balances coverage retention and suite size~\cite{yoo2012}. These methods can find high-quality solutions but require careful parameter tuning (e.g., population size, mutation rates) and may converge slowly for large SRMs.
 
-Overlap-aware algorithms consider test intersection sizes, achieving 50\% higher coverage within fixed time budgets~\cite{bach2017}. Similarity-based clustering (e.g., Jaccard distance) selects representative tests but adds $O(n^2m)$ complexity.
+\subsection{Quantum-Inspired GA}
+Hussein et al. propose a quantum-inspired genetic algorithm (QIGA) that uses quantum superposition and rotation operators to improve convergence properties relative to classical GAs~\cite{hussein2020}. While promising on smaller instances, performance and repeatability on very large SRMs remain sensitive to parameterisation.
+
+\subsection{Simulated Annealing / PSO}
+Other metaheuristics such as simulated annealing and particle swarm optimization have also been explored for TSM in the broader search-based testing literature, though typically as variants on the same trade-off between solution quality and computational effort~\cite{yoo2012}.
+
+\section{Data-Driven and Similarity-Based Approaches}
+
+\subsection{Clustering / Jaccard}
+Similarity-based methods (e.g., Jaccard distance over coverage vectors) cluster tests and select representatives to reduce redundancy. These approaches are intuitive and SRM-compatible but typically incur $O(n^2 m)$ similarity computation cost for $n$ tests and $m$ requirements, which must be amortised with indexing or approximation in large-scale settings.
+
+\subsection{Overlap-Aware Methods}
+Overlap-aware algorithms explicitly consider pairwise test intersections to prioritize tests that add unique coverage, achieving up to 50\% higher effectiveness within fixed time budgets relative to traditional greedy selection~\cite{bach2017}. The additional overhead of overlap computation is offset by improved coverage retention and reduced duplication in the selected suite.
 
 Table~\ref{tab:literature-complexity} summarizes the computational complexity characteristics of the surveyed algorithmic approaches.
 
@@ -83,43 +88,12 @@ Table~\ref{tab:literature-complexity} summarizes the computational complexity ch
   \end{threeparttable}
 \end{table}
 
-\section{Empirical Evaluations}
+% Empirical evidence moved to Chapter~\ref{chap:evaluation} to streamline narrative and avoid redundancy.
 
-Empirical studies reveal the fundamental trade-offs inherent in test suite minimization. Rothermel et al.'s early experiments~\cite{rothermel1998} demonstrated that removing tests can significantly reduce execution time (30--50\% reduction) but may also degrade fault detection capability (10--20\% loss). 
+\section{Summary and Scope Decision}
 
-Shi et al. analyzed 1,478 failed builds from 32 open-source projects and introduced the Failed-Build Detection Loss (FBDL) metric: the percentage of failed builds where the reduced suite misses faults detected by the original suite~\cite{shi2018}. They found FBDL values up to 52.2\%, significantly higher than suggested by traditional coverage-based metrics. 
+Greedy heuristics provide strong baselines with predictable performance: classical greedy offers $O(nm)$ runtime but can over-select under high overlap~\cite{chvatal1979}, whereas HGS prioritizes rare requirements to improve retention at modest additional cost $O(nm\log m)$~\cite{harrold1993}. Delayed greedy further reduces redundancy via lattice-based implication analysis but increases complexity to $O(n^2 m)$~\cite{tallam2005}.
 
-Noemmer and Haas compared four minimization algorithms on several open-source projects and achieved reductions exceeding 70\%, but observed an average 12.5\% loss in fault detection capability~\cite{noemmer2020}. These studies indicate that aggressive minimization may harm fault detection and that balancing reduction effectiveness with test quality preservation is essential for practical deployment.
+Exact ILP formulations yield optimality guarantees at exponential worst-case cost~\cite{yoo2012}, and hybrid pipelines such as REDUNET demonstrate substantial reductions by leveraging CFG information~\cite{mongiovi2020}. However, such structure-dependent inputs do not exist in SRM-only settings and thus fall outside the feasible design space for LASSO's black-box SRM pipeline. Search-based metaheuristics (GA/QIGA, SA/PSO) are flexible but impose tuning burden and higher computational overhead on large matrices~\cite{yoo2012,hussein2020}. Similarity- and overlap-aware methods align well with SRM availability and directly target redundancy reduction~\cite{bach2017}.
 
-Table~\ref{tab:empirical-results} consolidates key empirical findings from the literature, demonstrating the consistent trade-offs between reduction effectiveness and quality preservation across different studies and datasets.
-
-\begin{table}[H]
-  \centering
-  \caption{Empirical Results from Test Suite Minimization Studies}
-  \label{tab:empirical-results}
-  \begin{threeparttable}
-    \begin{tabular}{|l|l|c|c|c|}
-      \hline
-      \textbf{Study} & \textbf{Algorithm} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Fault Detection} \\
-      & & \textbf{Ratio} & \textbf{Retention} & \textbf{Loss} \\
-      \hline
-      Harrold et al.~\cite{harrold1993} & HGS & 45--70\% & 95--98\% & 5--10\% \\
-      \hline
-      Rothermel et al.~\cite{rothermel1998} & Classical Greedy & 30--50\% & 85--95\% & 10--20\% \\
-      \hline
-      Bach et al.~\cite{bach2017} & Overlap-Aware & 40--60\% & 90--95\% & 8--15\% \\
-      \hline
-      Shi et al.~\cite{shi2018} & Various\tnote{a} & 50--80\% & N/A & FBDL: 52.2\%\tnote{b} \\
-      \hline
-      Noemmer \& Haas~\cite{noemmer2020} & Multiple & $>70\%$ & 90--95\% & 12.5\% (avg) \\
-      \hline
-      Mongiovì et al.~\cite{mongiovi2020} & REDUNET & $\approx 90\%$ & $\approx 100\%$ & $<5\%$ \\
-      \hline
-    \end{tabular}
-    \begin{tablenotes}
-      \small
-      \item[a] Study compared HGS, delayed greedy, and ILP-based approaches
-      \item[b] FBDL = Failed-Build Detection Loss, measured on 1,478 builds from 32 projects
-    \end{tablenotes}
-  \end{threeparttable}
-\end{table}
+Given LASSO's constraints (SRM-only inputs, large-scale execution, and pipeline integration requirements), we restrict the candidate space to SRM-compatible methods with polynomial-time complexity and minimal external assumptions. The subsequent chapters evaluate these SRM-compatible methods using a unified scoring framework, independent of LASSO implementation details.

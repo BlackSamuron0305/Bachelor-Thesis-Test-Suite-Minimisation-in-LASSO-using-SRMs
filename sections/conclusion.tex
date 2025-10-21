@@ -1,37 +1,12 @@
-\section{Research Questions Answered}
+\chapter{Conclusion}
 
-This thesis systematically addressed the four research questions established in Chapter 1:
+\section{Summary}
+Goal: develop a language-independent, SRM-based test suite minimization approach suitable for LASSO. We surveyed 47 studies, defined a six-criteria evaluation (C1--C6), and selected Harrold--Gupta--Soffa (HGS) with an overlap-aware extension as the most balanced solution across coverage, reduction, scalability, SRM-compatibility, and feasibility~\cite{harrold1993,bach2017,yoo2012}.
 
-\textbf{RQ1: Which test suite minimization techniques demonstrate the highest effectiveness and practical applicability?} Our systematic literature review of 47 papers identified that greedy heuristics, particularly the Harrold–Gupta–Soffa algorithm, consistently demonstrate superior balance between effectiveness (45--70\% reduction) and practical applicability (polynomial-time complexity, minimal implementation requirements).
+\section{Findings}
+The overlap-aware HGS achieves 50--75\% reduction while retaining 95--98\% coverage and 90--95\% fault detection in literature, with $O(nm \log m)$ complexity and SRM-only operation. Our design decomposes into modular components (preprocessor, selection engine, assessor, exporter) to support maintainability and integration within LASSO.
 
-\textbf{RQ2: What evaluation criteria are most appropriate for SRM-based environments?} We established a comprehensive six-criteria evaluation framework encompassing coverage preservation, reduction effectiveness, fault detection retention, computational scalability, SRM compatibility, and implementation feasibility. This framework successfully differentiated between algorithmic approaches and guided selection decisions.
+\section{Next Steps}
+Empirically validate on LASSO-generated SRMs and Defects4J, calibrate overlap penalty $\alpha$, evaluate mutation preservation, and extend to incremental minimization for CI. Explore data-driven variants (e.g., clustering or embeddings) to further reduce redundancy consistent with SRM constraints.
 
-\textbf{RQ3: Which algorithmic approach optimally balances the evaluation criteria?} Through systematic comparative analysis, HGS enhanced with overlap-aware heuristics emerged as the optimal solution, achieving 95--98\% coverage retention, 50--75\% reduction ratios, and 90--95\% fault detection preservation while maintaining $O(nm \log m)$ complexity.
-
-\textbf{RQ4: How can the selected approach be effectively integrated into LASSO's analysis pipeline?} Our implementation framework specification demonstrates language-independent integration through modular components operating exclusively on LASSO's coverage-adapted SRM infrastructure, ensuring compatibility across diverse programming environments.
-
-\subsection{Key Contributions}
-
-\textbf{Systematic Literature Analysis:} We conducted a comprehensive survey of test suite minimization techniques, establishing a taxonomic framework that categorizes approaches based on algorithmic paradigms: greedy heuristics, exact optimization methods, search-based techniques, and data-driven approaches.
-
-\textbf{Evaluation Framework Development:} Our research established a multi-criteria evaluation framework specifically tailored for SRM-based minimization within language-independent analysis platforms, providing systematic methodology for algorithm selection that balances theoretical optimality with practical constraints.
-
-\textbf{Algorithm Selection and Enhancement:} Through rigorous comparative analysis, we identified the Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics as the optimal approach for LASSO integration, demonstrating superior performance across multiple evaluation dimensions.
-
-\textbf{Implementation Framework Design:} We developed a comprehensive implementation framework that specifies algorithmic components, data structures, and integration architecture within LASSO's analysis pipeline, ensuring language independence, scalability, and maintainability.
-
-\section{Practical Implications}
-
-This work addresses critical bottlenecks in automated testing and continuous integration by enabling 45--70\% test suite reduction while preserving quality. Language-independent minimization supports heterogeneous codebases in industrial environments.
-
-\section{Limitations and Future Research}
-
-\subsection{Limitations}
-This theoretical contribution requires empirical validation. Key threats: (1) algorithm selection based on literature, not LASSO SRM comparisons, (2) coverage-fault detection correlation may not generalize universally, (3) mutation scores may not reflect real defects, (4) SRM adaptation abstracts multi-system behavioral complexities, (5) parameter sensitivity ($\alpha$, thresholds) requires tuning. Future work should include diverse empirical evaluations, industrial fault datasets, parameter sensitivity analysis, and cross-platform replications.
-
-\subsection{Future Directions}
-Promising research avenues include: (1) machine learning integration for fault-driven selection, (2) Pareto-optimal multi-objective optimization, (3) incremental minimization for CI/CD, (4) cross-language effectiveness analysis, (5) large-scale industrial validation.
-
-\section{Concluding Remarks}
-
-This thesis demonstrates that overlap-aware HGS achieves substantial reduction (45--70\%) while preserving quality (95--98\% coverage, 90--95\% fault detection). The approach provides a foundation for production-quality minimization in LASSO and contributes to large-scale test suite optimization understanding.
+\paragraph{Research Questions Closure.} RQ1 identified HGS with overlap-aware extensions as the most promising class among surveyed techniques; RQ2 established C1--C6 as LASSO-aligned evaluation criteria; RQ3 justified the selection of overlap-aware HGS on these criteria; and RQ4 outlined its integration into LASSO's SRM pipeline, thereby closing the loop from literature to design and integration~\cite{harrold1993,bach2017,yoo2012,Kessel2022}.

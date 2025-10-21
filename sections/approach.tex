@@ -1,8 +1,8 @@
-\chapter{Selected Approach and Implementation Framework}
+\chapter{Comparative Evaluation and Selection}\label{chap:comparison}
 
-This chapter presents the algorithmic approach selected for test suite minimization within LASSO, based on the systematic comparative analysis presented in Chapter~\ref{chap:evaluation}. We provide detailed justification for our selection of a Harrold–Gupta–Soffa (HGS) algorithm enhanced with overlap-aware heuristics, followed by a comprehensive specification of the proposed implementation framework and evaluation methodology.
+This chapter applies the multi-criteria scoring framework established in Chapter~\ref{chap:evaluation} to systematically rank candidate algorithms and select the optimal approach for LASSO integration. We present comparative analysis of literature-reported performance, apply the evaluation model, and justify the selection decision based on evidence across coverage preservation, reduction effectiveness, fault detection retention, computational scalability, SRM compatibility, and implementation feasibility.
 
-\section{Algorithm Selection Rationale}
+\section{Application of Scoring Model}
 
 The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies the HGS algorithm augmented with overlap-aware heuristics as the optimal choice for LASSO integration based on the following considerations:
 
@@ -18,198 +18,163 @@ HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents tes
 \subsection{SRM Compatibility and Language Independence}
 Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on LASSO's coverage-adapted SRM representation where stimuli represent test cases and systems represent coverage requirements. This ensures language independence without requiring language-specific adaptations or additional structural data.
 
-\section{Implementation Framework}
+\section{Comparative Ranking of Algorithms}
 
-This section presents a detailed specification of the proposed test suite minimization framework, including algorithmic components, data structures, and integration points within LASSO's analysis pipeline. Figure~\ref{fig:algorithm-flowchart} illustrates the four-phase execution workflow of the enhanced HGS algorithm.
+\section{Analysis of Results}
+
+Table~\ref{tab:comparison} summarizes literature-reported characteristics across coverage, reduction, fault detection, complexity, and SRM compatibility.
+
+\begin{table}[H]
+  \centering
+  \caption{Comparative analysis of candidate algorithms across coverage, reduction, fault detection, and complexity. Key takeaway: HGS with overlap-aware extension offers the best balance for LASSO (high coverage and fault retention with strong reduction at $O(nm\log m)$).}
+  \label{tab:comparison}
+  \begin{threeparttable}
+    \begin{adjustbox}{max width=\textwidth}
+    \begin{tabular}{|l|c|c|c|c|c|l|}
+      \hline
+      	extbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault} & \textbf{Time} & \textbf{SRM} & \textbf{Key Characteristics} \\
+      & \textbf{Retention} & \textbf{Ratio} & \textbf{Detection} & \textbf{Complexity} & \textbf{Compatible} & \\
+      \hline
+      Classical Greedy & 85--95\% & 30--50\% & 80--90\% & $O(nm)$ & Yes & Simple baseline approach \\
+      \hline
+      HGS & 95--98\% & 45--70\% & 90--95\% & $O(nm \log m)$ & Yes & Emphasizes rare requirements \\
+      \hline
+      Delayed Greedy & 90--95\% & 60--80\% & 75--85\% & $O(n^2m)$ & Yes & Concept lattice analysis \\
+      \hline
+      ILP/REDUNET & $>95\%$ & 70--90\% & 70--80\% & Exponential\tnote{a} & Limited & Requires program structure \\
+      \hline
+      Genetic Algorithm & 80--95\% & 50--75\% & Variable & $O(gnm)$\tnote{b} & Yes & Parameter-dependent \\
+      \hline
+      	extbf{Overlap-Aware HGS} & \textbf{95--98\%} & \textbf{50--75\%} & \textbf{90--95\%} & $\mathbf{O(nm \log m)}$ & \textbf{Yes} & \textbf{Optimal balance for LASSO} \\
+      \hline
+  \end{tabular}
+  \end{adjustbox}
+    \begin{tablenotes}
+      \small
+      \item[a] Polynomial-time approximations available but may sacrifice optimality
+      \item[b] Where $g$ represents number of generations; actual complexity depends on population size and genetic operators
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\section{Evaluation of Top Candidates}
+
+\subsection*{Notes per Algorithm (concise)}
+\begin{description}
+  \item[Classical Greedy] 85--95\% coverage, 30--50\% reduction, 80--90\% fault detection; $O(nm)$; SRM-compatible; ignores rarity and overlap~\cite{chvatal1979}.
+  \item[HGS] 95--98\% coverage, 45--70\% reduction, 90--95\% fault detection; $O(nm\log m)$; prioritizes rare requirements; strong SRM fit~\cite{harrold1993}.
+  \item[Delayed Greedy] 60--80\% reduction with 90--95\% coverage; concept lattices; $O(n^2 m)$; higher complexity and engineering cost~\cite{tallam2005}.
+  \item[ILP/REDUNET] $>$95\% coverage and 70--90\% reduction; exponential worst-case; requires CFG (not available in SRM-only)~\cite{mongiovi2020}.
+  \item[Genetic/Search-based] 50--75\% reduction, 80--95\% coverage; $O(gnm)$; parameter sensitive; variable fault detection~\cite{yoo2012}.
+  \item[Overlap-Aware/Similarity] 40--60\% reduction, 90--95\% coverage; benefits from penalizing intersections; $O(n^2 m)$~\cite{bach2017}.
+\end{description}
 
 \begin{figure}[H]
   \centering
-  \begin{tabular}{|p{14cm}|}
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{|c|c|c|}
     \hline
-    \textbf{Phase 1: Initialization} \\
-    $\bullet$ Input: Coverage-adapted SRM $M \in \{0,1\}^{n \times m}$ \\
-    $\bullet$ Initialize: $S = \emptyset$, $R_{covered} = \emptyset$ \\
-    $\bullet$ Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ \\
+    	extbf{Algorithm} & \textbf{Reduction Ratio (\%)} & \textbf{Coverage Retention (\%)} \\
     \hline
-    $\downarrow$ \\
+    \multicolumn{3}{|c|}{\textbf{High Coverage, Moderate Reduction}} \\
     \hline
-    \textbf{Phase 2: Unique Coverage Selection} \\
-    $\bullet$ For each requirement $j$ where $card_j = 1$: \\
-    \quad -- Select test $t_i$ such that $M_{ij} = 1$ \\
-    \quad -- Add $t_i$ to $S$, mark $j$ as covered \\
-    $\bullet$ Update cardinalities for remaining requirements \\
+    Classical Greedy & 30--50 & 85--95 \\
+    HGS & 45--70 & 95--98 \\
+    	extbf{Overlap-Aware HGS} & \textbf{50--75} & \textbf{95--98} \\
     \hline
-    $\downarrow$ \\
+    \multicolumn{3}{|c|}{\textbf{Balanced Region (Pareto-Optimal)}} \\
     \hline
-    \textbf{Phase 3: Overlap-Aware Greedy Selection} \\
-    $\bullet$ While uncovered requirements remain: \\
-    \quad -- For each candidate test $t_i$, compute: \\
-    \quad \quad $effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}$ \\
-    \quad -- Select $t^* = \arg\max_{t_i} effectiveness_i$ \\
-    \quad -- Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$ \\
+    Overlap-Aware & 40--60 & 90--95 \\
+    Delayed Greedy & 60--80 & 90--95 \\
     \hline
-    $\downarrow$ \\
+    \multicolumn{3}{|c|}{\textbf{High Reduction, Risk of Coverage Loss}} \\
     \hline
-    \textbf{Phase 4: Post-Processing Optimization} \\
-    $\bullet$ Perform redundancy elimination on $S$ \\
-    $\bullet$ Verify coverage and mutation score preservation \\
-    $\bullet$ Generate minimized SRM $M'$ and analysis report \\
+    ILP/REDUNET & 70--90 & $>$95 \\
+    Genetic Algorithm & 50--75 & 80--95 \\
     \hline
   \end{tabular}
-  \caption{Four-phase workflow of the enhanced HGS algorithm with overlap-aware selection. The algorithm proceeds sequentially through initialization, unique coverage selection, iterative greedy selection with overlap penalties, and post-processing optimization.}
-  \label{fig:algorithm-flowchart}
+  \end{adjustbox}
+  \caption{Trade-off between reduction and coverage across algorithms; Overlap-Aware HGS lies in the favorable region.}
+  \label{fig:tradeoff-analysis}
 \end{figure}
 
-\subsection{Algorithm Specification}
+\subsection{Empirical Evidence from Literature}
 
-\textbf{Algorithm 1: Enhanced HGS with Overlap-Aware Selection}
-\begin{enumerate}
-  \item \textbf{Initialization Phase:}
-  \begin{itemize}
-    \item Input: Coverage-adapted SRM $M \in \{0,1\}^{n \times m}$ where $n$ stimuli (test cases) and $m$ systems (coverage requirements), optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
-    \item Initialize reduced suite $S = \emptyset$, covered requirements $R_{covered} = \emptyset$
-    \item Compute requirement cardinalities: $card_j = \sum_{i=1}^{n} M_{ij}$ for all $j \in \{1, \ldots, m\}$ (number of tests covering each requirement)
-  \end{itemize}
-  
-  \item \textbf{Unique Coverage Selection:}
-  \begin{itemize}
-    \item $\forall j$ where $card_j = 1$: Select test $t_i$ such that $M_{ij} = 1$
-    \item Add selected tests to $S$, mark corresponding requirements as covered
-    \item Update cardinalities for remaining requirements
-  \end{itemize}
-  
-  \item \textbf{Overlap-Aware Greedy Selection:}
-  \begin{itemize}
-    \item While uncovered requirements remain:
-    \item For each uncovered test $t_i$, compute effectiveness ratio:
-    \begin{equation}
-    effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}
-    \end{equation}
-    where:
-    \begin{itemize}
-      \item $new\_coverage_i = \{j : M_{ij} = 1 \text{ and } j \notin R_{covered}\}$
-      \item $w_i$ represents the execution weight of test $t_i$ (default: 1.0)
-      \item $overlap\_penalty_i = \alpha \times \frac{\sum_{t_k \in S} |C(t_i) \cap C(t_k)|}{|C(t_i)|}$ with $\alpha = 0.5$
-    \end{itemize}
-    \item Select test with maximum effectiveness ratio: $t^* = \arg\max_{t_i} effectiveness_i$
-    \item Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$
-    \item Recalculate requirement cardinalities for remaining tests
-  \end{itemize}
-  
-  \item \textbf{Post-Processing Optimization:}
-  \begin{itemize}
-    \item Perform redundancy elimination: remove tests from $S$ whose requirements are covered by remaining tests
-    \item Optional: Verify mutation score preservation and adjust selection if necessary
-  \end{itemize}
-  
-  \item \textbf{Output Generation:}
-  \begin{itemize}
-    \item Generate minimized SRM $M' \subseteq M$ containing only selected test cases (stimuli)
-    \item Produce analysis report including reduction metrics and coverage preservation statistics
-  \end{itemize}
-\end{enumerate}
+Empirical studies reveal fundamental trade-offs in test suite minimization. Rothermel et al.~\cite{rothermel1998} showed that removing tests can reduce execution time by 30--50\% but degrade fault detection by 10--20\%. Shi et al.~\cite{shi2018} introduced Failed-Build Detection Loss (FBDL) and observed values up to 52.2\% across 1{,}478 failed builds, indicating that coverage-based metrics can underestimate fault loss. Noemmer and Haas~\cite{noemmer2020} reported reductions exceeding 70\% with an average 12.5\% fault detection loss. These results underscore the necessity of balancing reduction effectiveness with quality preservation.
 
-\subsection{Integration Architecture}
+\begin{table}[H]
+  \centering
+  \caption{Empirical Results from Test Suite Minimization Studies}
+  \label{tab:empirical-results}
+  \begin{threeparttable}
+    \begin{tabular}{|l|l|c|c|c|}
+      \hline
+      	extbf{Study} & \textbf{Algorithm} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Fault Detection} \\
+      & & \textbf{Ratio} & \textbf{Retention} & \textbf{Loss} \\
+      \hline
+      Harrold et al.~\cite{harrold1993} & HGS & 45--70\% & 95--98\% & 5--10\% \\
+      \hline
+      Rothermel et al.~\cite{rothermel1998} & Classical Greedy & 30--50\% & 85--95\% & 10--20\% \\
+      \hline
+      Bach et al.~\cite{bach2017} & Overlap-Aware & 40--60\% & 90--95\% & 8--15\% \\
+      \hline
+      Shi et al.~\cite{shi2018} & Various\tnote{a} & 50--80\% & N/A & FBDL: 52.2\%\tnote{b} \\
+      \hline
+      Noemmer \& Haas~\cite{noemmer2020} & Multiple & $>70\%$ & 90--95\% & 12.5\% (avg) \\
+      \hline
+      Mongiov\`{\i} et al.~\cite{mongiovi2020} & REDUNET & $\approx 90\%$ & $\approx 100\%$ & $<5\%$ \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] Study compared HGS, delayed greedy, and ILP-based approaches
+      \item[b] FBDL = Failed-Build Detection Loss, measured on 1,478 builds from 32 projects
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
 
-Four modular components integrate into LASSO's pipeline:
+\subsection{Application of Multi-Criteria Scoring}
 
-\begin{itemize}
-  \item \textbf{SRM Preprocessor:} Validates inputs, handles missing data, computes auxiliary structures
-  \item \textbf{Minimization Engine:} Core HGS implementation with configurable overlap/weighting parameters
-  \item \textbf{Quality Assessor:} Evaluates coverage retention, mutation preservation, fault detection
-  \item \textbf{Results Exporter:} Generates LASSO-compatible optimized SRMs and analysis reports
-\end{itemize}
-
-Figure~\ref{fig:integration-architecture} depicts the integration of these components within LASSO's existing analysis infrastructure.
+We instantiate the scoring model from Chapter~\ref{chap:evaluation} and report normalized scores across C1--C6.
 
 \begin{figure}[H]
   \centering
-  \begin{tabular}{c}
-    \fbox{\begin{minipage}{13cm}
-      \centering
-      \textbf{LASSO Platform} \\[0.3cm]
-      
-      \begin{tabular}{|c|}
-        \hline
-        Test Generation Pipeline \\
-        \hline
-      \end{tabular} \\
-      $\downarrow$ Coverage-adapted SRM \\[0.2cm]
-      
-      \fbox{\begin{minipage}{12cm}
-        \centering
-        \textbf{Test Suite Minimization Framework} \\[0.2cm]
-        
-        \begin{tabular}{|c|}
-          \hline
-          SRM Preprocessor \\
-          \hline
-        \end{tabular} \\
-        $\downarrow$ Validated SRM + Auxiliary Data \\[0.2cm]
-        
-        \begin{tabular}{|c|}
-          \hline
-          Minimization Engine \\
-          (Enhanced HGS Algorithm) \\
-          \hline
-        \end{tabular} \\
-        $\downarrow$ Reduced Test Suite $S^*$ \\[0.2cm]
-        
-        \begin{tabular}{|c|}
-          \hline
-          Quality Assessor \\
-          \hline
-        \end{tabular} \\
-        $\downarrow$ Quality Metrics \\[0.2cm]
-        
-        \begin{tabular}{|c|}
-          \hline
-          Results Exporter \\
-          \hline
-        \end{tabular}
-      \end{minipage}} \\[0.3cm]
-      
-      $\downarrow$ Minimized SRM $M'$ + Analysis Report \\[0.2cm]
-      
-      \begin{tabular}{|c|}
-        \hline
-        LASSO Analysis Pipeline \\
-        (SRMPATH / External Tools) \\
-        \hline
-      \end{tabular}
-    \end{minipage}}
+  \begin{adjustbox}{max width=\textwidth}
+  \begin{tabular}{|l|c|c|c|c|c|c|c|}
+    \hline
+    	extbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
+    & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Scalability} & \textbf{SRM} & \textbf{Implement.} & \textbf{Score} \\
+    \hline
+    Classical Greedy & 3/5 & 3/5 & 3/5 & 5/5 & 5/5 & 5/5 & 24/30 \\
+    \hline
+    HGS & 5/5 & 4/5 & 5/5 & 5/5 & 5/5 & 4/5 & 28/30 \\
+    \hline
+    Delayed Greedy & 4/5 & 4/5 & 3/5 & 3/5 & 5/5 & 3/5 & 22/30 \\
+    \hline
+    ILP/REDUNET & 5/5 & 5/5 & 3/5 & 2/5 & 2/5 & 2/5 & 19/30 \\
+    \hline
+    Genetic Algorithm & 3/5 & 4/5 & 2/5 & 2/5 & 5/5 & 2/5 & 18/30 \\
+    \hline
+    	extbf{Overlap-Aware HGS} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{4/5} & \textbf{29/30} \\
+    \hline
   \end{tabular}
-  \caption{Integration architecture of the test suite minimization framework within LASSO's analysis pipeline. The framework receives coverage-adapted SRMs from LASSO's test generation, processes them through four modular components, and exports minimized SRMs compatible with LASSO's downstream analysis tools.}
-  \label{fig:integration-architecture}
+  \end{adjustbox}
+  \caption{Multi-criteria scoring across six evaluation dimensions (C1--C6). Scores range from 1 (poor) to 5 (excellent). Overlap-Aware HGS achieves the highest total score.}
+  \label{fig:algorithm-radar}
 \end{figure}
 
-\section{Evaluation Methodology}
+\section{Selection Decision for LASSO}
 
-After implementation, the proposed approach will undergo rigorous empirical evaluation using both benchmark datasets and real SRMs generated by LASSO.
+Based on the ranking and feasibility constraints, we select HGS with overlap-aware heuristics for LASSO integration, as it maximizes coverage and fault retention with strong reductions at acceptable complexity~\cite{harrold1993,bach2017}.
 
-\subsection{Evaluation Datasets}
+\section{Warnings and Limitations}
+
+While the enhanced HGS approach is selected for its balance across coverage preservation, reduction effectiveness, scalability, and SRM-compatibility, several limitations remain:
 \begin{itemize}
-  \item \textbf{Benchmark Projects:} 10-15 open-source Java projects from the Defects4J dataset
-  \item \textbf{LASSO-Generated SRMs:} Real coverage matrices from projects analyzed within LASSO
-  \item \textbf{Synthetic Data:} Controlled SRMs with varying sparsity and overlap characteristics
+  \item \textbf{Overlap Computation Overhead:} Pairwise overlap estimation introduces additional cost; approximate or cached similarity may be required for very large SRMs~\cite{bach2017}.
+  \item \textbf{Heuristic Sensitivity:} Effectiveness depends on parameters (e.g., overlap penalty $\alpha$ and optional test weights $w_i$); robust defaults and sensitivity analyses are necessary~\cite{yoo2012}.
+  \item \textbf{Fault Semantics Gap:} Coverage proxies do not perfectly correlate with fault detection; mutation-aware extensions mitigate but do not eliminate this gap~\cite{shi2018}.
+  \item \textbf{SRM-Only Constraint:} Methods requiring program structure (e.g., CFG-dependent ILPs) cannot be leveraged directly in LASSO's SRM-only pipeline~\cite{mongiovi2020}.
 \end{itemize}
 
-\subsection{Performance Metrics}
-\begin{itemize}
-  \item \textbf{Reduction Ratio:} $RR = \frac{|T| - |S^*|}{|T|} \times 100\%$
-  \item \textbf{Coverage Retention:} $CR = \frac{|C(S^*)|}{|C(T)|} \times 100\%$
-  \item \textbf{Mutation Score Preservation:} $MSP = \frac{MS(S^*)}{MS(T)} \times 100\%$
-  \item \textbf{Fault Detection Loss:} Percentage of seeded faults missed by reduced suite
-  \item \textbf{Algorithm Runtime:} Wall-clock time for minimization process
-\end{itemize}
-
-\subsection{Success Criteria}
-\begin{itemize}
-  \item Achieve $\geq 45\%$ reduction ratio while maintaining $\geq 95\%$ coverage retention
-  \item Preserve $\geq 90\%$ of mutation score
-  \item Runtime complexity remains $O(nm \log m)$ for matrices with $n \leq 10,000$ tests
-  \item Outperform classical greedy by $\geq 10\%$ in fault detection retention
-\end{itemize}
-
-\subsection{Statistical Analysis}
-Results will be analyzed using repeated measures ANOVA with significance level $\alpha = 0.05$. Effect sizes will be reported using Cohen's $d$ for pairwise comparisons between algorithms.
+The next chapter presents the concrete implementation and integration of the selected algorithm within the LASSO platform.

@@ -1,4 +1,4 @@
-\chapter{Fundamentals}
+\chapter{Fundamentals}\label{chap:fundamentals}
 
 This chapter establishes the theoretical foundation for this thesis by introducing the core concepts, methodologies, and formal definitions essential to understanding test suite minimization. We present the metrics employed to quantify test suite effectiveness, provide a comprehensive description of the \emph{Stimulus-Response Matrix} (SRM) representation utilized within the LASSO platform, and formally define the test suite minimization problem within the context of computational complexity theory.
 
@@ -14,7 +14,7 @@ This chapter establishes the theoretical foundation for this thesis by introduci
 
 Mutation analysis provides superior insight into test effectiveness compared to coverage alone, as it directly measures fault-detection capability~\cite{fuzzingbook}.
 
-\section{Stimulus-Response Matrices}
+\section{Stimulus-Response Matrices}\label{sec:srm}
 
 The LASSO platform employs \emph{Stimulus-Response Matrices} (SRMs) as a unified, language-independent representation for capturing behavioral execution data across multiple software systems~\cite{Kessel2022}. An SRM, also known as an actuation matrix, is a two-dimensional matrix $M$ where rows represent stimuli (test sequences or method invocations), columns represent systems being tested, and each matrix element $M_{ij}$ contains the recorded response (actuation) of system $j$ to stimulus $i$:
 
