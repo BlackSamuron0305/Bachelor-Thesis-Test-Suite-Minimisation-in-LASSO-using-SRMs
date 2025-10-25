@@ -16,7 +16,7 @@ The integration of overlap-aware heuristics addresses HGS's potential limitation
 HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications.
 
 \subsection{SRM Compatibility and Language Independence}
-Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on LASSO's coverage-adapted SRM representation where stimuli represent test cases and systems represent coverage requirements. This ensures language independence without requiring language-specific adaptations or additional structural data.
+Unlike approaches requiring program structural information (e.g., REDUNET's CFG analysis~\cite{mongiovi2020}), our selected approach operates exclusively on LASSO's SRM representation where stimuli represent test cases and response objects contain coverage data for executable systems. Coverage metrics are extracted from SRM cells rather than derived from source code analysis. This ensures language independence without requiring language-specific adaptations or additional structural data beyond what LASSO's execution pipeline already provides.
 
 \section{Comparative Ranking of Algorithms}
 

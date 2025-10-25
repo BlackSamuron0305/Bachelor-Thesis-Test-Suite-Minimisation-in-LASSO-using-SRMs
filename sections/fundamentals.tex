@@ -16,94 +16,137 @@ Mutation analysis provides superior insight into test effectiveness compared to 
 
 \section{Stimulus-Response Matrices}\label{sec:srm}
 
-The LASSO platform employs \emph{Stimulus-Response Matrices} (SRMs) as a unified, language-independent representation for capturing behavioral execution data across multiple software systems~\cite{Kessel2022}. An SRM, also known as an actuation matrix, is a two-dimensional matrix $M$ where rows represent stimuli (test sequences or method invocations), columns represent systems being tested, and each matrix element $M_{ij}$ contains the recorded response (actuation) of system $j$ to stimulus $i$:
+The LASSO platform employs \emph{Stimulus-Response Matrices} (SRMs) as a unified, language-independent representation for capturing behavioral execution data across multiple software systems~\cite{Kessel2022}. An SRM is a two-dimensional matrix $M$ where rows represent stimuli (test sequences, method invocations, or API calls), columns represent executable software systems, and each matrix element $M_{ij}$ contains the structured response object produced by system $j$ when executed with stimulus $i$:
 
 \begin{equation}
-M_{ij} = \text{response of system } j \text{ to stimulus } i
+M_{ij} = \text{response object of system } j \text{ to stimulus } i
 \end{equation}
 
-SRMs are derived from Stimulus Matrices (SMs), which specify the input stimuli to be applied to systems. After executing the SM in LASSO's arena, an SRM is produced that records the observed outputs and behaviors. SRMs can be represented at two levels of abstraction: (1) \emph{black box view}, which records only the sequence invocation with input/output parameters, and (2) \emph{white box view}, which records the full method invocation sequence including all intermediate inputs and outputs—essentially a detailed execution trace. Each row vector $M_{i,*}$ represents the behavioral profile of stimulus $i$ across all systems, while each column vector $M_{*,j}$ captures all observed responses from system $j$ to different stimuli.
+Each response object $M_{ij}$ can contain rich, structured data including:
+\begin{itemize}
+  \item Textual output, return values, and exceptions
+  \item Execution metrics (runtime, memory consumption)
+  \item Code coverage data (statement, branch, path coverage percentages)
+  \item Mutation testing results (mutation score, killed mutants)
+  \item Execution traces and logs
+\end{itemize}
 
-\textbf{Example:} Consider a simple SRM with 4 stimuli (test sequences) and 6 systems:
+\textbf{SRM Generation Mechanism:} SRMs are produced through LASSO's experimental execution pipeline using two key constructs~\cite{Kessel2022}:
+\begin{enumerate}
+  \item \emph{Sequence Sheets} define ordered execution steps, specifying how stimuli are constructed (e.g., method call sequences with parameters) and their dependencies
+  \item \emph{Actuation Sheets} define the experimental setup, specifying which systems should be tested with which stimuli in LASSO's execution arena
+\end{enumerate}
+
+\subsubsection{Data Flow from Specification to Execution Results}
+
+The relationship among these three artifacts follows a clear data flow pipeline:
+
+\begin{enumerate}
+  \item \textbf{Sequence Sheets (Stimulus Specification):} Each row defines one stimulus — an ordered sequence of actions, API calls, or method invocations with their parameters. Columns contain execution steps, input values, and expected outputs. Sequence Sheets function as the \emph{test case specification}, describing \emph{what} to execute. These specifications determine the row structure of the resulting SRM.
+
+  \item \textbf{Actuation Sheets (Execution Schedule):} Each row defines one \emph{actuation} — a pairing of a system (software executable, container, or unit) with a stimulus from the Sequence Sheet. Actuation Sheets may include environment configuration parameters such as runtime limits, virtual machine images, or compiler versions. They function as the \emph{experiment execution schedule}, specifying \emph{where} and \emph{under what conditions} to execute each stimulus. These specifications determine the column structure of the resulting SRM.
+
+  \item \textbf{Arena Execution:} LASSO's Arena component processes the Actuation Sheet, executing each (stimulus, system) pair according to the specifications in the Sequence Sheet and recording the resulting behavioral observations.
+
+  \item \textbf{Stimulus-Response Matrices (Execution Results):} The Arena stores recorded responses as structured objects in SRM cells $M_{ij}$. Each cell captures the complete execution result for system $j$ responding to stimulus $i$, including outcome status, coverage metrics, mutation scores, runtime measurements, and exception logs.
+\end{enumerate}
+
+This pipeline can be summarized as: \emph{Sequence Sheet} (rows) + \emph{Actuation Sheet} (columns) $\xrightarrow{\text{Arena}}$ \emph{SRM} (cells with response objects). The SRM thus serves as a persistent, queryable repository of experimental results that can be analyzed for behavioral comparison, functional equivalence detection, or, as in this thesis, test suite optimization.
+
+After execution, the resulting SRM records observed system behaviors at two levels of abstraction: (1) \emph{black-box view}, which captures only the final input/output parameters of sequence invocations, and (2) \emph{white-box view}, which records the complete method invocation trace including all intermediate inputs, outputs, and state changes. Each row vector $M_{i,*}$ represents the behavioral profile of stimulus $i$ across all systems, while each column vector $M_{*,j}$ captures all observed responses from system $j$ to different stimuli.
+
+\textbf{Example:} Consider a simple SRM with 4 stimuli (test sequences) and 6 systems, where each response object contains execution results:
 \begin{equation}
 M = \begin{pmatrix}
-r_{11} & r_{12} & r_{13} & r_{14} & r_{15} & r_{16} \\
-r_{21} & r_{22} & r_{23} & r_{24} & r_{25} & r_{26} \\
-r_{31} & r_{32} & r_{33} & r_{34} & r_{35} & r_{36} \\
-r_{41} & r_{42} & r_{43} & r_{44} & r_{45} & r_{46}
+\{\text{pass}, 85\%, 12\text{ms}\} & \{\text{pass}, 92\%, 8\text{ms}\} & \{\text{fail}, 78\%, 15\text{ms}\} & \cdots \\
+\{\text{pass}, 90\%, 10\text{ms}\} & \{\text{pass}, 88\%, 9\text{ms}\} & \{\text{pass}, 95\%, 7\text{ms}\} & \cdots \\
+\{\text{fail}, 65\%, 20\text{ms}\} & \{\text{pass}, 91\%, 11\text{ms}\} & \{\text{pass}, 87\%, 13\text{ms}\} & \cdots \\
+\{\text{pass}, 88\%, 14\text{ms}\} & \{\text{fail}, 70\%, 18\text{ms}\} & \{\text{pass}, 93\%, 6\text{ms}\} & \cdots
 \end{pmatrix}
 \end{equation}
 
-In this example, stimulus 1 produces responses $r_{11}$ through $r_{16}$ across the six systems, while system 6 produces responses $r_{16}$, $r_{26}$, $r_{36}$, and $r_{46}$ to the four different stimuli. Such behavioral profiles enable large-scale behavioral analysis including similarity measurements, code clone detection, and functional equivalence analysis across multiple systems. Figure~\ref{fig:srm-structure} illustrates the canonical SRM structure used for multi-system behavioral comparison.
+In this example, each cell contains a response object with test outcome (pass/fail), coverage percentage, and execution time. Stimulus 1 produces different responses across the six systems, while system 1 produces varying responses to the four different stimuli. Such behavioral profiles enable large-scale behavioral analysis including similarity measurements, code clone detection, functional equivalence analysis, and performance comparison across multiple systems. Figure~\ref{fig:srm-structure} illustrates the canonical SRM structure used for multi-system behavioral comparison.
 
 \begin{figure}[H]
   \centering
   \begin{tabular}{c|cccccc}
     & \textbf{System 1} & \textbf{System 2} & \textbf{System 3} & \textbf{System 4} & \textbf{System 5} & \textbf{System 6} \\
     \hline
-    \textbf{Stimulus 1} & $r_{11}$ & $r_{12}$ & $r_{13}$ & $r_{14}$ & $r_{15}$ & $r_{16}$ \\
-    \textbf{Stimulus 2} & $r_{21}$ & $r_{22}$ & $r_{23}$ & $r_{24}$ & $r_{25}$ & $r_{26}$ \\
-    \textbf{Stimulus 3} & $r_{31}$ & $r_{32}$ & $r_{33}$ & $r_{34}$ & $r_{35}$ & $r_{36}$ \\
-    \textbf{Stimulus 4} & $r_{41}$ & $r_{42}$ & $r_{43}$ & $r_{44}$ & $r_{45}$ & $r_{46}$ \\
+    \textbf{Stimulus 1} & \{pass, 85\%\} & \{pass, 92\%\} & \{fail, 78\%\} & \{pass, 89\%\} & \{pass, 91\%\} & \{pass, 87\%\} \\
+    \textbf{Stimulus 2} & \{pass, 90\%\} & \{pass, 88\%\} & \{pass, 95\%\} & \{pass, 86\%\} & \{fail, 72\%\} & \{pass, 93\%\} \\
+    \textbf{Stimulus 3} & \{fail, 65\%\} & \{pass, 91\%\} & \{pass, 87\%\} & \{pass, 94\%\} & \{pass, 89\%\} & \{fail, 70\%\} \\
+    \textbf{Stimulus 4} & \{pass, 88\%\} & \{fail, 70\%\} & \{pass, 93\%\} & \{pass, 85\%\} & \{pass, 90\%\} & \{pass, 92\%\} \\
   \end{tabular}
-  \caption{Canonical SRM structure: rows represent stimuli (test sequences or method invocations), columns represent different software systems, and cells contain observed responses enabling behavioral comparison across systems.}
+  \caption{Canonical SRM structure: rows represent stimuli (test sequences or method invocations), columns represent different software systems, and cells contain structured response objects (e.g., test outcome and coverage percentage) enabling behavioral comparison across systems.}
   \label{fig:srm-structure}
 \end{figure}
 
 SRMs can also store additional analysis attributes, such as non-functional metrics or static properties, alongside dynamic execution data. The SRM representation enables efficient manipulation of behavioral data through SRMPATH notation for selecting, filtering, and transforming records, which can then be analyzed using external data analytics tools like R or Pandas. This compact representation facilitates scalable analysis of large system populations while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages and enable systematic, scalable behavioral comparison across many systems.
 
-\subsection{Adapting SRMs for Test Suite Minimization}
+\subsection{Leveraging SRMs for Test Suite Minimization}
 
-While SRMs in their canonical form capture system responses to stimuli for behavioral comparison, LASSO's test generation and analysis pipeline produces a specialized view of SRMs for test suite minimization. In this adapted context:
-\begin{itemize}
-  \item Each \emph{stimulus} (row) corresponds to a generated test case or test sequence
-  \item Each \emph{system} (column) represents a coverage requirement (statement, branch, path, or mutant) within a single target system under test
-  \item Each \emph{response} (cell) is typically binary: 1 if the test (stimulus) covers the requirement (system attribute), 0 otherwise
-\end{itemize}
+Test suite minimization within LASSO operates directly on existing SRMs produced by the platform's execution pipeline~\cite{Kessel2022}. Rather than creating a new data structure, the minimization process extracts coverage-relevant information from SRM response objects for a selected target system. The workflow proceeds as follows:
 
-This adaptation transforms the multi-system behavioral analysis matrix into a test-coverage matrix for a single system. Formally, we map the general SRM structure $f: M_{SM} \rightarrow M_{SRM}$ (where a Stimulus Matrix maps to a Stimulus-Response Matrix through execution) to a specialized form where stimuli are test cases and responses are coverage indicators. This enables us to apply test suite minimization algorithms—originally designed for coverage matrices—directly within LASSO's SRM-based infrastructure while maintaining the platform's language-independent analysis capabilities and unified data representation. Figure~\ref{fig:srm-adaptation} illustrates this transformation from canonical to coverage-adapted SRM representation.
+\begin{enumerate}
+  \item \textbf{System Selection:} Select one target system (column) from the SRM for minimization. In the current implementation, minimization focuses on a single system; multi-system minimization remains future work.
+  
+  \item \textbf{Coverage Extraction:} For each stimulus $i$ and the selected system $j$, extract coverage-related metrics from the response object $M_{ij}$. These metrics include:
+  \begin{itemize}
+    \item Statement, branch, or path coverage indicators
+    \item Mutation testing results (killed mutants)
+    \item Execution outcomes (pass/fail status)
+  \end{itemize}
+  
+  \item \textbf{Algorithm Application:} Apply the HGS minimization algorithm (detailed in Chapter~\ref{chap:implementation}) using the extracted coverage data to select a subset of stimuli that preserve coverage requirements.
+  
+  \item \textbf{SRM Reduction:} Generate a reduced SRM containing only the selected stimuli (rows) while preserving the original SRM schema (systems as columns, structured response objects in cells). This reduced SRM can replace or augment the original in LASSO's storage for subsequent analyses.
+\end{enumerate}
+
+This approach maintains LASSO's language-independent analysis capabilities by operating purely on SRM-level abstractions without requiring access to source code, control-flow graphs, or language-specific program structure. Figure~\ref{fig:srm-adaptation} illustrates the minimization workflow showing system selection and stimulus reduction.
 
 \begin{figure}[H]
   \centering
   \begin{minipage}[t]{0.45\textwidth}
     \centering
-    \textbf{(a) Canonical SRM}\\
+    \textbf{(a) Original SRM (Multi-System)}\\
     \vspace{0.3cm}
     \begin{tabular}{c|ccc}
       & \textbf{Sys1} & \textbf{Sys2} & \textbf{Sys3} \\
       \hline
-      \textbf{Stim1} & pass & fail & pass \\
-      \textbf{Stim2} & pass & pass & pass \\
-      \textbf{Stim3} & fail & pass & fail \\
+      \textbf{Stim1} & \{pass, 85\%\} & \{fail, 70\%\} & \{pass, 90\%\} \\
+      \textbf{Stim2} & \{pass, 92\%\} & \{pass, 88\%\} & \{pass, 95\%\} \\
+      \textbf{Stim3} & \{fail, 65\%\} & \{pass, 91\%\} & \{fail, 72\%\} \\
+      \textbf{Stim4} & \{pass, 88\%\} & \{pass, 87\%\} & \{pass, 93\%\} \\
+      \textbf{Stim5} & \{pass, 90\%\} & \{fail, 68\%\} & \{pass, 89\%\} \\
     \end{tabular}
     \vspace{0.2cm}
     
-    \small Multi-system behavioral comparison
+    \small All stimuli, all systems
   \end{minipage}
   \hfill
   \begin{minipage}[t]{0.45\textwidth}
     \centering
-    \textbf{(b) Adapted SRM for TSM}\\
+    \textbf{(b) Reduced SRM (System 1)}\\
     \vspace{0.3cm}
     \begin{tabular}{c|ccc}
-      & \textbf{Req1} & \textbf{Req2} & \textbf{Req3} \\
+      & \textbf{Sys1} & \textbf{Sys2} & \textbf{Sys3} \\
       \hline
-      \textbf{Test1} & 1 & 0 & 1 \\
-      \textbf{Test2} & 1 & 1 & 0 \\
-      \textbf{Test3} & 0 & 1 & 1 \\
+      \textbf{Stim1} & \{pass, 85\%\} & \{fail, 70\%\} & \{pass, 90\%\} \\
+      \textbf{Stim2} & \{pass, 92\%\} & \{pass, 88\%\} & \{pass, 95\%\} \\
+      \textbf{Stim4} & \{pass, 88\%\} & \{pass, 87\%\} & \{pass, 93\%\} \\
     \end{tabular}
     \vspace{0.2cm}
     
-    \small Single-system coverage matrix
+    \small Minimized stimuli, same schema
   \end{minipage}
-  \caption{SRM representation transformation: (a) canonical form captures behavioral responses across multiple systems; (b) adapted form for test suite minimization represents binary coverage relationships between test cases and requirements within a single target system.}
+  \caption{SRM-based test suite minimization workflow: (a) original SRM captures responses from all systems to all stimuli; (b) reduced SRM after minimization selects System 1 and eliminates redundant stimuli (Stim3, Stim5) while preserving SRM structure and coverage for the target system.}
   \label{fig:srm-adaptation}
 \end{figure}
 
 \section{The Test Suite Minimization Problem}
 
 \subsection{Formal Problem Definition}
-Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases and $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$. Note that while LASSO's SRM structure captures system responses to stimuli, for test suite minimization purposes within LASSO's test generation pipeline, we adapt the SRM representation to encode coverage relationships: we treat each generated test as a stimulus and each coverage requirement (statement, branch, or mutant) as a system attribute, allowing us to apply minimization algorithms to the resulting coverage matrix. The coverage achieved by the complete test suite is defined as:
+Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases (stimuli in LASSO terminology) and $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$. Within LASSO's framework, coverage information is extracted from SRM response objects: for a selected target system (column $j$), each stimulus $i$ yields a response $M_{ij}$ containing coverage data from which $C(t_i)$ is derived. The coverage achieved by the complete test suite is defined as:
 
 \begin{equation}
 C(T) = \bigcup_{i=1}^{n} C(t_i)
@@ -130,7 +173,7 @@ Existing approaches to test suite minimization can be taxonomically classified i
   
   \item \textbf{Search-based and metaheuristic methods:} Evolutionary algorithms, genetic algorithms, and other population-based methods explore the solution space using fitness functions that balance multiple objectives such as suite size and coverage preservation~\cite{hussein2020}.
   
-  \item \textbf{Data-driven and clustering techniques:} These methods exploit structural properties of the coverage matrix, using similarity measures, clustering algorithms, or machine learning techniques to identify representative test cases~\cite{bach2017}.
+  \item \textbf{Data-driven and clustering techniques:} These methods exploit structural properties of extracted coverage information, using similarity measures, clustering algorithms, or machine learning techniques to identify representative test cases~\cite{bach2017}.
 \end{itemize}
 
 This taxonomic framework provides the organizational structure for the comprehensive literature review presented in Chapter~\ref{chap:literature-review}. Figure~\ref{fig:algorithm-taxonomy} illustrates the hierarchical classification of test suite minimization approaches.

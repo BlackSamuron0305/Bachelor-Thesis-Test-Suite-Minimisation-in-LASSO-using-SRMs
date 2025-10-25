@@ -17,7 +17,7 @@ Our evaluation framework incorporates both quantitative metrics and qualitative 
   
   \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. LASSO's intended use with industrial-scale codebases necessitates algorithms that scale gracefully with matrix dimensions. Target: $O(nm \log m)$ or better.
   
-  \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on binary matrix representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation.
+  \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on SRM representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation where coverage data is embedded in response objects rather than extracted from source code analysis~\cite{Kessel2022}.
   
   \item[\textbf{C6: Implementation Feasibility}] Assessment of algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's architecture.
 \end{description}
@@ -43,7 +43,7 @@ Weights reflect LASSO's priorities: coverage and fault preservation receive high
 
 The scoring applies only to algorithms satisfying LASSO's feasibility constraints:
 \begin{itemize}
-  \item \textbf{SRM Compatibility (C5):} Operate directly on binary coverage-adapted SRMs $M \in \{0,1\}^{n\times m}$ without requiring language-specific structure such as CFGs~\cite{Kessel2022}.
+  \item \textbf{SRM Compatibility (C5):} Operate on SRMs without requiring language-specific structure such as CFGs. Coverage data must be extractable from SRM response objects rather than source code~\cite{Kessel2022}.
   \item \textbf{Computational Scalability (C4):} Polynomial-time behavior suitable for large $n,m$ with targets of $O(nm)$ to $O(nm\log m)$~\cite{yoo2012}.
   \item \textbf{Engineering Feasibility (C6):} Bounded parameterization and maintainable integration within LASSO's pipeline.
 \end{itemize}

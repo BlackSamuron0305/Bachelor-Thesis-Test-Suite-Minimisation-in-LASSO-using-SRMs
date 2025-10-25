@@ -7,10 +7,11 @@ This appendix provides precise pseudocode for the overlap-aware Harrold--Gupta--
 
 \subsection*{Inputs and Outputs}
 \begin{itemize}
-	\item Input: Coverage matrix $M \in \{0,1\}^{n\times m}$ (rows: tests $T = \{t_1,\dots,t_n\}$; columns: requirements $R = \{r_1,\dots,r_m\}$)
-		\item Optional input: Non-negative weight vector $w \in \mathrm{R}^n$ with $w_i \ge 0$ (execution cost per test)
+	\item Input: SRM $M$ from LASSO (stimuli $\times$ systems, structured response objects); target system index $j$
+	\item Preprocessing: Extract coverage data from response objects $M_{ij}$ to construct test–requirement relationships (tests $T = \{t_1,\dots,t_n\}$ as stimuli; requirements $R = \{r_1,\dots,r_m\}$ as coverage elements)
+	\item Optional input: Non-negative weight vector $w \in \mathrm{R}^n$ with $w_i \ge 0$ (execution cost per test, extractable from response objects)
 	\item Parameters: Overlap penalty coefficient $\alpha \in [0,1]$ (default $0.5$)
-	\item Output: Reduced test set $S \subseteq T$ preserving target coverage criteria
+	\item Output: Reduced SRM $M'$ containing selected stimuli (rows) with original schema preserved
 \end{itemize}
 
 \subsection*{Algorithm}
@@ -74,16 +75,52 @@ Table~\ref{tab:appendix-benchmarks} extends the scenarios with per-iteration sel
 \subsection*{Reproducibility Notes}
 Experiments are executed on an Intel Core i7 with 16\,GB RAM. Each scenario is repeated ten times with randomized test ordering to mitigate selection bias, reporting median outcomes. Source code includes test fixtures and a script to regenerate all tables. Random seeds and configuration parameters (e.g., $\alpha$) are documented alongside results.
 
-\section{SRM Conversion Specification}
+\section{SRM Coverage Extraction Specification}
 \label{app:srm}
-We specify the mapping from LASSO Stimulus--Response Matrices (SRMs) to the coverage matrix used by the minimizer:
+
+We specify the process for extracting coverage information from LASSO Stimulus--Response Matrices (SRMs) for use by the minimization algorithm:
+
+\subsection{SRM Structure}
+LASSO SRMs are two-dimensional matrices where:
 \begin{itemize}
-	\item Rows (stimuli) map to tests $T$.
-	\item Columns (systems) map to coverage requirements $R$ after adaptation: structural coverage uses statement/branch IDs; mutation uses mutant IDs; functional uses requirement IDs.
-	\item Cell values map to binary coverage: $M[i][j] = 1$ iff stimulus $t_i$ triggers a response covering requirement $r_j$.
-	\item Optional weight $w[i]$ derives from execution time aggregated from LASSO run logs.
+	\item Rows (stimuli) represent test sequences, method invocations, or API calls
+	\item Columns (systems) represent executable software units under test
+	\item Cells contain structured response objects $M_{ij}$ with execution results from system $j$ responding to stimulus $i$
 \end{itemize}
-Invalid or inconsistent SRM rows (e.g., all-zero coverage) are filtered prior to minimization, with diagnostics stored for auditability. The converter ensures language independence by operating purely on matrix representations.
+
+\subsection{Coverage Extraction Process}
+For a selected target system (column $j$):
+\begin{enumerate}
+	\item \textbf{System Selection:} Choose target system index $j$ from SRM columns (current implementation: single system; multi-system minimization is future work)
+	
+	\item \textbf{Response Parsing:} For each stimulus $i$, extract coverage metrics from response object $M_{ij}$:
+	\begin{itemize}
+		\item Statement/branch/path coverage indicators
+		\item Mutation testing results (killed mutants, mutation score)
+		\item Execution outcome (pass/fail status)
+		\item Optional: execution time for weighted minimization
+	\end{itemize}
+	
+	\item \textbf{Requirement Mapping:} Construct test–requirement relationships:
+	\begin{itemize}
+		\item Tests $T = \{t_1, \ldots, t_n\}$ map to stimuli (rows)
+		\item Requirements $R = \{r_1, \ldots, r_m\}$ map to coverage elements: statement/branch IDs for structural coverage, mutant IDs for mutation testing
+		\item Coverage indicator: test $t_i$ covers requirement $r_k$ iff response object $M_{ij}$ indicates coverage of element $k$
+	\end{itemize}
+	
+	\item \textbf{Validation:} Filter invalid or inconsistent stimuli (e.g., empty coverage, execution failures) with diagnostics stored for auditability
+\end{enumerate}
+
+\subsection{Output Format}
+The minimizer produces a reduced SRM $M'$ where:
+\begin{itemize}
+	\item Rows correspond to selected stimuli (subset of original)
+	\item Columns preserve original system structure
+	\item Cells retain original structured response objects
+	\item Schema remains identical to input SRM for seamless integration with LASSO analyses
+\end{itemize}
+
+This extraction process ensures language independence by operating purely on SRM-level abstractions without requiring source code access or language-specific program structure.
 
 \section{Licensing Header Template}
 \label{app:license}
