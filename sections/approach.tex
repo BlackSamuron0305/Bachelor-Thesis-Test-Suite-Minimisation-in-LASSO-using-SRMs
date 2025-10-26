@@ -163,6 +163,10 @@ We instantiate the scoring model from Chapter~\ref{chap:evaluation} and report n
   \label{fig:algorithm-radar}
 \end{figure}
 
+\subsection{Empirical Motivation for Mutation-Aware Minimisation}
+
+Recent evidence supports the integration of mutation information directly into test-suite minimisation heuristics. Jehan and Wotawa~\cite{jehan2023} achieved $\approx$70\% reduction without measurable degradation in fault-detection capability when mutation coverage was used as the requirement metric. Conversely, Noemmer and Haas~\cite{noemmer2020} found that minimising solely on structural coverage leads to an average 12.5\% drop in mutation-based fault detection. These findings confirm that mutation data should guide the minimisation heuristic directly rather than being assessed post hoc. Therefore, the algorithm selected for LASSO (HGS) is extended with a $\beta$-weighted effectiveness function that directly incorporates mutation-kill information into the greedy selection process.
+
 \section{Selection Decision for LASSO}
 
 Based on the ranking and feasibility constraints, we select HGS with overlap-aware heuristics for LASSO integration, as it maximizes coverage and fault retention with strong reductions at acceptable complexity~\cite{harrold1993,bach2017}.

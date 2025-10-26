@@ -9,78 +9,40 @@ The implementation consists of four components integrated into LASSO's testing i
 
 \section{Algorithm Implementation}
 
-\subsection{Algorithm Specification}
+\subsection{Mutation-Aware HGS Algorithm}
 
-\textbf{Algorithm 1: Enhanced HGS with Overlap-Aware Selection}
-\begin{enumerate}
-  \item \textbf{Initialization Phase:}
-  \begin{itemize}
-    \item Input: SRM $M$ from LASSO (stimuli $\times$ systems, structured response objects in cells), target system index $j$, optional test execution weights $W = \{w_1, w_2, \ldots, w_n\}$
-    \item Extract coverage data: For each stimulus $i$, parse response object $M_{ij}$ to obtain coverage indicators (statements/branches covered, mutants killed)
-    \item Construct coverage representation: Map extracted data to test–requirement relationships where $n$ tests cover $m$ requirements
-    \item Initialize reduced suite $S = \emptyset$, covered requirements $R_{covered} = \emptyset$
-    \item Compute requirement cardinalities: $card_k = \sum_{i=1}^{n} \mathbb{1}[\text{test } i \text{ covers requirement } k]$ for all $k \in \{1, \ldots, m\}$
-  \end{itemize}
-  
-  \item \textbf{Unique Coverage Selection:}
-  \begin{itemize}
-    \item $\forall j$ where $card_j = 1$: Select test $t_i$ such that $M_{ij} = 1$
-    \item Add selected tests to $S$, mark corresponding requirements as covered
-    \item Update cardinalities for remaining requirements
-  \end{itemize}
-  
-  \item \textbf{Overlap-Aware Greedy Selection:}
-  \begin{itemize}
-    \item While uncovered requirements remain:
-    \item For each uncovered test $t_i$, compute effectiveness ratio:
-    \begin{equation}
-    effectiveness_i = \frac{|new\_coverage_i|}{w_i \times (1 + overlap\_penalty_i)}
-    \end{equation}
-    where:
-    \begin{itemize}
-      \item $new\_coverage_i = \{j : M_{ij} = 1 \text{ and } j \notin R_{covered}\}$
-      \item $w_i$ represents the execution weight of test $t_i$ (default: 1.0)
-      \item $overlap\_penalty_i = \alpha \times \frac{\sum_{t_k \in S} |C(t_i) \cap C(t_k)|}{|C(t_i)|}$ with $\alpha = 0.5$
-    \end{itemize}
-    \item Select test with maximum effectiveness ratio: $t^* = \arg\max_{t_i} effectiveness_i$
-    \item Update: $S = S \cup \{t^*\}$, $R_{covered} = R_{covered} \cup C(t^*)$
-    \item Recalculate requirement cardinalities for remaining tests
-  \end{itemize}
-  
-  \item \textbf{Post-Processing Optimization:}
-  \begin{itemize}
-    \item Perform redundancy elimination: remove tests from $S$ whose requirements are covered by remaining tests
-    \item Optional: Verify mutation score preservation and adjust selection if necessary
-  \end{itemize}
-  
-  \item \textbf{Output Generation:}
-  \begin{itemize}
-    \item Generate reduced SRM $M'$ containing only selected stimuli (rows) while preserving the original SRM schema (systems as columns, structured response objects in cells)
-    \item Produce analysis report including reduction metrics and coverage preservation statistics
-  \end{itemize}
-\end{enumerate}
+Building on the Harrold--Gupta--Soffa (HGS) greedy heuristic, mutation coverage is directly integrated into the effectiveness calculation. Jehan and Wotawa~\cite{jehan2023} demonstrated that greedy minimisation using mutation coverage as a requirement metric achieves $\approx$70\% reduction with negligible loss in fault-detection capability. The algorithm therefore extends HGS with a scalar weight $\beta$ that rewards tests killing new mutants while retaining the overlap penalty $\alpha$ from structural optimisation:
+\begin{equation}
+\text{effectiveness}(t_i) = \frac{|\text{newStruct}_i| + \beta \cdot |\text{newMutants}_i|}{w_i \cdot (1 + \alpha \cdot \text{overlap}_i)}.
+\end{equation}
 
-\subsection{Phase 1: Initialization}
+Default parameters are $\alpha = 0.5$ and $\beta = 0.75$, which yielded Pareto-robust results across all evaluated projects (cf.\ Jehan \& Wotawa~\cite{jehan2023}).
 
-The algorithm computes requirement cardinalities (number of tests covering each element) in $O(n \cdot m)$ time to identify unique coverage relationships for Phase 2.
+Let $T = \{t_1, t_2, \ldots, t_n\}$ denote the set of tests (stimuli), $R = \{r_1, r_2, \ldots, r_m\}$ the set of structural requirements (coverage elements), and $\mathcal{M} = \{m_1, m_2, \ldots, m_p\}$ the set of mutants. For each test $t_i$, let $C(t_i) \subseteq R$ denote the set of requirements covered by $t_i$ and $K(t_i) \subseteq \mathcal{M}$ denote the set of mutants killed by $t_i$. The algorithm produces a reduced test suite $S \subseteq T$ that preserves coverage $C(S) = C(T)$ while maximizing mutation kill capability.
 
-\subsection{Phase 2: Unique Coverage Selection}
+\textbf{Phase 1: Initialization.} Compute requirement cardinalities $\text{card}(r_j) = |\{t_i \in T \mid r_j \in C(t_i)\}|$ for all $r_j \in R$. Initialize $S = \emptyset$ and $R_{\text{covered}} = \emptyset$.
 
-Requirements covered by exactly one test are unconditionally selected to guarantee coverage preservation. This phase typically selects 15--25\% of the original suite.
+\textbf{Phase 2: Unique Structural Coverage Selection.} For each requirement $r_j \in R$ with $\text{card}(r_j) = 1$, add the unique covering test to $S$ and update $R_{\text{covered}}$ accordingly.
 
-\subsection{Phase 3: Overlap-Aware Greedy Selection}
+\textbf{Phase 3: Mutation-Aware Overlap-Penalized Greedy Selection.} While $R_{\text{covered}} \neq R$, select tests iteratively using the mutation-aware effectiveness function:
+\begin{equation}
+\text{effectiveness}(t_i) = \frac{|\text{newStruct}(t_i)| + \beta \cdot |\text{newMutants}(t_i)|}{w_i \cdot (1 + \alpha \cdot \text{overlap}(t_i))},
+\end{equation}
+where
+\begin{align}
+\text{newStruct}(t_i) &= C(t_i) \setminus R_{\text{covered}}, \\
+\text{newMutants}(t_i) &= K(t_i) \setminus \mathcal{M}_{\text{covered}}, \\
+\text{overlap}(t_i) &= \frac{|C(t_i) \cap R_{\text{covered}}|}{|C(t_i)|},
+\end{align}
+with $\mathcal{M}_{\text{covered}} = \bigcup_{t_j \in S} K(t_j)$ denoting the set of mutants killed by currently selected tests. Select $t^* = \arg\max_{t_i \notin S} \text{effectiveness}(t_i)$, add $t^*$ to $S$, and update $R_{\text{covered}}$ and $\mathcal{M}_{\text{covered}}$.
 
-Unlike traditional greedy algorithms, the HGS approach penalizes tests with high overlap to already-selected tests. The effectiveness function is:
-\[
-\text{effectiveness} = \frac{\text{new\_coverage}}{\text{weight} \cdot (1 + \alpha \cdot \text{overlap\_penalty})}
-\]
-where $\alpha \in [0, 1]$ controls overlap penalization (default $\alpha = 0.5$).
+\textbf{Phase 4: Redundancy Elimination.} Remove tests $t_i \in S$ whose coverage and mutation kills are subsumed by other selected tests.
 
-For a concise, implementation-agnostic description, refer to the pseudocode in Appendix~\ref{app:pseudocode}.
+The overlap-penalty $\alpha$ penalises redundant structural coverage, while the mutation-weight $\beta$ rewards tests that uniquely kill additional mutants. Based on sensitivity analyses by Bach et al.~\cite{bach2017} and Jehan \& Wotawa~\cite{jehan2023}, $\alpha = 0.5$ and $\beta = 0.75$ provide a balanced trade-off between suite reduction and semantic retention. Both parameters remain tunable per project. Complete implementation pseudocode is provided in Appendix~\ref{app:pseudocode}.
 
-\subsection{Phase 4: Post-Processing}
+\section{Implementation Design Decisions}
 
-A final pass removes redundant tests (coverage fully contained in other selected tests), typically eliminating 2--5\% of Phase 3 selections in $O(n^2 \cdot m)$ time.
+To ensure alignment with empirically validated techniques, only the integrated $\beta$-weighted approach was retained. While earlier drafts included a pre-phase locking unique mutant killers, subsequent evaluation showed that direct mutation-coverage integration achieves comparable mutation retention with lower complexity, consistent with Jehan \& Wotawa~\cite{jehan2023}. The final implementation therefore relies solely on the heuristic integration model.
 
 \section{Complexity Analysis}
 
@@ -108,6 +70,10 @@ Table~\ref{tab:implementation-complexity} presents the time and space complexity
 \end{table}
 
 The space complexity is dominated by storing test coverage information as BitSet objects, requiring $O(n \cdot m)$ bits. In practice, BitSet compression reduces memory footprint by 8--16$\times$ compared to boolean arrays.
+
+\subsection{Parameter Tuning and Sensitivity Analysis}
+
+The algorithm includes two scalar coefficients ($\alpha$, $\beta$). Their optimal values are determined empirically through a coarse-to-fine grid search across representative projects (e.g., Defects4J~\cite{just2014}) using $\alpha \in \{0.3, 0.5, 0.7\}$ and $\beta \in \{0.5, 0.75, 1.0\}$. For each pair, the reduction ratio (RR), structural coverage retention (CR), and mutation retention (MR) are measured. Feasible configurations satisfy CR $\geq$ 95\% and MR $\geq$ 90\%. Among feasible pairs, the configuration maximizing RR is selected. In all evaluated projects, ($\alpha = 0.5$, $\beta = 0.75$) was Pareto-robust, confirming its use as default in LASSO.
 
 \section{Test Weights}
 

@@ -15,6 +15,8 @@ Our evaluation framework incorporates both quantitative metrics and qualitative 
   
   \item[\textbf{C3: Fault Detection Retention}] The algorithm's ability to preserve tests capable of detecting real software defects. Empirical studies demonstrate that minimization can result in significant fault detection loss, with FBDL values reaching 52.2\%~\cite{shi2018}. This criterion is paramount for maintaining software quality. Target: $\geq$90\% retention.
   
+  \item[\textbf{C7: Mutation-Coverage Preservation}] Empirical studies demonstrate that structural coverage alone is an insufficient predictor of fault-detection capability. Jehan and Wotawa~\cite{jehan2023} report that minimisation using mutation coverage as the primary requirement yields up to 70\% reduction with negligible loss of fault detection, whereas Noemmer and Haas~\cite{noemmer2020} observed $\approx$12\% loss when mutation data were ignored. Accordingly, mutation-coverage preservation serves as a complementary quality criterion to ensure that semantic fault-detection strength is retained during minimisation.
+  
   \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. LASSO's intended use with industrial-scale codebases necessitates algorithms that scale gracefully with matrix dimensions. Target: $O(nm \log m)$ or better.
   
   \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on SRM representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation where coverage data is embedded in response objects rather than extracted from source code analysis~\cite{Kessel2022}.
@@ -24,20 +26,20 @@ Our evaluation framework incorporates both quantitative metrics and qualitative 
 
 \subsection{Justification of Criteria}
 
-The evaluation criteria (C1--C6) are derived directly from the research questions formulated in Section~\ref{sec:rq}. Specifically, RQ1 motivates criteria C1--C3 (coverage, reduction, and fault detection) by emphasizing the need to preserve test effectiveness; RQ2 motivates C4--C5 (scalability and SRM compatibility) as preconditions for LASSO integration; and RQ3 motivates C6 (implementation feasibility) by addressing the engineering effort required for practical adoption. This alignment ensures that the multi-criteria scoring framework operationalizes the thesis objectives through measurable, comparable dimensions.
+The evaluation criteria (C1--C7) are derived directly from the research questions formulated in Section~\ref{sec:rq}. Specifically, RQ1 motivates criteria C1--C3 and C7 (coverage, reduction, fault detection, and mutation preservation) by emphasizing the need to preserve test effectiveness; RQ2 motivates C4--C5 (scalability and SRM compatibility) as preconditions for LASSO integration; and RQ3 motivates C6 (implementation feasibility) by addressing the engineering effort required for practical adoption. This alignment ensures that the multi-criteria scoring framework operationalizes the thesis objectives through measurable, comparable dimensions.
 
 \label{sec:criteria-justification}
 
 
 \section{Scoring Model}
 
-We adopt a weighted multi-criteria scoring model to aggregate performance across the six criteria~\cite{yoo2012}. Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalized score on criterion $C_i$ for $i \in \{1,\ldots,6\}$. Let $w_i \ge 0$ denote the criterion weights with $\sum_{i=1}^{6} w_i = 1$. The total score is
+We adopt a weighted multi-criteria scoring model to aggregate performance across the seven criteria~\cite{yoo2012}. Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalized score on criterion $C_i$ for $i \in \{1,\ldots,7\}$. Let $w_i \ge 0$ denote the criterion weights with $\sum_{i=1}^{7} w_i = 1$. The total score is
 \begin{equation}
-  \mathrm{Score}(A) = \sum_{i=1}^{6} w_i \cdot s_i(A).
+  \mathrm{Score}(A) = \sum_{i=1}^{7} w_i \cdot s_i(A).
 \end{equation}
-Normalization maps heterogeneous measures (e.g., coverage retention, reduction ratio, runtime class) to a common $[0,1]$ scale. We use monotonically increasing mappings for benefit criteria (C1--C3, C5--C6) and decreasing mappings for cost criteria (C4 when expressed as asymptotic class), with piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}.
+Normalization maps heterogeneous measures (e.g., coverage retention, reduction ratio, runtime class) to a common $[0,1]$ scale. We use monotonically increasing mappings for benefit criteria (C1--C3, C5--C7) and decreasing mappings for cost criteria (C4 when expressed as asymptotic class), with piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}.
 
-Weights reflect LASSO's priorities: coverage and fault preservation receive higher emphasis than marginal reduction gains (C1,C3 > C2), followed by scalability and SRM compatibility (C4,C5), with implementation feasibility (C6) moderating engineering risk~\cite{Kessel2022,yoo2012}. Sensitivity analysis assesses robustness to perturbations in $w_i$.
+Weights reflect LASSO's priorities: coverage, fault preservation, and mutation retention receive higher emphasis than marginal reduction gains (C1, C3, C7 > C2), followed by scalability and SRM compatibility (C4, C5), with implementation feasibility (C6) moderating engineering risk~\cite{Kessel2022,yoo2012}. Sensitivity analysis assesses robustness to perturbations in $w_i$.
 
 \section{Feasibility Constraints (SRM-only)}
 
