@@ -16,9 +16,11 @@ The time complexity is $O(nm)$ where $n$ is the number of test cases and $m$ is 
 
 Harrold, Gupta, and Soffa proposed a refined greedy heuristic that addresses limitations of the classical approach by prioritizing requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation.
 
+	extbf{Why rarity helps.} Under the set-cover view, the risk of losing unique requirements increases when the selection metric overvalues abundant (high-cardinality) requirements. By giving preference to rare requirements early, HGS increases the probability that each unique requirement is claimed by at least one selected test, reducing the need for later corrective additions. This choice preserves the greedy nature and the $O(\ln m)$ approximation behavior inherited from set cover~\cite{chvatal1979}, while improving expected retention on practical instances with skewed cardinality distributions.
+
 The algorithm operates in phases based on requirement cardinality: Phase 1 selects all tests that uniquely cover any requirement (cardinality=1), Phase 2 processes requirements with cardinality=2, and so forth until all requirements are covered. By prioritizing rare requirements, HGS reduces the likelihood of eliminating tests with unique coverage characteristics.
 
-Empirical studies demonstrate that HGS produces smaller minimized suites compared to classical greedy (45--70\% reduction) while maintaining superior coverage preservation (95--98\% retention)~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting.
+Empirical studies demonstrate that HGS produces smaller minimized suites compared to classical greedy (45--70\% reduction) while maintaining superior coverage preservation (95--98\% retention)~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting. Overlap-aware extensions act as diversity-preserving refinements of HGS that penalize redundant selections and further improve retention without altering the underlying approximation class~\cite{bach2017}.
 
 \subsection{Delayed Greedy}
 

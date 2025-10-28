@@ -7,6 +7,13 @@ This chapter presents the implementation of the Harrold--Gupta--Soffa (HGS) algo
 
 The implementation consists of four components integrated into LASSO's testing infrastructure: \texttt{OverlapAwareHGSMinimizer} (core 4-phase algorithm), \texttt{TestCase} (data model with BitSet coverage encoding), \texttt{MinimalTestSuite} (result container), and \texttt{HGSMinimizerDemo} (demonstration with 5 usage scenarios). All components follow LASSO conventions and GPL3 licensing.
 
+\paragraph{Architecture hierarchy.} The end-to-end call chain within the platform is:
+\begin{center}
+\begin{tabular}{c}
+	exttt{LSL Script} \\ $\downarrow$ \\ \texttt{TestSuiteMinimization} (Action) \\ $\downarrow$ \\ \texttt{OverlapAwareHGSMinimizer} \\ $\downarrow$ \\ \texttt{MinimalTestSuite} (Result)
+\end{tabular}
+\end{center}
+
 \section{Algorithm Implementation}
 
 \subsection{Mutation-Aware HGS Algorithm}
@@ -70,6 +77,19 @@ Table~\ref{tab:implementation-complexity} presents the time and space complexity
 \end{table}
 
 The space complexity is dominated by storing test coverage information as BitSet objects, requiring $O(n \cdot m)$ bits. In practice, BitSet compression reduces memory footprint by 8--16$\times$ compared to boolean arrays.
+
+\subsection{Algorithm Parameters ($\alpha$, $\beta$)}
+
+The effectiveness metric is governed by two scalar parameters and auxiliary configuration flags:
+\begin{itemize}
+  \item $\alpha \in [0,1]$ (overlap penalty): increases the denominator to penalize tests whose coverage overlaps strongly with already selected tests; higher values promote diversity.
+  \item $\beta \in [0,2]$ (mutation weighting): scales the contribution of newly killed mutants relative to newly covered structural requirements in the numerator; higher values emphasize mutation retention.
+  \item \texttt{useMutationScore} (bool): when enabled, includes mutation-kill information in the BitSet representation used by the selector.
+  \item \texttt{reportStats} (bool): emits reduction ratio, coverage retention, and mutation retention summaries for auditability.
+  \item \texttt{updateAbstraction} (bool): persists the reduced SRM abstraction back into the repository for downstream analyses.
+\end{itemize}
+
+  extbf{Recommended configurations.} For general-purpose SRM minimization, we recommend $\alpha = 0.5$, $\beta = 0.75$, \texttt{useMutationScore}=\texttt{true}, \texttt{reportStats}=\texttt{true}, and \texttt{updateAbstraction}=\texttt{true}. These defaults balance reduction effectiveness with coverage and mutation retention in line with empirical evidence~\cite{bach2017,jehan2023}.
 
 \subsection{Parameter Tuning and Sensitivity Analysis}
 
@@ -141,6 +161,62 @@ The minimizer integrates with LASSO's SRM-based execution pipeline as follows:
 \end{enumerate}
 
 Integration via LASSO's LSL (LASSO Specification Language) supports declarative minimization policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting. A formal specification of coverage extraction from SRM response objects is provided in Appendix~\ref{app:srm}.
+
+\subsection{Execution Flow and Data Extraction}
+\label{sec:exec-flow}
+
+The end-to-end execution comprises three stages integrated in the LASSO pipeline~\cite{Kessel2022}:
+\begin{enumerate}
+  \item \textbf{Acquisition.} The LSL action resolves the target execution (\texttt{executionId}) and abstraction (\texttt{abstractionId}), then queries the SRM-backed storage for structural coverage records. We restrict to instruction and branch coverage for consistency across systems:
+\begin{lstlisting}[language=SQL]
+SELECT sheetId, systemId, type, value
+FROM CELLVALUE
+WHERE executionId = ?
+  AND abstractionId = ?
+  AND (type LIKE '%INSTRUCTION_COVERED%'
+       OR type LIKE '%BRANCH_COVERED%');
+\end{lstlisting}
+  Each row is parsed into a compact bit-level representation keyed by test (row) and requirement (column).
+
+  \item \textbf{Assembly.} For each test $t_i$, we build two disjoint BitSets: (i) $B^{cov}_i$ for structural coverage (instruction/branch), and (ii) $B^{mut}_i$ for mutants killed by $t_i$. Mutation kills are inferred by comparing the observed outputs of the original and mutated program versions; a mutant is considered killed if the observable behavior diverges beyond the configured oracle~\cite{yoo2012,just2014}. We concatenate these into a single vector $B_i = [B^{cov}_i \mid B^{mut}_i]$ for set-operations, while the effectiveness function applies the scalar weight $\beta$ to the mutation segment during scoring (no physical duplication of bits is required).
+
+  \item \textbf{Selection.} The minimizer invokes the overlap-aware HGS selector with the assembled BitSets and parameters $(\alpha,\beta)$, returning the reduced suite $S^*$ and summary statistics. The call signature in the prototype is:
+\begin{lstlisting}[language=Java]
+MinimalTestSuite Sstar =
+  OverlapAwareHGSMinimizer.select(
+      tests /* T */, requirements /* Req */, alpha, beta,
+      /* flags: */ useMutationScore, reportStats, updateAbstraction);
+\end{lstlisting}
+  The result is serialized back into a reduced SRM with the original schema to preserve downstream compatibility in LASSO~\cite{Kessel2022}.
+\end{enumerate}
+
+\subsection{Key Classes and Responsibilities}
+
+The implementation separates orchestration, data access, and selection logic to support maintainability and testing:
+\begin{table}[H]
+  \centering
+  \begin{threeparttable}
+  \caption{Principal components and their roles in the minimization pipeline}
+  \label{tab:key-classes}
+  \begin{tabular}{p{0.26\textwidth} p{0.64\textwidth}}
+    	oprule
+    	extbf{Component} & \textbf{Responsibility and Interaction Points} \\
+    \midrule
+    	exttt{TestSuiteMinimization} (LSL action) & Entry point invoked from LASSO; resolves execution context, parameters $(\alpha,\beta)$, and flags; coordinates acquisition, assembly, and selection; persists the reduced SRM. \\
+    \addlinespace
+    	exttt{ClusterSRMRepository} & Data access to SRM-backed storage; executes coverage SQL (Listing in Section~\ref{sec:exec-flow}); streams rows to builders; abstracts differences across backends. \\
+    \addlinespace
+    	exttt{BitSetMatrix} & In-memory representation of tests and requirements as packed BitSets; exposes operations for union, difference, and cardinalities used by the selector. \\
+    \addlinespace
+    	exttt{OverlapAwareHGSMinimizer} & Core algorithm: Phase~1 unique-coverage seeding, Phase~2 greedy selection with overlap penalty (parameter $\alpha$) and mutation weighting (parameter $\beta$); computes effectiveness and updates residual coverage. \\
+    \addlinespace
+    	exttt{CoverageListener (JaCoCo adapter)} & Bridges runtime coverage events into SRM cell values during data collection; ensures consistent instruction/branch counters across systems. \\
+    \addlinespace
+    	exttt{MutationOracle} & Computes mutant-kill outcomes by comparing original vs. mutant executions; exports killed-mutant BitSets aligned to the SRM columns used for $B^{mut}_i$. \\
+    \bottomrule
+  \end{tabular}
+  \end{threeparttable}
+\end{table}
 
 \section{Documentation and Demonstration}
 

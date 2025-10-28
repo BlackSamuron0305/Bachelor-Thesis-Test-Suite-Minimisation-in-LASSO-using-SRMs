@@ -33,27 +33,11 @@ Each response object $M_{ij}$ can contain rich, structured data including:
 
 \textbf{SRM Generation Mechanism:} SRMs are produced through LASSO's experimental execution pipeline using two key constructs~\cite{Kessel2022}:
 \begin{enumerate}
-  \item \emph{Sequence Sheets} define ordered execution steps, specifying how stimuli are constructed (e.g., method call sequences with parameters) and their dependencies
+  \item \emph{Sequence Sheets} define ordered execution steps, specifying how stimuli are constructed (e.g., method call sequences with parameters)
   \item \emph{Actuation Sheets} define the experimental setup, specifying which systems should be tested with which stimuli in LASSO's execution arena
 \end{enumerate}
 
-\subsubsection{Data Flow from Specification to Execution Results}
-
-The relationship among these three artifacts follows a clear data flow pipeline:
-
-\begin{enumerate}
-  \item \textbf{Sequence Sheets (Stimulus Specification):} Each row defines one stimulus — an ordered sequence of actions, API calls, or method invocations with their parameters. Columns contain execution steps, input values, and expected outputs. Sequence Sheets function as the \emph{test case specification}, describing \emph{what} to execute. These specifications determine the row structure of the resulting SRM.
-
-  \item \textbf{Actuation Sheets (Execution Schedule):} Each row defines one \emph{actuation} — a pairing of a system (software executable, container, or unit) with a stimulus from the Sequence Sheet. Actuation Sheets may include environment configuration parameters such as runtime limits, virtual machine images, or compiler versions. They function as the \emph{experiment execution schedule}, specifying \emph{where} and \emph{under what conditions} to execute each stimulus. These specifications determine the column structure of the resulting SRM.
-
-  \item \textbf{Arena Execution:} LASSO's Arena component processes the Actuation Sheet, executing each (stimulus, system) pair according to the specifications in the Sequence Sheet and recording the resulting behavioral observations.
-
-  \item \textbf{Stimulus-Response Matrices (Execution Results):} The Arena stores recorded responses as structured objects in SRM cells $M_{ij}$. Each cell captures the complete execution result for system $j$ responding to stimulus $i$, including outcome status, coverage metrics, mutation scores, runtime measurements, and exception logs.
-\end{enumerate}
-
-This pipeline can be summarized as: \emph{Sequence Sheet} (rows) + \emph{Actuation Sheet} (columns) $\xrightarrow{\text{Arena}}$ \emph{SRM} (cells with response objects). The SRM thus serves as a persistent, queryable repository of experimental results that can be analyzed for behavioral comparison, functional equivalence detection, or, as in this thesis, test suite optimization.
-
-After execution, the resulting SRM records observed system behaviors at two levels of abstraction: (1) \emph{black-box view}, which captures only the final input/output parameters of sequence invocations, and (2) \emph{white-box view}, which records the complete method invocation trace including all intermediate inputs, outputs, and state changes. Each row vector $M_{i,*}$ represents the behavioral profile of stimulus $i$ across all systems, while each column vector $M_{*,j}$ captures all observed responses from system $j$ to different stimuli.
+The pipeline operates as: \emph{Sequence Sheet} (rows) + \emph{Actuation Sheet} (columns) $\xrightarrow{\text{Arena}}$ \emph{SRM} (cells with response objects). LASSO's Arena component executes each (stimulus, system) pair and records the resulting behavioral observations in SRM cells $M_{ij}$. Each cell captures the complete execution result including outcome status, coverage metrics, mutation scores, runtime measurements, and exception logs. The resulting SRM records observed system behaviors at two levels: (1) \emph{black-box view}, capturing only input/output parameters, and (2) \emph{white-box view}, recording the complete method invocation trace with all intermediate states.
 
 \textbf{Example:} Consider a simple SRM with 4 stimuli (test sequences) and 6 systems, where each response object contains execution results:
 \begin{equation}
@@ -90,7 +74,7 @@ Test suite minimization within LASSO operates directly on existing SRMs produced
 \begin{enumerate}
   \item \textbf{System Selection:} Select one target system (column) from the SRM for minimization. In the current implementation, minimization focuses on a single system; multi-system minimization remains future work.
   
-  \item \textbf{Coverage Extraction:} For each stimulus $i$ and the selected system $j$, extract coverage-related metrics from the response object $M_{ij}$. These metrics include:
+  \item \textbf{Coverage Extraction:} For each stimulus $i$ and the selected system $j$, extract coverage-related metrics from the response object $M_{ij}$:
   \begin{itemize}
     \item Statement, branch, or path coverage indicators
     \item Mutation testing results (killed mutants)
@@ -162,6 +146,8 @@ S^* = \arg \min_{S \subseteq T} |S| \quad \text{subject to} \quad C(S) = C(T)
 This optimization problem is equivalent to the classical \emph{minimum set cover problem}, which is known to be NP-complete~\cite{yoo2012}. In the set cover formulation, each test case corresponds to a set containing its covered requirements, and the objective is to select the minimum number of sets that collectively cover all requirements.
 
 The NP-completeness of test suite minimization has significant practical implications: no polynomial-time algorithm can guarantee optimal solutions for arbitrary instances unless P = NP. Consequently, practical approaches employ approximation algorithms~\cite{chvatal1979}, heuristic methods, or exact algorithms with exponential worst-case complexity that perform well on typical instances.
+
+In particular, the classical greedy set-cover algorithm achieves a logarithmic approximation ratio of $O(\ln m)$, where $m$ denotes the number of requirements~\cite{chvatal1979}. The Harrold--Gupta--Soffa (HGS) heuristic~\cite{harrold1993} can be viewed as a domain-adapted greedy approximation to minimum set cover that prioritizes \emph{rare} requirements (low cardinality) to increase the likelihood of retaining tests with unique coverage. Overlap awareness extends HGS with a diversity-preserving penalty that discourages selecting tests whose coverage is largely redundant with already selected tests, thereby improving expected retention without changing the asymptotic guarantee.
 
 \subsection{Algorithmic Categories}
 Existing approaches to test suite minimization can be taxonomically classified into several categories, each offering different trade-offs between solution quality, computational efficiency, and implementation complexity:

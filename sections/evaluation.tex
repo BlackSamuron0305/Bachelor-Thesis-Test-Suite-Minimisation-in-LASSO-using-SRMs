@@ -1,10 +1,12 @@
 \chapter{Evaluation Criteria and Scoring Framework}\label{chap:evaluation}
 
-Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter presents the criteria (C1--C6) and a formal scoring framework to support consistent, evidence-based ranking of candidate algorithms under LASSO's SRM-only constraints.
+Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter presents the criteria (C1--C7) and a formal scoring framework to support consistent, evidence-based ranking of candidate algorithms under LASSO's SRM-only constraints.
 
-\section{Evaluation Criteria (C1--C6)}
+\section{Evaluation Criteria (C1--C7)}
 
 Our evaluation framework incorporates both quantitative metrics and qualitative assessments derived from established software engineering research methodologies. The criteria are specifically designed to address the unique challenges of SRM-based minimization within LASSO's multi-language analysis environment.
+
+\paragraph{Multi-criteria objective via $\beta$-weighting.} The mutation-aware extension of HGS integrates structural coverage and mutation retention into a single selection objective by introducing a scalar $\beta$ that weights mutant kills relative to new structural coverage~\cite{jehan2023}. Algebraically, the coverage vector can be seen as a concatenation of BitSets for structure and (duplicated) mutants; $\beta$ scales the mutant segment, yielding a weighted set representation that is still comparable in the BitSet domain. This embedding enables direct multi-criteria optimization without leaving the SRM/BitSet abstraction and is evaluated under criteria C1, C3, and C7 simultaneously.
 
 \subsection{Primary Evaluation Criteria}
 
