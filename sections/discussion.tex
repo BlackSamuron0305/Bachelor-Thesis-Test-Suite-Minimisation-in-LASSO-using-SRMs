@@ -1,0 +1,40 @@
+\chapter{Discussion}
+\label{chap:discussion}
+
+This chapter critically reflects on the proposed test suite minimisation approach for the LASSO platform. We discuss limitations inherent to the available data in the Stimulus--Response Matrix (SRM), the algorithmic trade-offs of the ME-OA-HGS heuristic, and the strengths that render this approach practical and safe for continuous use.
+
+\section{Limitations of the Approach}
+
+\subsection{Data Granularity Constraints from the SRM}
+As detailed in Section~\ref{chap:fundamentals}, the current JaCoCo integration in the SRM provides aggregate class-level coverage only (30 metrics spanning six entities and five values; see Section~2.1). These metrics are identical for every test in the suite because per-test coverage is not available in the SRM. The consequences are twofold:
+\begin{itemize}
+  \item \textbf{Loss of Coverage-Based Discrimination:} The minimisation algorithm cannot distinguish tests based on structural coverage; thus, coverage alone cannot guide selection.
+  \item \textbf{Heavy Reliance on Mutation Data:} Selection relies primarily on per-test mutation kills. While this enables a guarantee of preserving the strong mutation score, effectiveness may degrade when mutation data are sparse or unavailable.
+\end{itemize}
+
+\subsection{Inability to Detect Weak Mutants}
+The SRM records only the final pass/fail verdict for each test execution. Consequently, a mutant is deemed killed only if the original test passes and the mutant execution fails, i.e., under the \emph{strong mutation} criterion. Intermediary program states are not stored, which precludes detecting \emph{weak kills} where only the internal state differs~\cite{offutt1997}. Therefore, the preservation guarantee applies to the strong mutation score; weak mutation preservation is not ensured.
+
+\subsection{Greedy Nature of the Algorithm}
+The ME-OA-HGS algorithm is a greedy heuristic inspired by minimum set cover~\cite{harrold1993,yoo2012}. Greedy methods run in polynomial time but are not guaranteed to find globally minimal test suites. Two aspects are noteworthy:
+\begin{itemize}
+  \item \textbf{Risk of Sub-Optimality:} The two-phase design (selection of essential tests followed by greedy selection) reduces the risk by prioritising rare requirements and indispensable tests. However, the local choice in Phase~2 may exclude combinations of less-weighted tests achieving comparable coverage with smaller size.
+  \item \textbf{Parameter Sensitivity:} The outcome depends on parameters controlling overlap penalties (\(\alpha\)) and mutation weighting (\(\beta\)). Defaults (\(\alpha = 0.5\), \(\beta = 1.0\)) provide a balanced baseline, but alternative settings may trade off suite size versus fault revelation.
+\end{itemize}
+
+\section{Strengths and Advantages}
+
+\subsection{Guaranteed Preservation of Fault-Detection Capability}
+By integrating mutation kills into both the essential-test phase and the adjusted weight used for greedy selection, the approach guarantees 100\% preservation of the \emph{strong} mutation score of the original test suite. This avoids a well-known pitfall of coverage-only minimisation, which may remove tests that are structurally redundant yet highly fault-revealing~\cite{yoo2012,harrold1993}.
+
+\subsection{Overlap Awareness for Diversity}
+The explicit overlap penalty (parameter \(\alpha\)) discourages selecting tests that are highly similar to those already chosen, thus promoting diversity in the reduced suite. Empirically, overlap-aware selection helps retain heterogeneous behaviours even when coverage signals are uniform.
+
+\subsection{Computational Efficiency and Determinism}
+The algorithm runs in polynomial time and is deterministic, producing the same minimised suite for identical inputs and parameters, in contrast to stochastic meta-heuristics~\cite{yoo2012}. This predictability and efficiency are essential for Continuous Integration/Continuous Deployment (CI/CD) integration where reproducibility and bounded runtime are required.
+
+\section{Implications for the LASSO Platform}
+The reliance on SRM as the single source of truth preserves language-agnosticism and scalability. As the SRM evolves to include per-test coverage, the same algorithmic framework can immediately benefit by combining granular structural signals with mutation data, potentially improving reduction ratios while maintaining fault-detection guarantees.
+
+\subsection{Practical Performance Implications}
+In practice, ME-OA-HGS offers substantial performance gains for LASSO's execution pipeline. Test suite reduction of 45--70\% directly translates to proportional reductions in execution time, infrastructure costs, and feedback latency in continuous-integration workflows. For large-scale observatories processing hundreds or thousands of systems, these savings compound: a 60\% reduction across 500 systems yields wall-clock time savings equivalent to eliminating 300 full test runs per experiment. Moreover, the deterministic polynomial-time complexity ($O(nm \log m)$) ensures predictable runtime scaling, enabling LASSO operators to forecast resource requirements accurately. The preserved mutation score guarantees that fault-detection capability remains intact despite the reduced execution load, making ME-OA-HGS a safe and cost-effective optimization for production deployment in LASSO's Arena execution environment.

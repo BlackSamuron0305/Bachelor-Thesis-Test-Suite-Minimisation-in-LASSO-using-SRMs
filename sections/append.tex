@@ -1,11 +1,12 @@
 
 \begin{appendices}
 
-\section{HGS Minimization Pseudocode}
+\chapter{ME-OA-HGS Minimization Pseudocode}
 \label{app:pseudocode}
-This appendix provides precise pseudocode for the mutation-aware Harrold--Gupta--Soffa (HGS) algorithm used in this thesis. The notation follows the set-cover literature~\cite{chvatal1979} and adopts bitset-based operations for efficiency.
 
-\subsection*{Inputs and Outputs}
+This appendix provides precise pseudocode for the ME-OA-HGS algorithm used in this thesis. The notation follows the set-cover literature~\cite{chvatal1979} and adopts bitset-based operations for efficiency.
+
+\subsection*{Notation}
 \begin{itemize}
 	\item Input: SRM $M$ from LASSO (stimuli $\times$ systems, structured response objects); target system index $j$
 	\item Preprocessing: Extract coverage data and mutation information from response objects $M_{ij}$ to construct test--requirement relationships (tests $T = \{t_1,\dots,t_n\}$ as stimuli; structural requirements $R = \{r_1,\dots,r_m\}$ as coverage elements; mutants $\mathcal{M} = \{m_1,\dots,m_p\}$)
@@ -17,7 +18,7 @@ This appendix provides precise pseudocode for the mutation-aware Harrold--Gupta-
 
 \subsection*{Algorithm}
 \begin{framed}
-\noindent\textbf{Procedure} MutationAwareHGS($M$, $w$, $\alpha$, $\beta$)\\
+\noindent\textbf{Procedure} MEOAHGS($M$, $w$, $\alpha$, $\beta$)\\
 \textbf{Input:} Bitset rows $M[i]$ for tests $t_i$, mutation kill sets $K(t_i)$\\
 \textbf{Output:} Minimal (heuristic) subset $S$ preserving coverage and mutation kill capability\\[4pt]
 
@@ -83,7 +84,7 @@ Table~\ref{tab:appendix-benchmarks} extends the scenarios with per-iteration sel
 \end{table}
 
 \subsection*{Reproducibility Notes}
-Experiments are executed on an Intel Core i7 with 16\,GB RAM. Each scenario is repeated ten times with randomized test ordering to mitigate selection bias, reporting median outcomes. Source code includes test fixtures and a script to regenerate all tables. Random seeds and configuration parameters (e.g., $\alpha$) are documented alongside results.
+Experiments are executed on an \textit{Intel Core i7} with 16~GB RAM. Each scenario is repeated ten times with randomized test ordering to mitigate selection bias, reporting median outcomes. Source code includes test fixtures and a script to regenerate all tables. Random seeds and configuration parameters (e.g., $\alpha$) are documented alongside results.
 
 \section{SRM Coverage Extraction Specification}
 \label{app:srm}

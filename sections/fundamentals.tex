@@ -6,13 +6,29 @@ This chapter establishes the theoretical foundation for this thesis by introduci
 
 \emph{Code coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite~\cite{zhu1997}. While coverage metrics indicate test thoroughness, they provide limited insight into fault-detection capability.
 
-\emph{Mutation testing} evaluates test suite quality by introducing small syntactic modifications (\emph{mutants}) into program source code~\cite{jia2011}. The \emph{mutation score} measures the percentage of mutants detected (killed) by the test suite:
+\subsection{Detailed Explanation of Coverage Metrics}
+The test suite minimisation process requires a formal definition of \emph{coverage requirements}. In this work, we leverage the JaCoCo code coverage tool, which provides a comprehensive set of metrics that we store in the Stimulus--Response Matrix (SRM) and treat as the requirement set $R$ that the minimised test suite must satisfy. JaCoCo reports coverage across six entities, each measured by five values, resulting in 30 total metrics used as requirements~\cite{jacoco-counters}:
 
+\begin{itemize}
+  \item \textbf{Entities} (granularity levels): INSTRUCTION (bytecode instructions), LINE (source code lines), BRANCH (conditional branches), METHOD (methods), COMPLEXITY (cyclomatic complexity), CLASS (classes)
+  \item \textbf{Values} (per entity): TOTALCOUNT (total items), COVEREDCOUNT (executed items), MISSEDCOUNT (non-executed items), COVEREDRATIO (fraction covered), MISSEDRATIO (fraction missed)
+\end{itemize}
+
+Consequently, the coverage value used in the minimisation algorithm is the set of all 30 aggregate metrics (e.g., \texttt{LINE\_COVEREDCOUNT = 50}, \texttt{BRANCH\_TOTALCOUNT = 30}) that constitute the requirements $R$. The objective is to select a subset of tests that collectively \emph{cover} the maximum possible subset of these metrics. In the current integration with the SRM, as available to this thesis, coverage is provided as aggregate, class-level measurements (sheetId=\texttt{JACOCO}) and not at per-test granularity. As a result, every test appears to cover the same set of 30 metrics. This known limitation forces the minimisation to rely primarily on mutation information for discriminating tests, whereas the preservation of the mutation score serves as the principal safety guarantee~\cite{yoo2012}.
+
+\subsection{Strong Mutation Score as the Minimisation Criterion}
+\emph{Mutation testing} evaluates test suite quality by introducing small syntactic modifications (\emph{mutants}) into the source code and assessing whether tests distinguish the mutant from the original program~\cite{jia2011}. Two criteria are commonly distinguished~\cite{offutt1997}:
+\begin{enumerate}
+  \item \textbf{Weak Mutation:} a mutant is killed if its execution state (e.g., variable values) differs from the original program's state at the mutation point.
+  \item \textbf{Strong Mutation:} a mutant is killed if the final externally observable behaviour differs (e.g., return value or an exception), leading to a different test verdict.
+\end{enumerate}
+
+In this work, the minimisation algorithm \emph{exclusively} uses the \textbf{Strong Mutation Score}. The SRM records only the final pass/fail result of executing a test against a mutant variant; thus, a mutant is considered killed if the original test passes while its execution on the mutant fails, which corresponds to strong mutation. Because intermediate program states are not recorded in the SRM, weak kills cannot be detected. Therefore, the guarantee of preservation applies strictly to the strong mutation score~\cite{offutt1997,yoo2012}.
+
+For completeness, we recall the standard definition of mutation score:
 \begin{equation}
-\text{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\%
+	ext{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\%\, .
 \end{equation}
-
-Mutation analysis provides superior insight into test effectiveness compared to coverage alone, as it directly measures fault-detection capability~\cite{fuzzingbook}.
 
 \section{Stimulus-Response Matrices}\label{sec:srm}
 
@@ -67,6 +83,9 @@ In this example, each cell contains a response object with test outcome (pass/fa
 
 SRMs can also store additional analysis attributes, such as non-functional metrics or static properties, alongside dynamic execution data. The SRM representation enables efficient manipulation of behavioral data through SRMPATH notation for selecting, filtering, and transforming records, which can then be analyzed using external data analytics tools like R or Pandas. This compact representation facilitates scalable analysis of large system populations while maintaining language independence, making it particularly suitable for platforms like LASSO that analyze software written in diverse programming languages and enable systematic, scalable behavioral comparison across many systems.
 
+\subsection{Data Extraction from the Stimulus--Response Matrix (SRM)}
+All necessary data for the minimisation algorithm---both structural coverage and mutation results---are sourced directly from the SRM. The SRM acts as a unified data repository where test execution results are stored as key--value records. Structural coverage data (JaCoCo metrics) are extracted from entries with a specific \emph{sheetId} (e.g., \texttt{JACOCO}) and \emph{variantId} set to \texttt{original}. Mutation data are obtained by querying test results for all mutant \emph{variantIds}. A test \emph{kills} a mutant if the original execution passes but the execution against the mutant variant fails. This systematic extraction allows the minimisation algorithm to operate entirely on SRM data, preserving the language-agnostic and scalable nature of the LASSO platform~\cite{Kessel2022}.
+
 \subsection{Leveraging SRMs for Test Suite Minimization}
 
 Test suite minimization within LASSO operates directly on existing SRMs produced by the platform's execution pipeline~\cite{Kessel2022}. Rather than creating a new data structure, the minimization process extracts coverage-relevant information from SRM response objects for a selected target system. The workflow proceeds as follows:
@@ -81,7 +100,7 @@ Test suite minimization within LASSO operates directly on existing SRMs produced
     \item Execution outcomes (pass/fail status)
   \end{itemize}
   
-  \item \textbf{Algorithm Application:} Apply the HGS minimization algorithm (detailed in Chapter~\ref{chap:implementation}) using the extracted coverage data to select a subset of stimuli that preserve coverage requirements.
+  \item \textbf{Algorithm Application:} Apply the ME-OA-HGS minimization algorithm (detailed in Chapter~\ref{chap:implementation}) using the extracted coverage data to select a subset of stimuli that preserve coverage requirements.
   
   \item \textbf{SRM Reduction:} Generate a reduced SRM containing only the selected stimuli (rows) while preserving the original SRM schema (systems as columns, structured response objects in cells). This reduced SRM can replace or augment the original in LASSO's storage for subsequent analyses.
 \end{enumerate}

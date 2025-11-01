@@ -4,13 +4,13 @@ This chapter applies the multi-criteria scoring framework established in Chapter
 
 \section{Application of Scoring Model}
 
-The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies the HGS algorithm augmented with overlap-aware heuristics as the optimal choice for LASSO integration based on the following considerations:
+The multi-criteria evaluation framework established in Chapter~\ref{chap:evaluation} reveals that test suite minimization algorithms must balance competing objectives: reduction effectiveness, coverage preservation, fault detection retention, computational efficiency, and practical implementability. Our systematic analysis identifies ME-OA-HGS as the optimal choice for LASSO integration based on the following considerations:
 
 \subsection{Superior Coverage Preservation}
-HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Harrold et al.~\cite{harrold1993} demonstrated that HGS maintains higher coverage ratios (95--98\%) compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%.
+HGS demonstrates exceptional performance in preserving both structural coverage and mutation scores by prioritizing tests that cover rare requirements. This addresses a fundamental limitation of classical greedy approaches, which may inadvertently select redundant tests while overlooking those with unique coverage profiles. Harrold et al.~\cite{harrold1993} demonstrated that HGS maintains higher coverage ratios (95--98\%) compared to baseline approaches while achieving substantial reduction ratios between 45\% and 70\%. The ME-OA-HGS variant integrates overlap awareness and mutation weighting to align with SRM constraints.
 
 \subsection{Enhanced Fault Detection Through Overlap Awareness}
-The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}.
+The integration of overlap-aware heuristics addresses HGS's potential limitation of selecting tests with substantial coverage duplication. Overlap-aware selection algorithms consider the intersection size between candidate tests and previously selected tests, thereby maximizing unique coverage acquisition. Bach et al. demonstrated that overlap-aware approaches achieve up to 50\% higher code coverage within fixed time budgets compared to traditional greedy methods~\cite{bach2017}. ME-OA-HGS further incorporates mutation weighting (parameter $\beta$) to prioritise tests that contribute to strong mutation score retention.
 
 \subsection{Computational Efficiency and Scalability}
 HGS maintains polynomial time complexity $O(nm \log m)$ where $n$ represents test cases and $m$ represents requirements, making it suitable for large-scale SRM processing. The addition of overlap computation introduces manageable overhead while preserving scalability characteristics essential for industrial applications.
@@ -26,18 +26,18 @@ Table~\ref{tab:comparison} summarizes literature-reported characteristics across
 
 \begin{table}[H]
   \centering
-  \caption{Comparative analysis of candidate algorithms across coverage, reduction, fault detection, and complexity. Key takeaway: HGS with overlap-aware extension offers the best balance for LASSO (high coverage and fault retention with strong reduction at $O(nm\log m)$).}
+  \caption{Comparative analysis of candidate algorithms across coverage, reduction, fault detection, and complexity. Key takeaway: ME-OA-HGS offers the best balance for LASSO (high coverage and fault retention with strong reduction at $O(nm\log m)$).}
   \label{tab:comparison}
   \begin{threeparttable}
     \begin{adjustbox}{max width=\textwidth}
     \begin{tabular}{|l|c|c|c|c|c|l|}
       \hline
-      	extbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault} & \textbf{Time} & \textbf{SRM} & \textbf{Key Characteristics} \\
+      \textbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault} & \textbf{Time} & \textbf{SRM} & \textbf{Key Characteristics} \\
       & \textbf{Retention} & \textbf{Ratio} & \textbf{Detection} & \textbf{Complexity} & \textbf{Compatible} & \\
       \hline
       Classical Greedy & 85--95\% & 30--50\% & 80--90\% & $O(nm)$ & Yes & Simple baseline approach \\
       \hline
-      HGS & 95--98\% & 45--70\% & 90--95\% & $O(nm \log m)$ & Yes & Emphasizes rare requirements \\
+  HGS & 95--98\% & 45--70\% & 90--95\% & $O(nm \log m)$ & Yes & Emphasizes rare requirements \\
       \hline
       Delayed Greedy & 90--95\% & 60--80\% & 75--85\% & $O(n^2m)$ & Yes & Concept lattice analysis \\
       \hline
@@ -45,7 +45,7 @@ Table~\ref{tab:comparison} summarizes literature-reported characteristics across
       \hline
       Genetic Algorithm & 80--95\% & 50--75\% & Variable & $O(gnm)$\tnote{b} & Yes & Parameter-dependent \\
       \hline
-      	extbf{Overlap-Aware HGS} & \textbf{95--98\%} & \textbf{50--75\%} & \textbf{90--95\%} & $\mathbf{O(nm \log m)}$ & \textbf{Yes} & \textbf{Optimal balance for LASSO} \\
+      \textbf{ME-OA-HGS} & \textbf{95--98\%} & \textbf{50--75\%} & \textbf{90--95\%} & $\mathbf{O(nm \log m)}$ & \textbf{Yes} & \textbf{Optimal balance for LASSO} \\
       \hline
   \end{tabular}
   \end{adjustbox}
@@ -74,13 +74,13 @@ Table~\ref{tab:comparison} summarizes literature-reported characteristics across
   \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{|c|c|c|}
     \hline
-    	extbf{Algorithm} & \textbf{Reduction Ratio (\%)} & \textbf{Coverage Retention (\%)} \\
+    \textbf{Algorithm} & \textbf{Reduction Ratio (\%)} & \textbf{Coverage Retention (\%)} \\
     \hline
     \multicolumn{3}{|c|}{\textbf{High Coverage, Moderate Reduction}} \\
     \hline
     Classical Greedy & 30--50 & 85--95 \\
     HGS & 45--70 & 95--98 \\
-    	extbf{Overlap-Aware HGS} & \textbf{50--75} & \textbf{95--98} \\
+    \textbf{Overlap-Aware HGS} & \textbf{50--75} & \textbf{95--98} \\
     \hline
     \multicolumn{3}{|c|}{\textbf{Balanced Region (Pareto-Optimal)}} \\
     \hline
@@ -94,7 +94,7 @@ Table~\ref{tab:comparison} summarizes literature-reported characteristics across
     \hline
   \end{tabular}
   \end{adjustbox}
-  \caption{Trade-off between reduction and coverage across algorithms; Overlap-Aware HGS lies in the favorable region.}
+  \caption{Trade-off between reduction and coverage across algorithms; ME-OA-HGS lies in the favorable region.}
   \label{fig:tradeoff-analysis}
 \end{figure}
 
@@ -109,7 +109,7 @@ Empirical studies reveal fundamental trade-offs in test suite minimization. Roth
   \begin{threeparttable}
     \begin{tabular}{|l|l|c|c|c|}
       \hline
-      	extbf{Study} & \textbf{Algorithm} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Fault Detection} \\
+      \textbf{Study} & \textbf{Algorithm} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Fault Detection} \\
       & & \textbf{Ratio} & \textbf{Retention} & \textbf{Loss} \\
       \hline
       Harrold et al.~\cite{harrold1993} & HGS & 45--70\% & 95--98\% & 5--10\% \\
@@ -142,7 +142,7 @@ We instantiate the scoring model from Chapter~\ref{chap:evaluation} and report n
   \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{|l|c|c|c|c|c|c|c|}
     \hline
-    	extbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
+    \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
     & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Scalability} & \textbf{SRM} & \textbf{Implement.} & \textbf{Score} \\
     \hline
     Classical Greedy & 3/5 & 3/5 & 3/5 & 5/5 & 5/5 & 5/5 & 24/30 \\
@@ -155,7 +155,7 @@ We instantiate the scoring model from Chapter~\ref{chap:evaluation} and report n
     \hline
     Genetic Algorithm & 3/5 & 4/5 & 2/5 & 2/5 & 5/5 & 2/5 & 18/30 \\
     \hline
-    	extbf{Overlap-Aware HGS} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{4/5} & \textbf{29/30} \\
+    \textbf{Overlap-Aware HGS} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{5/5} & \textbf{4/5} & \textbf{29/30} \\
     \hline
   \end{tabular}
   \end{adjustbox}
@@ -169,7 +169,7 @@ Recent evidence supports the integration of mutation information directly into t
 
 \section{Selection Decision for LASSO}
 
-Based on the ranking and feasibility constraints, we select HGS with overlap-aware heuristics for LASSO integration, as it maximizes coverage and fault retention with strong reductions at acceptable complexity~\cite{harrold1993,bach2017}. Consistent with evidence from Jehan and Wotawa~\cite{jehan2023}, the integration extends HGS by a scalar $\beta$-weight to incorporate mutation coverage directly into the selection metric.
+Based on the ranking and feasibility constraints, we select ME-OA-HGS for LASSO integration, as it maximizes coverage and fault retention with strong reductions at acceptable complexity~\cite{harrold1993,bach2017}. Consistent with evidence from Jehan and Wotawa~\cite{jehan2023}, ME-OA-HGS extends HGS by a scalar $\beta$-weight to incorporate mutation coverage directly into the selection metric alongside overlap awareness.
 
 \section{Warnings and Limitations}
 
