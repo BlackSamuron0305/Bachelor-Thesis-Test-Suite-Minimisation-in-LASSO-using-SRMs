@@ -21,7 +21,7 @@ This limitation reflects the current state of LASSO's coverage instrumentation r
 
 \subsection{Inability to Detect Weak Mutants}
 
-Since the SRM stores only the final pass/fail verdict for each test execution, a mutant is deemed killed only if the original test passes and the mutant execution fails---the \emph{strong mutation} criterion. Intermediary program states are not stored, precluding detection of \emph{weak kills} where only internal state differs~\cite{offutt1997}. Hence, the preservation guarantee holds only for strong mutation scores; weak mutation preservation is not ensured.
+Since the SRM stores only the final pass/fail verdict for each test execution, a mutant is deemed killed only if the original test passes and the mutant execution fails---the \emph{strong mutation} criterion. Intermediary program states are not stored, precluding detection of \emph{weak kills} where only internal state differs~\cite{offutt2000}. Hence, the preservation guarantee holds only for strong mutation scores; weak mutation preservation is not ensured.
 
 \subsection{Greedy Nature of the Algorithm}
 

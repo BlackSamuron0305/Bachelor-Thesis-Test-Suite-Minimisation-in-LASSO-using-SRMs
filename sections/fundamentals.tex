@@ -17,13 +17,13 @@ The test-suite minimisation process requires a formal definition of \emph{covera
 The coverage value used in the minimisation algorithm is the set of all 30 aggregate metrics (e.g., \texttt{LINE\_COVEREDCOUNT = 50}, \texttt{BRANCH\_TOTALCOUNT = 30}) that constitute the requirements $R$. The objective is to select a subset of tests that collectively covers these metrics. In the available dataset, coverage metrics are aggregated at class level (sheetId=\texttt{JACOCO}) and not at per-test granularity. Consequently, every test appears to cover the same set of 30 metrics. This limitation requires the minimisation to rely primarily on mutation information for discriminating tests, while preservation of the mutation score serves as the principal correctness guarantee~\cite{yoo2012}.
 
 \subsection{Strong Mutation Score as the Minimisation Criterion}
-\emph{Mutation testing} evaluates test-suite quality by introducing small syntactic modifications (\emph{mutants}) into the source code and assessing whether tests distinguish the mutant from the original program~\cite{jia2011}. Two criteria are commonly distinguished~\cite{offutt1997}:
+\emph{Mutation testing} evaluates test-suite quality by introducing small syntactic modifications (\emph{mutants}) into the source code and assessing whether tests distinguish the mutant from the original program~\cite{jia2011}. Two criteria are commonly distinguished~\cite{offutt2000}:
 \begin{enumerate}
   \item \textbf{Weak Mutation:} a mutant is killed if its execution state differs from the original program's state at the mutation point.
   \item \textbf{Strong Mutation:} a mutant is killed if the final externally observable behaviour differs, leading to a different test verdict.
 \end{enumerate}
 
-This work employs exclusively the \textbf{Strong Mutation Score}. The SRM records only the final pass/fail result of executing a test against a mutant variant; thus, a mutant is considered killed if the original test passes while execution on the mutant fails. Because intermediate program states are not recorded in the SRM, weak kills cannot be detected. The preservation guarantee therefore applies strictly to the strong mutation score~\cite{offutt1997,yoo2012}.
+This work employs exclusively the \textbf{Strong Mutation Score}. The SRM records only the final pass/fail result of executing a test against a mutant variant; thus, a mutant is considered killed if the original test passes while execution on the mutant fails. Because intermediate program states are not recorded in the SRM, weak kills cannot be detected. The preservation guarantee therefore applies strictly to the strong mutation score~\cite{offutt2000,yoo2012}.
 
 The standard definition of mutation score is:
 \[

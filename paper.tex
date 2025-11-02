@@ -78,8 +78,6 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \makenomenclature
 \newcommand{\Listofabbrev}{
 \cleardoublepage
-\phantomsection
-\addcontentsline{toc}{chapter}{\nomname}
 \printnomenclature
 \newpage
 }
@@ -118,10 +116,10 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \listoftables               % includes list of tables
 \clearpage                  % tell the ToC that there is a page break after list of tables, however the hyperlink still points to the wrong page
 
+\input{sections/abbreviations}  % define abbreviations
 \Listofabbrev               %  list of abbreviations
 
 \mainmatter                 % main part, arabic numerals for chapters
-\input{sections/abbreviations}
 \include{sections/introduction}
 \include{sections/fundamentals}
 \include{sections/literature_review}
