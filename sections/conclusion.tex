@@ -1,14 +1,27 @@
 \chapter{Conclusion}
 
 \section{Summary}
-Goal: develop a language-independent, SRM-based test suite minimization approach suitable for LASSO. We surveyed 47 studies, defined a six-criteria evaluation (C1--C6), and selected ME-OA-HGS as the most balanced solution across coverage, reduction, scalability, SRM-compatibility, and feasibility~\cite{harrold1993,bach2017,yoo2012}.
 
-\section{Findings}
-ME-OA-HGS achieves 50--75\% reduction while retaining 95--98\% coverage and 90--95\% fault detection in literature, with $O(nm \log m)$ complexity and SRM-only operation. Our implementation extracts coverage metrics from LASSO SRM response objects for a selected target system, applies the minimization algorithm, and produces a reduced SRM preserving the original schema. The design decomposes into modular components (preprocessor, selection engine, assessor, exporter) to support maintainability and integration within LASSO.
+This thesis addresses the challenge of test suite minimization in the Large-Scale Software Observatorium (LASSO), a platform designed for scalable, language-agnostic analysis of software systems. The central objective was to develop a minimization approach that operates directly on LASSO's Stimulus-Response Matrix (SRM) representation while preserving fault-detection capability, achieving substantial test reduction, and maintaining computational scalability.
 
-\section{Next Steps}
+We conducted a systematic literature review encompassing 47 empirical studies published between 1993 and 2024, covering greedy heuristics, exact optimization methods, search-based approaches, and data-driven techniques. Based on this survey, we established a comprehensive evaluation framework consisting of six criteria (C1--C6): coverage preservation, reduction effectiveness, fault-detection retention, computational scalability, SRM compatibility, and implementation feasibility. Through rigorous comparative analysis, we identified the Mutation-Enhanced and Overlap-Aware Harrold-Gupta-Soffa (ME-OA-HGS) algorithm as the optimal solution that balances all evaluation dimensions while satisfying LASSO's architectural constraints~\cite{harrold1993,bach2017,yoo2012}.
+
+\section{Key Findings}
+
+The ME-OA-HGS algorithm demonstrates strong empirical performance across multiple dimensions. Literature reports indicate test suite reductions of 50--75\% while retaining 95--98\% of code coverage and 90--95\% of fault-detection capability~\cite{harrold1993,bach2017}. The algorithm operates in polynomial time with $O(nm \log m)$ complexity, where $n$ represents the number of tests and $m$ denotes the number of requirements, ensuring scalability to industrial-size applications.
+
+Our implementation architecture integrates seamlessly with LASSO's existing infrastructure. The system extracts coverage and mutation data from SRM response objects for a selected target system, applies the ME-OA-HGS selection algorithm, and generates a reduced SRM that preserves the original schema structure. This design maintains LASSO's language independence while enabling test minimization across diverse programming languages without requiring source code access or language-specific tooling.
+
+The modular architecture decomposes the minimization pipeline into four principal components: a preprocessor that extracts and transforms coverage data from SRM cells, a selection engine implementing the ME-OA-HGS algorithm with configurable overlap penalty ($\alpha$) and mutation weighting ($\beta$) parameters, an effectiveness assessor that validates preservation of coverage and mutation scores, and an SRM exporter that constructs the reduced matrix. This separation of concerns enhances maintainability, facilitates testing, and supports future extensions to the minimization capabilities.
+
+\section{Future Work}
 \label{sec:future-work}
-Empirically validate on LASSO-generated SRMs and Defects4J, calibrate overlap penalty $\alpha$, evaluate mutation preservation, and extend to incremental minimization for CI. Explore data-driven variants (e.g., clustering or embeddings) to further reduce redundancy consistent with SRM constraints.
+
+Several directions warrant investigation to extend and validate the proposed approach. Empirical validation on production LASSO-generated SRMs and established benchmarks such as Defects4J~\cite{just2014} would provide concrete evidence of real-world performance. Systematic parameter calibration studies exploring different values for the overlap penalty $\alpha$ and mutation weight $\beta$ could identify optimal configurations for specific project characteristics or quality objectives.
+
+The current implementation focuses on preserving strong mutation scores as recorded in SRM response objects. Future work should investigate techniques for incorporating weak mutation preservation or other semantic adequacy criteria when such data become available in LASSO's infrastructure. Additionally, extending the approach to support incremental minimization—where new tests are progressively added to an existing minimized suite—would enhance applicability in continuous integration environments where test suites evolve continuously.
+
+Data-driven variants leveraging clustering techniques, embedding representations, or machine learning could potentially identify redundancy patterns beyond structural coverage overlap. Such approaches must remain consistent with SRM constraints (i.e., operating without source code access) but could exploit behavioral similarity metrics derived from execution traces or response patterns across multiple systems.
 
 \paragraph{Multi-System Extension.} The current implementation minimizes test stimuli for one target system (single SRM column). Future work should extend this approach to multi-system SRM reduction, maintaining behavioral coverage across several systems concurrently. This would enable simultaneous minimization for multiple implementations while preserving cross-system behavioral comparison capabilities—a key strength of LASSO's SRM-based analysis framework~\cite{Kessel2022}.
 
