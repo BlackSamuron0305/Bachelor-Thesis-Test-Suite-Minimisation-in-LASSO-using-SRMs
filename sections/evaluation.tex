@@ -1,67 +1,78 @@
 \chapter{Evaluation Criteria and Scoring Framework}\label{chap:evaluation}
 
-Selecting an optimal test suite minimization algorithm for integration into the LASSO platform requires systematic evaluation based on well-defined criteria that reflect both theoretical properties and practical constraints. This chapter presents the criteria (C1--C7) and a formal scoring framework to support consistent, evidence-based ranking of candidate algorithms under LASSO's SRM-only constraints.
+Algorithm selection for integration into the LASSO platform is based on explicitly defined, quantifiable criteria reflecting theoretical soundness and practical feasibility. This chapter presents seven evaluation criteria (C1--C7) and a formal scoring framework to support consistent, evidence-based ranking of candidate test-suite minimisation algorithms under LASSO's SRM-only constraints.
+
+The criteria address both empirical performance dimensions (coverage preservation, reduction effectiveness, fault detection retention) and operational requirements (computational scalability, SRM compatibility, implementation feasibility). Together, C1--C7 operationalise the research questions formulated in Section~\ref{sec:rq} through measurable, comparable dimensions.
 
 \section{Evaluation Criteria (C1--C7)}
 
-Our evaluation framework incorporates both quantitative metrics and qualitative assessments derived from established software engineering research methodologies. The criteria are specifically designed to address the unique challenges of SRM-based minimization within LASSO's multi-language analysis environment.
+The evaluation framework incorporates quantitative metrics and qualitative assessments derived from established software engineering research methodologies. The criteria address the challenges of SRM-based minimisation within LASSO's multi-language analysis environment.
 
-\paragraph{Multi-criteria objective via $\beta$-weighting.} The mutation-aware extension of HGS integrates structural coverage and mutation retention into a single selection objective by introducing a scalar $\beta$ that weights mutant kills relative to new structural coverage~\cite{jehan2023}. Algebraically, the coverage vector can be seen as a concatenation of BitSets for structure and (duplicated) mutants; $\beta$ scales the mutant segment, yielding a weighted set representation that is still comparable in the BitSet domain. This embedding enables direct multi-criteria optimization without leaving the SRM/BitSet abstraction and is evaluated under criteria C1, C3, and C7 simultaneously.
+\paragraph{Multi-criteria objective via $\beta$-weighting.} The mutation-aware extension of HGS integrates structural coverage and mutation retention into a single selection objective by introducing a scalar parameter $\beta$ that weights mutant kills relative to new structural coverage~\cite{jehan2023}. The coverage vector is represented as a concatenation of BitSets for structure and mutants, where $\beta$ scales the mutant segment, yielding a weighted set representation comparable in the BitSet domain. This embedding enables direct multi-criteria optimisation within the SRM/BitSet abstraction and is evaluated under criteria C1, C3, and C7 simultaneously.
 
 \subsection{Primary Evaluation Criteria}
 
 \begin{description}
-  \item[\textbf{C1: Coverage Preservation}] The algorithm must maintain code coverage and mutation scores that closely approximate those of the original test suite. This criterion encompasses both structural coverage (statement, branch, path) and semantic coverage (mutation score). Algorithms that prioritize rare requirements (e.g., HGS) demonstrate superior performance in this dimension. Target: $\geq$95\% retention.
+  \item[\textbf{C1: Coverage Preservation}] The algorithm must maintain code coverage that closely approximates that of the original test suite. This criterion encompasses structural coverage (statement, branch, path) and semantic coverage (mutation score). Algorithms that prioritise rare requirements (e.g., HGS) demonstrate superior performance in this dimension. Target: $\geq$95\,\% retention.
   
-  \item[\textbf{C2: Reduction Effectiveness}] Quantified as the percentage of test cases eliminated from the original suite. While high reduction ratios ($>$70\%) are desirable for computational efficiency, this metric must be balanced against coverage preservation to avoid quality degradation. Target: $>$45\% reduction.
+  \item[\textbf{C2: Reduction Effectiveness}] Quantified as the percentage of test cases eliminated from the original suite. High reduction ratios ($>$70\,\%) improve computational efficiency but must be balanced against coverage preservation to avoid quality degradation. Target: $>$45\,\% reduction.
   
-  \item[\textbf{C3: Fault Detection Retention}] The algorithm's ability to preserve tests capable of detecting real software defects. Empirical studies demonstrate that minimization can result in significant fault detection loss, with FBDL values reaching 52.2\%~\cite{shi2018}. This criterion is paramount for maintaining software quality. Target: $\geq$90\% retention.
+  \item[\textbf{C3: Fault Detection Retention}] The algorithm must preserve tests capable of detecting real software defects. Empirical studies demonstrate that minimisation can result in fault detection loss, with FBDL values reaching 52.2\,\%~\cite{shi2018}. This criterion maintains software quality assurance. Target: $\geq$90\,\% retention.
   
-  \item[\textbf{C7: Mutation-Coverage Preservation}] Empirical studies demonstrate that structural coverage alone is an insufficient predictor of fault-detection capability. Jehan and Wotawa~\cite{jehan2023} report that minimisation using mutation coverage as the primary requirement yields up to 70\% reduction with negligible loss of fault detection, whereas Noemmer and Haas~\cite{noemmer2020} observed $\approx$12\% loss when mutation data were ignored. Accordingly, mutation-coverage preservation serves as a complementary quality criterion to ensure that semantic fault-detection strength is retained during minimisation.
+  \item[\textbf{C7: Mutation-Coverage Preservation}] Structural coverage alone is an insufficient predictor of fault-detection capability. Jehan and Wotawa~\cite{jehan2023} report that minimisation using mutation coverage as the primary requirement yields up to 70\,\% reduction with negligible fault detection loss, whereas Noemmer and Haas~\cite{noemmer2020} observed approximately 12\,\% loss when mutation data were ignored. Mutation-coverage preservation serves as a complementary quality criterion ensuring that semantic fault-detection strength is retained during minimisation.
   
-  \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. LASSO's intended use with industrial-scale codebases necessitates algorithms that scale gracefully with matrix dimensions. Target: $O(nm \log m)$ or better.
+  \item[\textbf{C4: Computational Scalability}] The algorithm must demonstrate polynomial-time complexity suitable for large-scale SRM processing. LASSO's deployment with industrial-scale codebases requires algorithms that scale gracefully with matrix dimensions. Target: $O(nm \log m)$ or better.
   
-  \item[\textbf{C5: SRM Compatibility}] The algorithm should operate directly on SRM representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation where coverage data is embedded in response objects rather than extracted from source code analysis~\cite{Kessel2022}.
+  \item[\textbf{C5: SRM Compatibility}] The algorithm must operate directly on SRM representations without requiring additional program structural information (e.g., control-flow graphs). This ensures language independence and compatibility with LASSO's unified representation, where coverage data is embedded in response objects rather than extracted from source code analysis~\cite{Kessel2022}.
   
-  \item[\textbf{C6: Implementation Feasibility}] Assessment of algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's architecture.
+  \item[\textbf{C6: Implementation Feasibility}] Assessed as algorithmic complexity from a software engineering perspective, including implementation effort, maintainability, parameter sensitivity, and integration complexity within LASSO's architecture.
 \end{description}
+
+These seven criteria jointly capture both empirical performance and practical integrability.
 
 \subsection{Justification of Criteria}
 
-The evaluation criteria (C1--C7) are derived directly from the research questions formulated in Section~\ref{sec:rq}. Specifically, RQ1 motivates criteria C1--C3 and C7 (coverage, reduction, fault detection, and mutation preservation) by emphasizing the need to preserve test effectiveness; RQ2 motivates C4--C5 (scalability and SRM compatibility) as preconditions for LASSO integration; and RQ3 motivates C6 (implementation feasibility) by addressing the engineering effort required for practical adoption. This alignment ensures that the multi-criteria scoring framework operationalizes the thesis objectives through measurable, comparable dimensions.
+The evaluation criteria (C1--C7) are derived directly from the research questions formulated in Section~\ref{sec:rq}. RQ1 motivates criteria C1--C3 and C7 (coverage, reduction, fault detection, and mutation preservation) by emphasising the need to preserve test effectiveness. RQ2 motivates C4--C5 (scalability and SRM compatibility) as preconditions for LASSO integration. RQ3 motivates C6 (implementation feasibility) by addressing the engineering effort required for practical adoption. This alignment ensures that the multi-criteria scoring framework operationalises the thesis objectives through measurable, comparable dimensions.
 
 \label{sec:criteria-justification}
 
 
 \section{Scoring Model}
 
-We adopt a weighted multi-criteria scoring model to aggregate performance across the seven criteria~\cite{yoo2012}. Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalized score on criterion $C_i$ for $i \in \{1,\ldots,7\}$. Let $w_i \ge 0$ denote the criterion weights with $\sum_{i=1}^{7} w_i = 1$. The total score is
+We adopt a weighted multi-criteria scoring model to aggregate performance across the seven criteria~\cite{yoo2012}. Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalised score on criterion $C_i$ for $i \in \{1,\ldots,7\}$. Let $w_i \ge 0$ denote the criterion weights with $\sum_{i=1}^{7} w_i = 1$. The total score is
 \begin{equation}
-  \mathrm{Score}(A) = \sum_{i=1}^{7} w_i \cdot s_i(A).
+  \text{Score}(A) = \sum_{i=1}^{7} w_i \cdot s_i(A).
 \end{equation}
-Normalization maps heterogeneous measures (e.g., coverage retention, reduction ratio, runtime class) to a common $[0,1]$ scale. We use monotonically increasing mappings for benefit criteria (C1--C3, C5--C7) and decreasing mappings for cost criteria (C4 when expressed as asymptotic class), with piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}.
 
-Weights reflect LASSO's priorities: coverage, fault preservation, and mutation retention receive higher emphasis than marginal reduction gains (C1, C3, C7 > C2), followed by scalability and SRM compatibility (C4, C5), with implementation feasibility (C6) moderating engineering risk~\cite{Kessel2022,yoo2012}. Sensitivity analysis assesses robustness to perturbations in $w_i$.
+Normalisation maps heterogeneous measures (e.g., coverage retention, reduction ratio, runtime class) to a common $[0,1]$ scale using monotonic mappings: higher-is-better for benefit criteria (C1--C3, C5--C7) and lower-is-better for cost criteria (C4 when expressed as asymptotic class). We employ piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}.
+
+Weights reflect LASSO's priorities. Coverage preservation, fault detection retention, and mutation retention receive the largest weights (C1, C3, C7), followed by reduction effectiveness (C2), scalability and SRM compatibility (C4, C5), and implementation feasibility (C6)~\cite{Kessel2022,yoo2012}. Sensitivity analysis verifies stability of rankings under small perturbations in $w_i$.
+
+This scoring model provides a reproducible and transparent basis for ranking candidate algorithms.
 
 \section{Feasibility Constraints (SRM-only)}
 
 The scoring applies only to algorithms satisfying LASSO's feasibility constraints:
 \begin{itemize}
-  \item \textbf{SRM Compatibility (C5):} Operate on SRMs without requiring language-specific structure such as CFGs. Coverage data must be extractable from SRM response objects rather than source code~\cite{Kessel2022}.
-  \item \textbf{Computational Scalability (C4):} Polynomial-time behavior suitable for large $n,m$ with targets of $O(nm)$ to $O(nm\log m)$~\cite{yoo2012}.
-  \item \textbf{Engineering Feasibility (C6):} Bounded parameterization and maintainable integration within LASSO's pipeline.
+  \item \textbf{SRM Compatibility (C5):} Must operate on SRMs without requiring language-specific structure such as control-flow graphs. Coverage data must be extractable from SRM response objects rather than source code~\cite{Kessel2022}.
+  \item \textbf{Computational Scalability (C4):} Must demonstrate polynomial-time behaviour suitable for large $n,m$ with targets of $O(nm)$ to $O(nm\log m)$~\cite{yoo2012}.
+  \item \textbf{Engineering Feasibility (C6):} Must exhibit bounded parameterisation and maintainable integration within LASSO's pipeline.
 \end{itemize}
-Algorithms violating these constraints (e.g., ILP pipelines requiring CFGs~\cite{mongiovi2020}) are excluded from primary ranking but may be considered in offline analyses where inputs and solver budgets permit.
+
+Algorithms violating these constraints (e.g., ILP pipelines requiring control-flow graphs~\cite{mongiovi2020}) are excluded from primary ranking but may be considered in supplementary comparisons where inputs and solver budgets permit.
+
+These feasibility criteria operationalise LASSO's design principle of language-independent, scalable analysis.
 
 \section{Evaluation Procedure}
 
-We apply the framework as follows:
+The framework is applied through the following procedure:
 \begin{enumerate}
-  \item \textbf{Candidate Set:} Enumerate SRM-compatible algorithms from Chapter~\ref{chap:literature-review} (greedy, overlap-aware, similarity, selected metaheuristics).
-  \item \textbf{Evidence Collection:} Extract literature-reported ranges for coverage retention, reduction, and fault detection, together with asymptotic complexity classes~\cite{harrold1993,rothermel1998,bach2017,shi2018,yoo2012}.
-  \item \textbf{Normalization:} Map each metric to $s_i(A) \in [0,1]$ using calibrated functions consistent with LASSO targets (e.g., $\ge 95\%$ coverage retention for C1).
-  \item \textbf{Weighting:} Set $w_i$ to reflect organizational priorities; verify stability with local sensitivity analysis.
-  \item \textbf{Aggregation and Ranking:} Compute Score$(A)$ and produce a strict or partial order; apply tie-breakers favoring higher C1/C3.
-  \item \textbf{Selection:} Carry forward the top-ranked algorithm(s) to Chapter~5 for comparative presentation and final selection for LASSO integration.
+  \item \textbf{Candidate Set:} Enumerate SRM-compatible algorithms from Chapter~\ref{chap:literature-review} (greedy, overlap-aware, similarity-based, selected metaheuristics).
+  \item \textbf{Evidence Collection:} Extract literature-reported ranges for coverage retention, reduction, and fault detection, together with asymptotic complexity classes~\cite{harrold1993,rothermel1998,bach2017,shi2018,yoo2012}. Use these values to calibrate $s_i(A)$ and $w_i$.
+  \item \textbf{Normalisation:} Map each metric to $s_i(A) \in [0,1]$ using calibrated functions consistent with LASSO targets (e.g., $\ge 95\,\%$ coverage retention for C1).
+  \item \textbf{Weighting:} Set $w_i$ to reflect organisational priorities. Verify stability with local sensitivity analysis.
+  \item \textbf{Aggregation and Ranking:} Compute $\text{Score}(A)$ and produce a strict or partial order. Apply tie-breakers favouring higher C1/C3 scores.
+  \item \textbf{Selection:} Carry forward the top-ranked algorithm(s) to Chapter~\ref{chap:approach} for comparative presentation and final selection for LASSO integration.
 \end{enumerate}
-This separation of concerns ensures that Chapter~\ref{chap:evaluation} states the criteria and scoring method, while Chapter~5 reports the comparative tables, trade-offs, and the resulting selection decision.
+
+The subsequent chapter applies this framework to compare candidate algorithms and present the final selection for LASSO integration.

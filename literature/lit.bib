@@ -20,8 +20,8 @@
 }
 
 @article{chvatal1979,
-  title     = {A greedy heuristic for the set-covering problem},
-  author    = {Chvatal, Vasek},
+  author    = {V{\'a}{\v{s}}ek Chv{\'a}tal},
+  title     = {A Greedy Heuristic for the Set-Covering Problem},
   journal   = {Mathematics of Operations Research},
   volume    = {4},
   number    = {3},
@@ -30,14 +30,19 @@
   publisher = {INFORMS}
 }
 
-@book{Boehm1981,
+
+@article{boehm1981,
   author    = {Barry W. Boehm},
   title     = {Software Engineering Economics},
-  year      = {1981},
-  publisher = {Prentice Hall},
-  address   = {Englewood Cliffs, NJ},
-  isbn      = {0138221227}
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {SE-10},
+  number    = {1},
+  pages     = {4--21},
+  year      = {1984},
+  publisher = {IEEE},
+  doi       = {10.1109/TSE.1984.5010193}
 }
+
 
 % Duplicate entry removed; use Boehm1981 consistently
 
@@ -63,14 +68,16 @@
 
 @article{yoo2012,
   author    = {Shin Yoo and Mark Harman},
-  title     = {Regression testing minimization, selection and prioritization: A survey},
+  title     = {Regression Testing Minimisation, Selection and Prioritisation: A Survey},
   journal   = {Software Testing, Verification and Reliability},
   volume    = {22},
   number    = {2},
   pages     = {67--120},
   year      = {2012},
-  publisher = {Wiley}
+  publisher = {Wiley},
+  doi       = {10.1002/stvr.430}
 }
+
 
 @article{rothermel1998,
   author    = {Gregg Rothermel and Mary Jean Harrold},
@@ -168,23 +175,25 @@
 }
 
 @article{harrold1993,
-  author  = {Mary~Jean Harrold and Rajiv Gupta and Mary~Lou Soffa},
-  title   = {A Methodology for Controlling the Size of a Test Suite},
-  journal = {ACM Transactions on Software Engineering and Methodology},
-  volume  = {2},
-  number  = {3},
-  pages   = {270--285},
-  year    = {1993}
-}
-
-@inproceedings{offutt1997,
-  author    = {A. Jefferson Offutt and R. H. Untch},
-  title     = {Mutation 2000: The Next Generation of Mutation Testing Systems},
-  booktitle = {Proceedings of the 1997 International Symposium on Software Testing and Analysis (ISSTA)},
-  pages     = {140--155},
-  year      = {1997},
+  author    = {Mary Jean Harrold and Rajiv Gupta and Mary Lou Soffa},
+  title     = {A Methodology for Controlling the Size of a Test Suite},
+  journal   = {ACM Transactions on Software Engineering and Methodology},
+  volume    = {2},
+  number    = {3},
+  pages     = {270--285},
+  year      = {1993},
   publisher = {ACM}
 }
+
+
+@techreport{offutt2000,
+  author      = {A. Jefferson Offutt and Roland H. Untch},
+  title       = {Mutation 2000: Uniting the Orthogonal},
+  institution = {George Mason University and Middle Tennessee State University},
+  year        = {2000},
+  note        = {Technical report supported by the National Science Foundation, Awards CCR-9804011 and CCR-9707792}
+}
+
 
 @misc{jacoco-counters,
   author       = {{JaCoCo Project}},
@@ -230,6 +239,27 @@
   organization = {IEEE}
 }
 
+@article{zhang2010,
+  author  = {Lingming Zhang and Tao Xie and Lu Zhang and Nikolai Tillmann and Jonathan de Halleux and Hong Mei},
+  title   = {Test generation via dynamic symbolic execution for mutation testing},
+  journal = {Software Maintenance and Evolution: Research and Practice},
+  volume  = {22},
+  number  = {4},
+  pages   = {261--285},
+  year    = {2010},
+  doi     = {10.1002/smr.439}
+}
+
+@inproceedings{jeffrey2005,
+  author    = {Dennis Jeffrey and Neelam Gupta},
+  title     = {Test Suite Reduction with Selective Redundancy},
+  booktitle = {Proceedings of the 21st IEEE International Conference on Software Maintenance (ICSM)},
+  pages     = {549--558},
+  year      = {2005},
+  publisher = {IEEE},
+  doi       = {10.1109/ICSM.2005.88}
+}
+
 @inproceedings{shi2018,
   author       = {August Shi and Alex Gyori and Suleman Mahmood and Peiyuan Zhao and Darko Marinov},
   title        = {Evaluating Test-Suite Reduction in Real Software Evolution},
@@ -243,9 +273,13 @@
   author    = {Raphael Noemmer and Roman Haas},
   title     = {An Evaluation of Test Suite Minimization Techniques},
   booktitle = {Software Quality: Quality Intelligence in Software and Systems Engineering},
+  editor    = {Dietmar Winkler and Stefan Biffl and Daniel Mendez and Johannes Bergsmann},
   pages     = {51--66},
   year      = {2020},
-  publisher = {Springer}
+  series    = {Lecture Notes in Business Information Processing},
+  volume    = {383},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-030-39250-9\_4}
 }
 
 @inproceedings{just2014,
@@ -259,6 +293,17 @@
   doi       = {10.1145/2610384.2628055}
 }
 
+@inproceedings{elbaum2001,
+  author    = {Alexey G. Malishevsky and Gregg Rothermel and Sebastian Elbaum},
+  title     = {Incorporating Varying Test Costs and Fault Severities into Test Case Prioritization},
+  booktitle = {Proceedings of the 23rd International Conference on Software Engineering (ICSE 2001)},
+  pages     = {329--338},
+  year      = {2001},
+  publisher = {IEEE Computer Society},
+  doi       = {10.1109/ICSE.2001.919106}
+}
+
+
 @article{elbaum2002,
   author    = {Sebastian Elbaum and Alexey G. Malishevsky and Gregg Rothermel},
   title     = {Test case prioritization: A family of empirical studies},
@@ -271,15 +316,49 @@
   doi       = {10.1109/32.988497}
 }
 
+@inproceedings{herzig2015,
+  author    = {Kim Herzig and Michaela Greiler and Jacek Czerwonka and Brendan Murphy},
+  title     = {The Art of Testing Less without Sacrificing Quality},
+  booktitle = {Proceedings of the 37th International Conference on Software Engineering (ICSE)},
+  year      = {2015},
+  volume    = {1},
+  pages     = {483--493},
+  publisher = {IEEE Press},
+  doi       = {10.1109/ICSE.2015.66}
+}
+
+@article{allamanis2018,
+  author  = {Miltiadis Allamanis and Earl T. Barr and Premkumar Devanbu and Charles Sutton},
+  title   = {A Survey of Machine Learning for Big Code and Naturalness},
+  journal = {ACM Comput. Surv.},
+  volume  = {51},
+  number  = {4},
+  pages   = {81:1--81:37},
+  year    = {2018},
+  doi     = {10.1145/3212695}
+}
+
+@article{wong1995,
+  author  = {W. Eric Wong and Joseph R. Horgan and Saul London and Hiralal Agrawal},
+  title   = {A Study of Effective Regression Testing in Practice},
+  journal = {Journal of Systems and Software},
+  volume  = {28},
+  number  = {2},
+  year    = {1995},
+  pages   = {135--144},
+  doi     = {10.1016/0164-1212(94)00089-4}
+}
+
 @article{jehan2023,
-  author  = {Stephan Jehan and Franz Wotawa},
+  author  = {Seema Jehan and Franz Wotawa},
   title   = {An Empirical Study of Greedy Test Suite Minimization Techniques Using Mutation Coverage},
   journal = {Information and Software Technology},
   volume  = {163},
-  year    = {2023},
   pages   = {107329},
+  year    = {2023},
   doi     = {10.1016/j.infsof.2023.107329}
 }
+
 
 @inproceedings{noemmerhaas2020,
   author    = {Raphael Noemmer and Roman Haas},

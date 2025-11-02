@@ -1,63 +1,64 @@
 \chapter{Minimization Algorithms}\label{chap:literature-review}
 
-This chapter presents a systematic survey of test suite minimization approaches documented in the academic literature. Our review methodology involved searching major computer science databases (IEEE Xplore, ACM Digital Library, SpringerLink) using keywords including ``test suite minimization,'' ``test suite reduction,'' and ``regression testing optimization.'' We identified 47 relevant papers published between 1993 and 2024, focusing on algorithmic approaches, empirical evaluations, and industrial applications.
+This chapter presents a systematic survey of test-suite minimisation approaches documented in the academic literature. We reviewed 47 primary studies published between 1993 and 2024, identified through searches of major computer science databases (IEEE Xplore, ACM Digital Library, SpringerLink) using keywords ``test suite minimization,'' ``test suite reduction,'' and ``regression testing optimization.'' We focus on algorithmic approaches, empirical evaluations, and industrial applications.
 
-We organize the review according to the taxonomic framework established in Chapter~2, examining greedy heuristics, exact optimization methods, search-based approaches, and data-driven techniques. This systematic analysis forms the basis for our criteria-based comparative evaluation in Chapter~\ref{chap:evaluation}.
+We organise the review according to the taxonomic framework established in Chapter~\ref{chap:fundamentals}, examining greedy heuristics, exact optimisation methods, search-based approaches, and data-driven techniques. This systematic analysis forms the empirical foundation for the criteria-based comparative evaluation in Chapter~\ref{chap:evaluation}.
 
 \section{Greedy Heuristics}
 
 \subsection{Classical Greedy}
 
-The classical greedy algorithm represents the most straightforward heuristic approach to test suite minimization~\cite{chvatal1979}. The algorithm operates by iteratively selecting the test case that covers the maximum number of currently uncovered requirements. Upon selecting a test, all requirements it covers are marked as satisfied. This process continues until all requirements are covered.
-
-The time complexity is $O(nm)$ where $n$ is the number of test cases and $m$ is the number of requirements, making it computationally efficient. However, the algorithm provides only a logarithmic approximation ratio of $O(\ln m)$ for the set cover problem. This theoretical limitation manifests as suboptimal reductions when coverage exhibits significant overlap between test cases.
+The classical greedy algorithm iteratively selects the test case covering the maximum number of currently uncovered requirements, marking all covered requirements as satisfied until complete coverage is achieved~\cite{chvatal1979}. The time complexity is $O(nm)$ where $n$ denotes the number of test cases and $m$ denotes the number of requirements. The algorithm provides an $O(\ln m)$ approximation ratio for the minimum set-cover problem. This theoretical bound manifests as suboptimal reductions when coverage exhibits significant overlap between test cases.
 
 \subsection{Harrold--Gupta--Soffa}
 
-Harrold, Gupta, and Soffa proposed a refined greedy heuristic that addresses limitations of the classical approach by prioritizing requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation.
+Harrold, Gupta, and Soffa proposed a refined greedy heuristic that prioritises requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation. Under the set-cover formulation, the risk of losing unique requirements increases when the selection metric overvalues abundant requirements. By prioritising rare requirements early, HGS increases the probability that each unique requirement is covered by at least one selected test, reducing the need for later corrective additions. This strategy preserves the greedy nature and the $O(\ln m)$ approximation ratio inherited from set cover~\cite{chvatal1979} while improving expected retention on practical instances with skewed cardinality distributions.
 
-\textbf{Why rarity helps.} Under the set-cover view, the risk of losing unique requirements increases when the selection metric overvalues abundant (high-cardinality) requirements. By giving preference to rare requirements early, HGS increases the probability that each unique requirement is claimed by at least one selected test, reducing the need for later corrective additions. This choice preserves the greedy nature and the $O(\ln m)$ approximation behavior inherited from set cover~\cite{chvatal1979}, while improving expected retention on practical instances with skewed cardinality distributions.
-
-The algorithm operates in phases based on requirement cardinality: Phase 1 selects all tests that uniquely cover any requirement (cardinality=1), Phase 2 processes requirements with cardinality=2, and so forth until all requirements are covered. By prioritizing rare requirements, HGS reduces the likelihood of eliminating tests with unique coverage characteristics.
-
-Empirical studies demonstrate that HGS produces smaller minimized suites compared to classical greedy (45--70\% reduction) while maintaining superior coverage preservation (95--98\% retention)~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting. Overlap-aware extensions act as diversity-preserving refinements of HGS that penalize redundant selections and further improve retention without altering the underlying approximation class~\cite{bach2017}.
+The algorithm operates in phases based on requirement cardinality: Phase~1 selects all tests that uniquely cover any requirement (cardinality = 1), Phase~2 processes requirements with cardinality = 2, and so forth until all requirements are covered. Empirical studies demonstrate that HGS achieves 45--70\,\% reduction while maintaining 95--98\,\% coverage retention~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting. Overlap-aware extensions refine HGS by penalising redundant selections and further improve retention without altering the underlying approximation class~\cite{bach2017}.
 
 \subsection{Delayed Greedy}
 
-Tallam and Gupta's delayed greedy~\cite{tallam2005} uses concept lattices to eliminate implied redundancies before greedy selection, achieving smaller suites than HGS but with $O(n^2m)$ complexity due to lattice analysis overhead.
+Tallam and Gupta's delayed greedy algorithm~\cite{tallam2005} uses concept lattices to eliminate implied redundancies before greedy selection. This approach achieves smaller suites than HGS but incurs $O(n^2m)$ complexity due to lattice construction overhead.
 
-\section{Exact Optimization Approaches}
+\section{Exact Optimisation Approaches}
 
 \subsection{ILP and REDUNET}
-TSM formulated as (weighted) set-cover ILP minimizes test costs while covering all requirements. Exact formulations can produce optimal or near-optimal reduced suites but are NP-hard in general, often requiring solver time that grows exponentially with problem size~\cite{yoo2012}. REDUNET~\cite{mongiovi2020} integrates CFG analysis into an ILP pipeline, reporting reductions around 90\% with near-complete coverage, but it requires program structure that is unavailable in SRM-only settings and exhibits exponential worst-case runtime.
 
-\subsection{Constraint / Graph Extensions}
-Approaches that enrich the optimization with structural constraints (e.g., control-flow or dependency graphs) can improve faithfulness of the objective but at the cost of additional inputs that are not available in SRM-only scenarios.
+Test-suite minimisation formulated as weighted set-cover Integer Linear Programming (ILP) minimises test costs while covering all requirements. Exact formulations produce optimal or near-optimal solutions but are NP-hard, often requiring solver time that grows exponentially with problem size~\cite{yoo2012}. REDUNET~\cite{mongiovi2020} integrates control-flow graph (CFG) analysis into an ILP pipeline, reporting reductions around 90\,\% with near-complete coverage retention. However, REDUNET requires program structure unavailable in SRM-only settings and exhibits exponential worst-case runtime.
+
+\subsection{Constraint and Graph Extensions}
+
+Approaches that enrich optimisation with structural constraints (e.g., control-flow or dependency graphs) can improve objective faithfulness at the cost of additional inputs unavailable in SRM-only scenarios.
 
 \section{Search-Based and Metaheuristic Approaches}
 
 \subsection{Genetic Algorithms}
-Search-based software engineering treats TSM as a search problem. Genetic algorithms (GAs) evolve subsets of tests according to a fitness function that balances coverage retention and suite size~\cite{yoo2012}. These methods can find high-quality solutions but require careful parameter tuning (e.g., population size, mutation rates) and may converge slowly for large SRMs.
+
+Search-based software engineering treats test-suite minimisation as a multi-objective optimisation problem balancing suite size and adequacy. Genetic algorithms (GAs) evolve test subsets according to a fitness function that trades coverage retention against suite size~\cite{yoo2012}. GAs provide flexibility but require careful parameter tuning (e.g., population size $p$, mutation rates) and exhibit $O(gnm)$ time complexity where $g$ denotes the number of generations.
 
 \subsection{Quantum-Inspired GA}
-Hussein et al. propose a quantum-inspired genetic algorithm (QIGA) that uses quantum superposition and rotation operators to improve convergence properties relative to classical GAs~\cite{hussein2020}. While promising on smaller instances, performance and repeatability on very large SRMs remain sensitive to parameterisation.
 
-\subsection{Simulated Annealing / PSO}
-Other metaheuristics such as simulated annealing and particle swarm optimization have also been explored for TSM in the broader search-based testing literature, though typically as variants on the same trade-off between solution quality and computational effort~\cite{yoo2012}.
+Hussein et al.\ propose a quantum-inspired genetic algorithm (QIGA) that uses quantum superposition and rotation operators to improve convergence properties relative to classical GAs~\cite{hussein2020}. QIGA maintains $O(gnm)$ complexity but exhibits sensitivity to parameterisation, with performance and repeatability on large SRMs requiring further empirical validation.
+
+\subsection{Simulated Annealing and PSO}
+
+Metaheuristics such as simulated annealing and particle swarm optimisation (PSO) have been explored for test-suite minimisation~\cite{yoo2012}. These methods represent variants on the fundamental trade-off between solution quality and computational effort, with performance dependent on problem-specific tuning.
 
 \section{Data-Driven and Similarity-Based Approaches}
 
-\subsection{Clustering / Jaccard}
-Similarity-based methods (e.g., Jaccard distance over coverage vectors) cluster tests and select representatives to reduce redundancy. These approaches are intuitive and SRM-compatible but typically incur $O(n^2 m)$ similarity computation cost for $n$ tests and $m$ requirements, which must be amortised with indexing or approximation in large-scale settings.
+\subsection{Similarity-Based Methods}
+
+Similarity-based methods compute distance metrics (e.g., Jaccard distance) over coverage vectors, cluster tests, and select representatives to reduce redundancy. These approaches are intuitive and SRM-compatible but incur $O(n^2 m)$ similarity computation cost for $n$ tests and $m$ requirements. This cost must be amortised through indexing or approximation in large-scale settings.
 
 \subsection{Overlap-Aware Methods}
-Overlap-aware algorithms explicitly consider pairwise test intersections to prioritize tests that add unique coverage, achieving up to 50\% higher effectiveness within fixed time budgets relative to traditional greedy selection~\cite{bach2017}. The additional overhead of overlap computation is offset by improved coverage retention and reduced duplication in the selected suite.
 
-Table~\ref{tab:literature-complexity} summarizes the computational complexity characteristics of the surveyed algorithmic approaches.
+Overlap-aware algorithms explicitly consider pairwise test intersections to prioritise tests that add unique coverage. Bach et al.\ report up to 50\,\% higher effectiveness within fixed time budgets relative to classical greedy selection~\cite{bach2017}. The additional $O(n^2 m)$ overlap computation overhead is offset by improved coverage retention and reduced duplication in the selected suite.
+
+Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
 
 \begin{table}[H]
   \centering
-  \caption{Computational Complexity of Test Suite Minimization Algorithms}
+  \caption{Computational complexity of representative test-suite minimisation algorithms.}
   \label{tab:literature-complexity}
   \begin{threeparttable}
     \begin{tabular}{|l|c|c|l|}
@@ -83,19 +84,17 @@ Table~\ref{tab:literature-complexity} summarizes the computational complexity ch
     \end{tabular}
     \begin{tablenotes}
       \small
-      \item[a] $|V|$ and $|E|$ denote CFG vertices and edges
-      \item[b] $g$ denotes number of generations
-      \item[c] $p$ denotes population size
+      \item[a] $|V|$ and $|E|$ denote control-flow graph vertices and edges.
+      \item[b] $g$ denotes number of generations.
+      \item[c] $p$ denotes population size.
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-% Empirical evidence moved to Chapter~\ref{chap:evaluation} to streamline narrative and avoid redundancy.
-
 \section{Summary and Scope Decision}
 
-Greedy heuristics provide strong baselines with predictable performance: classical greedy offers $O(nm)$ runtime but can over-select under high overlap~\cite{chvatal1979}, whereas HGS prioritizes rare requirements to improve retention at modest additional cost $O(nm\log m)$~\cite{harrold1993}. Delayed greedy further reduces redundancy via lattice-based implication analysis but increases complexity to $O(n^2 m)$~\cite{tallam2005}.
+Greedy heuristics provide strong baselines with predictable performance. Classical greedy offers $O(nm)$ runtime but over-selects under high overlap~\cite{chvatal1979}. HGS prioritises rare requirements to improve retention at modest additional cost $O(nm\log m)$~\cite{harrold1993}. Delayed greedy further reduces redundancy via lattice-based implication analysis but increases complexity to $O(n^2 m)$~\cite{tallam2005}.
 
-Exact ILP formulations yield optimality guarantees at exponential worst-case cost~\cite{yoo2012}, and hybrid pipelines such as REDUNET demonstrate substantial reductions by leveraging CFG information~\cite{mongiovi2020}. However, such structure-dependent inputs do not exist in SRM-only settings and thus fall outside the feasible design space for LASSO's black-box SRM pipeline. Search-based metaheuristics (GA/QIGA, SA/PSO) are flexible but impose tuning burden and higher computational overhead on large matrices~\cite{yoo2012,hussein2020}. Similarity- and overlap-aware methods align well with SRM availability and directly target redundancy reduction~\cite{bach2017}.
+Exact ILP formulations yield optimality guarantees at exponential worst-case cost~\cite{yoo2012}. Hybrid pipelines such as REDUNET leverage CFG information to achieve substantial reductions~\cite{mongiovi2020}, but such structure-dependent inputs do not exist in SRM-only settings and fall outside the feasible design space for LASSO's black-box pipeline. Search-based metaheuristics (GA, QIGA, simulated annealing, PSO) provide flexibility but impose parameter tuning burden and higher computational overhead on large matrices~\cite{yoo2012,hussein2020}. Similarity-based and overlap-aware methods align well with SRM availability and directly target redundancy reduction~\cite{bach2017}.
 
-Given LASSO's constraints (SRM-only inputs, large-scale execution, and pipeline integration requirements), we restrict the candidate space to SRM-compatible methods with polynomial-time complexity and minimal external assumptions. The subsequent chapters evaluate these SRM-compatible methods using a unified scoring framework, independent of LASSO implementation details.
+Given LASSO's constraints---SRM-only inputs, large-scale execution, and pipeline integration requirements---we restrict the candidate space to SRM-compatible methods with polynomial-time complexity and minimal external assumptions. The next chapter evaluates these SRM-compatible algorithms under a unified scoring framework to identify the most suitable candidate for LASSO integration.
