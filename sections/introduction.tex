@@ -23,7 +23,7 @@ LASSO employs \emph{Stimulus--Response Matrices} (SRMs)~\cite{Kessel2022} for sy
 
 Despite LASSO's capabilities, the platform currently lacks integrated test-suite minimization. When analyzing hundreds or thousands of systems, redundant test stimuli unnecessarily prolong execution time and increase infrastructure costs. Integrating minimization would enable LASSO to reduce test redundancy while preserving behavioral coverage necessary for cross-system comparison.
 
-\section{Problem Statement}
+\section{Problem Statement}\label{sec:problem-statement}
 
 Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a test suite and $R = \{r_1, r_2, \ldots, r_m\}$ denote coverage requirements. Each test $t_i \in T$ covers a subset $C(t_i) \subseteq R$. The \emph{test-suite minimization problem} seeks the smallest subset $S^* \subseteq T$ such that $C(S^*) = C(T) = \bigcup_{t_i \in T} C(t_i)$. This is equivalent to the minimum set-cover problem and is NP-complete~\cite{yoo2012}, requiring heuristic algorithms~\cite{harrold1993} that balance reduction effectiveness, coverage preservation, and computational efficiency. Figure~\ref{fig:problem-statement} illustrates this optimization.
 
@@ -97,6 +97,3 @@ The remainder of this thesis is organised as follows:
   \item[Chapter~7] discusses limitations, trade-offs, and deployment considerations.
   \item[Chapter~8] concludes the thesis and outlines future work.
 \end{description}
-
-
-

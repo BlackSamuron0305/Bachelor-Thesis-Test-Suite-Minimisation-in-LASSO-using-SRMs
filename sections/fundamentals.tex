@@ -4,211 +4,213 @@ This chapter establishes the theoretical foundation for this thesis by introduci
 
 \section{Test Coverage and Mutation Score}
 
-\emph{Code coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite~\cite{zhu1997}. Coverage metrics indicate structural thoroughness but provide limited insight into fault-detection capability.
+\emph{Test coverage} quantifies the proportion of program elements (statements, branches, paths, or conditions) exercised by a test suite~\cite{zhu1997}. Coverage metrics indicate structural thoroughness but provide limited insight into fault-detection capability.
 
-\subsection{Detailed Explanation of Coverage Metrics}
-The test-suite minimisation process requires a formal definition of \emph{coverage requirements}. In this work, we leverage the JaCoCo code-coverage tool, which provides a set of metrics that are stored in the Stimulus--Response Matrix (SRM) and treated as the requirement set $R$ that the minimised test suite must satisfy. JaCoCo reports coverage across six entities, each measured by five values, yielding $6 \times 5 = 30$ total metrics used as requirements~\cite{jacoco-counters}:
+\subsection{Coverage Metrics}
+\emph{Test coverage} measures which parts of a program are executed during test execution. Different coverage criteria define what constitutes a ``part'' of the program, each providing different levels of granularity and testing thoroughness~\cite{zhu1997}. The following coverage types are commonly employed in test-suite evaluation:
 
 \begin{itemize}
-  \item \textbf{Entities} (granularity levels): INSTRUCTION (bytecode instructions), LINE (source code lines), BRANCH (conditional branches), METHOD (methods), COMPLEXITY (cyclomatic complexity), CLASS (classes)
-  \item \textbf{Values} (per entity): TOTALCOUNT (total items), COVEREDCOUNT (executed items), MISSEDCOUNT (non-executed items), COVEREDRATIO (fraction covered), MISSEDRATIO (fraction missed)
+  \item \textbf{Instruction Coverage:} measures the proportion of bytecode instructions executed by the test suite. This is the finest-grained coverage metric, capturing low-level execution at the virtual machine level.
+  
+  \item \textbf{Line Coverage:} measures the proportion of source code lines executed. A line is considered covered if at least one instruction from that line is executed. This metric provides intuitive feedback directly tied to source code.
+  
+  \item \textbf{Branch Coverage:} measures the proportion of conditional branches (if-statements, loops, switch cases) whose true and false outcomes are both executed. Branch coverage ensures that both paths from each decision point are tested.
+  
+  \item \textbf{Method Coverage:} measures the proportion of methods invoked during test execution. A method is considered covered if it is called at least once, regardless of internal execution paths.
+  
+  \item \textbf{Complexity Coverage:} based on cyclomatic complexity, this metric measures the proportion of independent execution paths exercised. Higher complexity indicates more decision points and potential execution paths.
+  
+  \item \textbf{Class Coverage:} measures the proportion of classes instantiated or whose static methods are invoked during testing. This coarse-grained metric indicates overall system utilisation.
 \end{itemize}
 
-The coverage value used in the minimisation algorithm is the set of all 30 aggregate metrics (e.g., \texttt{LINE\_COVEREDCOUNT = 50}, \texttt{BRANCH\_TOTALCOUNT = 30}) that constitute the requirements $R$. The objective is to select a subset of tests that collectively covers these metrics. In the available dataset, coverage metrics are aggregated at class level (sheetId=\texttt{JACOCO}) and not at per-test granularity. Consequently, every test appears to cover the same set of 30 metrics. This limitation requires the minimisation to rely primarily on mutation information for discriminating tests, while preservation of the mutation score serves as the principal correctness guarantee~\cite{yoo2012}.
+Comprehensive test evaluation requires multi-level coverage metrics that capture program execution at different granularities. Different coverage types detect different classes of faults~\cite{zhu1997}---a test suite that achieves high line coverage but low branch coverage may miss faults in conditional logic, while high method coverage without adequate complexity coverage may fail to exercise all execution paths within complex methods. Employing coverage metrics across the entire spectrum from fine-grained instruction-level execution to coarse-grained class-level utilisation provides a more complete assessment of test-suite quality and fault-detection capability.
 
-\subsection{Strong Mutation Score as the Minimisation Criterion}
-\emph{Mutation testing} evaluates test-suite quality by introducing small syntactic modifications (\emph{mutants}) into the source code and assessing whether tests distinguish the mutant from the original program~\cite{jia2011}. Two criteria are commonly distinguished~\cite{offutt2000}:
+\subsection{Mutation Score}
+
+\emph{Mutation testing} is a fault-based technique that quantifies the effectiveness of a test suite by measuring its ability to detect artificially introduced faults, known as \emph{mutants}~\cite{jia2011}. Each mutant is a slightly modified version of the original program, created by applying a syntactic change such as replacing arithmetic or logical operators, altering conditional expressions, or modifying constants. A test suite is then executed against both the original and the mutated versions to determine whether it can distinguish them.
+
+The \emph{mutation score} expresses the proportion of mutants detected by the test suite and is defined as:
+\[
+\text{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\,\%.
+\]
+A mutant is considered \emph{killed} when a test produces a different observable outcome for the mutant than for the original program. This typically means that the test passes on the original system but fails when executed on the mutant. Conversely, if a test yields the same outcome on both versions, the mutant \emph{survives}.
+
+\paragraph{Mutation Types.}
+Two main types of mutation testing are commonly distinguished~\cite{offutt2000}:
 \begin{enumerate}
-  \item \textbf{Weak Mutation:} a mutant is killed if its execution state differs from the original program's state at the mutation point.
-  \item \textbf{Strong Mutation:} a mutant is killed if the final externally observable behaviour differs, leading to a different test verdict.
+  \item \textbf{Weak Mutation:} a mutant is detected if the program’s internal state immediately after executing the mutated statement differs from that of the original program. Detection is based on local state divergence rather than final output.
+  \item \textbf{Strong Mutation:} a mutant is detected only if this internal divergence propagates to the program’s externally observable behaviour, such as output values or test verdicts. This form requires execution to completion and comparison of final results.
 \end{enumerate}
 
-This work employs exclusively the \textbf{Strong Mutation Score}. The SRM records only the final pass/fail result of executing a test against a mutant variant; thus, a mutant is considered killed if the original test passes while execution on the mutant fails. Because intermediate program states are not recorded in the SRM, weak kills cannot be detected. The preservation guarantee therefore applies strictly to the strong mutation score~\cite{offutt2000,yoo2012}.
+Weak mutation focuses on local sensitivity to code changes, while strong mutation measures externally visible behavioural differences. Both flavours aim to approximate a test suite’s fault-detection capability, with the mutation score serving as a quantitative indicator of test effectiveness.
 
-The standard definition of mutation score is:
-\[
-\text{Mutation Score} = \frac{\text{mutants killed}}{\text{total mutants}} \times 100\,\%.
-\]
 
 \section{Stimulus--Response Matrices}\label{sec:srm}
 
-The LASSO platform employs \emph{Stimulus--Response Matrices} (SRMs) as a unified, language-independent representation for capturing behavioural execution data across multiple software systems~\cite{Kessel2022}. An SRM is a two-dimensional matrix $M$ where rows represent stimuli (test sequences, method invocations, or API calls), columns represent executable software systems, and each matrix element $M_{ij}$ contains the structured response object produced by system $j$ when executed with stimulus $i$:
+Stimulus--Response Matrices (SRMs) constitute the central data structure of LASSO's experimental framework for \emph{Test-Driven Software Experimentation} (TDSE)~\cite{Kessel2022}. They provide a unified, language-independent format for recording and comparing the run-time behaviour of software systems under controlled experimental conditions. To understand how SRMs are constructed, it is necessary to first introduce their two input artefacts: \emph{Sequence Sheets} and \emph{Actuation Sheets}.
 
-\begin{equation}
-M_{ij} = \text{response object of system } j \text{ to stimulus } i.
-\end{equation}
+\subsection{Sequence Sheets and Actuation Sheets}
 
-That is, $M_{ij}$ denotes the structured response produced by system $j$ when executed with stimulus $i$. Each response object can contain structured data including:
+\textbf{Sequence Sheets} describe the ordered stimuli applied to a system under test. They provide a tabular, human-readable, and directly executable representation of test cases that bridges the gap between code-based unit tests and tabular acceptance tests such as FIT. Each sequence sheet defines a linear sequence of method invocations together with their input parameters and expected outputs. The notation is deliberately language-independent and focuses on behavioural semantics rather than programming syntax.
+
+A typical sequence sheet consists of the following columns:
 \begin{itemize}
-  \item Textual output, return values, and exceptions
-  \item Execution metrics (runtime, memory consumption)
-  \item Code-coverage data (statement, branch, path coverage percentages)
-  \item Mutation-testing results (mutation score, killed mutants)
-  \item Execution traces and logs
+  \item \textbf{Output column:} the expected result or externally observable state after each operation.
+  \item \textbf{Operation column:} the operation or method name to be invoked.
+  \item \textbf{Service column:} either the class to be instantiated (\texttt{create}) or the instance on which the operation is called.
+  \item \textbf{Input columns:} zero or more arguments or references to previously created objects.
 \end{itemize}
 
-\textbf{SRM Generation Mechanism:} SRMs are produced through LASSO's experimental execution pipeline using two key constructs~\cite{Kessel2022}:
-\begin{enumerate}
-  \item \emph{Sequence Sheets} define ordered execution steps, specifying how stimuli are constructed (e.g., method call sequences with parameters).
-  \item \emph{Actuation Sheets} define the experimental setup, specifying which systems are tested with which stimuli in LASSO's execution arena.
-\end{enumerate}
+Each row represents one stimulus---a method invocation with given inputs and expected output---applied to the system under test. Objects can be instantiated using \texttt{create}, and cell references (e.g., \texttt{A1}, \texttt{D3}) are used to reuse or pass object instances between rows. Parameterised sequence sheets generalise this approach by introducing placeholders (e.g., \texttt{?p1}, \texttt{?p2}) for parameters or implementation classes, which can be substituted at runtime to produce multiple test variants. Thus, sequence sheets define the full set of stimuli for an experiment.
 
-The pipeline operates as:
-\[
-\text{Sequence Sheet} + \text{Actuation Sheet} \xrightarrow{\text{Arena}} \text{SRM}.
-\]
-LASSO's Arena component executes each (stimulus, system) pair and records the resulting behavioural observations in SRM cells $M_{ij}$. Each cell captures the execution result including outcome status, coverage metrics, mutation scores, runtime measurements, and exception logs. The resulting SRM records observed system behaviours at two levels: (1) \emph{black-box view}, capturing only input/output parameters, and (2) \emph{white-box view}, recording the complete method invocation trace with all intermediate states.
-
-\textbf{Example:} Consider a simple SRM with 4 stimuli (test sequences) and 6 systems, where each response object contains execution results:
-\begin{equation}
-M = \begin{pmatrix}
-\{\text{pass}, 85\,\%, 12\,\text{ms}\} & \{\text{pass}, 92\,\%, 8\,\text{ms}\} & \{\text{fail}, 78\,\%, 15\,\text{ms}\} & \cdots \\
-\{\text{pass}, 90\,\%, 10\,\text{ms}\} & \{\text{pass}, 88\,\%, 9\,\text{ms}\} & \{\text{pass}, 95\,\%, 7\,\text{ms}\} & \cdots \\
-\{\text{fail}, 65\,\%, 20\,\text{ms}\} & \{\text{pass}, 91\,\%, 11\,\text{ms}\} & \{\text{pass}, 87\,\%, 13\,\text{ms}\} & \cdots \\
-\{\text{pass}, 88\,\%, 14\,\text{ms}\} & \{\text{fail}, 70\,\%, 18\,\text{ms}\} & \{\text{pass}, 93\,\%, 6\,\text{ms}\} & \cdots
-\end{pmatrix}
-\end{equation}
-
-In this example, each cell contains a response object with test outcome (pass/fail), coverage percentage, and execution time. Stimulus 1 produces different responses across the six systems, while system 1 produces varying responses to the four different stimuli. Such behavioural profiles enable large-scale behavioural analysis including similarity measurements, code-clone detection, functional equivalence analysis, and performance comparison across multiple systems. Figure~\ref{fig:srm-structure} illustrates the canonical SRM structure used for multi-system behavioural comparison.
-
-\begin{figure}[H]
-  \centering
-  \begin{tabular}{c|cccccc}
-    & \textbf{System 1} & \textbf{System 2} & \textbf{System 3} & \textbf{System 4} & \textbf{System 5} & \textbf{System 6} \\
-    \hline
-    \textbf{Stimulus 1} & \{pass, 85\,\%\} & \{pass, 92\,\%\} & \{fail, 78\,\%\} & \{pass, 89\,\%\} & \{pass, 91\,\%\} & \{pass, 87\,\%\} \\
-    \textbf{Stimulus 2} & \{pass, 90\,\%\} & \{pass, 88\,\%\} & \{pass, 95\,\%\} & \{pass, 86\,\%\} & \{fail, 72\,\%\} & \{pass, 93\,\%\} \\
-    \textbf{Stimulus 3} & \{fail, 65\,\%\} & \{pass, 91\,\%\} & \{pass, 87\,\%\} & \{pass, 94\,\%\} & \{pass, 89\,\%\} & \{fail, 70\,\%\} \\
-    \textbf{Stimulus 4} & \{pass, 88\,\%\} & \{fail, 70\,\%\} & \{pass, 93\,\%\} & \{pass, 85\,\%\} & \{pass, 90\,\%\} & \{pass, 92\,\%\} \\
-  \end{tabular}
-  \caption{Canonical SRM structure where rows represent stimuli, columns represent software systems, and cells contain structured response objects enabling behavioural comparison across systems.}
-  \label{fig:srm-structure}
-\end{figure}
-
-SRMs can also store additional analysis attributes, such as non-functional metrics or static properties, alongside dynamic execution data. The SRM representation enables manipulation of behavioural data through SRMPATH notation for selecting, filtering, and transforming records, which can then be analysed using external data-analytics tools such as R or Pandas. This compact representation facilitates scalable analysis of large system populations while maintaining language independence, making it suitable for platforms like LASSO that analyse software written in diverse programming languages and enable systematic, scalable behavioural comparison across many systems.
-
-\subsection{Data Extraction from the Stimulus--Response Matrix (SRM)}
-All necessary data for the minimisation algorithm---both structural coverage and mutation results---are sourced directly from the SRM. The SRM acts as a unified data repository where test-execution results are stored as key--value records. Structural coverage data (JaCoCo metrics) are extracted from entries with a specific \emph{sheetId} (e.g., \texttt{JACOCO}) and \emph{variantId} set to \texttt{original}. Mutation data are obtained by querying test results for all mutant \emph{variantIds}. A test \emph{kills} a mutant if the original execution passes but execution against the mutant variant fails. This systematic extraction allows the minimisation algorithm to operate entirely on SRM data without requiring source-code access, preserving the language-agnostic and scalable nature of the LASSO platform~\cite{Kessel2022}.
-
-\subsection{Leveraging SRMs for Test-Suite Minimisation}
-
-Test-suite minimisation within LASSO operates directly on existing SRMs produced by the platform's execution pipeline~\cite{Kessel2022}. Rather than creating a new data structure, the minimisation process extracts coverage-relevant information from SRM response objects for a selected target system. The workflow proceeds as follows:
-
-\begin{enumerate}
-  \item \textbf{System Selection:} Select one target system (column) from the SRM for minimisation. In the current implementation, minimisation focuses on a single system; multi-system minimisation remains future work.
-  
-  \item \textbf{Coverage Extraction:} For each stimulus $i$ and the selected system $j$, extract coverage-related metrics from the response object $M_{ij}$:
-  \begin{itemize}
-    \item Statement, branch, or path coverage indicators
-    \item Mutation-testing results (killed mutants)
-    \item Execution outcomes (pass/fail status)
-  \end{itemize}
-  
-  \item \textbf{Algorithm Application:} Apply the minimisation algorithm (detailed in Chapter~\ref{chap:implementation}) using the extracted coverage data to select a subset of stimuli that preserve coverage requirements.
-  
-  \item \textbf{SRM Reduction:} Generate a reduced SRM containing only the selected stimuli (rows) while preserving the original SRM schema (systems as columns, structured response objects in cells). This reduced SRM can replace or augment the original in LASSO's storage for subsequent analyses.
-\end{enumerate}
-
-This approach maintains LASSO's language-independent analysis capabilities by operating purely on SRM-level abstractions without requiring access to source code, control-flow graphs, or language-specific program structure. Figure~\ref{fig:srm-adaptation} illustrates the minimisation workflow showing system selection and stimulus reduction.
+\textbf{Actuation Sheets} capture the observed responses obtained when executing a sequence sheet. They preserve the same structure but replace expected outputs with actual runtime data, thereby forming an \emph{actuation record}. Each actuation record represents one execution of a (stimulus, system) pair and contains both the concrete input values and the resulting outputs. While sequence sheets describe the \emph{intended behaviour}, actuation sheets record the \emph{empirical behaviour} of the implementation. Executing one sequence sheet across multiple systems or configurations therefore produces several actuation sheets.
 
 \begin{figure}[H]
   \centering
   \begin{minipage}[t]{0.45\textwidth}
     \centering
-    \textbf{(a) Original SRM (Multi-System)}\\
-    \vspace{0.3cm}
+    \textbf{Stimulus (Sequence Sheet)}\\[3pt]
     \begin{tabular}{c|ccc}
-      & \textbf{Sys1} & \textbf{Sys2} & \textbf{Sys3} \\
+      \textbf{Out} & \textbf{Operation} & \textbf{Service} & \textbf{Input} \\
       \hline
-      \textbf{Stim1} & \{pass, 85\,\%\} & \{fail, 70\,\%\} & \{pass, 90\,\%\} \\
-      \textbf{Stim2} & \{pass, 92\,\%\} & \{pass, 88\,\%\} & \{pass, 95\,\%\} \\
-      \textbf{Stim3} & \{fail, 65\,\%\} & \{pass, 91\,\%\} & \{fail, 72\,\%\} \\
-      \textbf{Stim4} & \{pass, 88\,\%\} & \{pass, 87\,\%\} & \{pass, 93\,\%\} \\
-      \textbf{Stim5} & \{pass, 90\,\%\} & \{fail, 68\,\%\} & \{pass, 89\,\%\} \\
+      create & \texttt{create} & \texttt{'Stack} & \\
+      -- & \texttt{push} & A1 & 42 \\
+      42 & \texttt{pop} & A1 & \\
     \end{tabular}
-    \vspace{0.2cm}
-    
-    \small All stimuli, all systems
   \end{minipage}
   \hfill
   \begin{minipage}[t]{0.45\textwidth}
     \centering
-    \textbf{(b) Reduced SRM (System 1)}\\
-    \vspace{0.3cm}
+    \textbf{Observed Behaviour (Actuation Sheet)}\\[3pt]
     \begin{tabular}{c|ccc}
-      & \textbf{Sys1} & \textbf{Sys2} & \textbf{Sys3} \\
+      \textbf{Out} & \textbf{Operation} & \textbf{Service} & \textbf{Input} \\
       \hline
-      \textbf{Stim1} & \{pass, 85\,\%\} & \{fail, 70\,\%\} & \{pass, 90\,\%\} \\
-      \textbf{Stim2} & \{pass, 92\,\%\} & \{pass, 88\,\%\} & \{pass, 95\,\%\} \\
-      \textbf{Stim4} & \{pass, 88\,\%\} & \{pass, 87\,\%\} & \{pass, 93\,\%\} \\
+      \texttt{<instance>} & \texttt{create} & \texttt{'Stack} & \\
+      \texttt{true} & \texttt{push} & A1 & 42 \\
+      \texttt{42} & \texttt{pop} & A1 & \\
     \end{tabular}
-    \vspace{0.2cm}
-    
-    \small Minimised stimuli, same schema
   \end{minipage}
-  \caption{SRM-based test-suite minimisation workflow showing (a) original SRM with all stimuli and systems, and (b) reduced SRM after eliminating redundant stimuli while preserving SRM structure and coverage for the target system.}
-  \label{fig:srm-adaptation}
+  \caption{Relationship between a sequence sheet (stimulus) and its corresponding actuation sheet (observed behaviour).}
+  \label{fig:seq-act-sheet}
 \end{figure}
 
-\section{The Test-Suite Minimisation Problem}
+\subsection{From Sequence Sheets to Stimulus--Response Matrices}
 
-\subsection{Formal Problem Definition}
-Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite set of test cases (stimuli in LASSO terminology) where $n$ denotes the number of tests, and let $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements where $m$ denotes the number of requirements. Each test case $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$. Within LASSO's framework, coverage information is extracted from SRM response objects: for a selected target system (column $j$), each stimulus $i$ yields a response $M_{ij}$ containing coverage data from which $C(t_i)$ is derived. The coverage achieved by the complete test suite is:
+LASSO generalises the one-to-one mapping of stimuli to actuation results into a multidimensional artefact known as the \emph{Stimulus--Response Matrix} (SRM). An SRM aggregates all actuation results of a given test set executed across multiple systems or system variants, yielding a unified experimental dataset.
 
-\begin{equation}
-C(T) = \bigcup_{i=1}^{n} C(t_i).
-\end{equation}
-
-The \emph{test-suite minimisation problem} seeks the minimum-cardinality subset $S^* \subseteq T$ that preserves complete coverage:
-
-\begin{equation}
-S^* = \arg \min_{S \subseteq T} |S| \quad \text{subject to} \quad C(S) = C(T).
-\end{equation}
-
-\subsection{Computational Complexity}
-This optimisation problem is equivalent to the classical \emph{minimum set-cover problem}, which is NP-complete~\cite{yoo2012}. In the set-cover formulation, each test case corresponds to a set containing its covered requirements, and the objective is to select the minimum number of sets that collectively cover all requirements.
-
-The NP-completeness of test-suite minimisation has significant practical implications: no polynomial-time algorithm can guarantee optimal solutions for arbitrary instances unless P = NP. Consequently, practical approaches employ approximation algorithms~\cite{chvatal1979}, heuristic methods, or exact algorithms with exponential worst-case complexity that perform well on typical instances.
-
-The classical greedy set-cover algorithm achieves a logarithmic approximation ratio of $O(\ln m)$, where $m$ denotes the number of requirements~\cite{chvatal1979}. This means that the greedy solution size is at most $O(\ln m)$ times the optimal solution size. The Harrold--Gupta--Soffa (HGS) heuristic~\cite{harrold1993} can be viewed as a domain-adapted greedy approximation to minimum set cover that prioritises \emph{rare} requirements (low cardinality) to increase the likelihood of retaining tests with unique coverage. Overlap-aware extensions augment HGS with a diversity-preserving penalty that discourages selecting tests whose coverage is largely redundant with already selected tests, thereby improving expected retention without changing the asymptotic approximation guarantee.
-
-\subsection{Algorithmic Categories}
-Existing approaches to test-suite minimisation can be taxonomically classified into several categories, each offering different trade-offs between solution quality, computational efficiency, and implementation complexity:
-
+Formally, an SRM is defined as
+\[
+M = [M_{ij}] \quad \text{with} \quad M_{ij} = \text{Actuation}(t_i, v_j),
+\]
+where
 \begin{itemize}
-  \item \textbf{Greedy heuristics:} Polynomial-time algorithms that make locally optimal choices at each step. Examples include the classical greedy algorithm that iteratively selects tests covering the maximum number of uncovered requirements~\cite{chvatal1979}, and the Harrold--Gupta--Soffa (HGS) algorithm that prioritises tests covering rare requirements~\cite{harrold1993}.
-  
-  \item \textbf{Exact optimisation methods:} Approaches that formulate minimisation as integer linear programming (ILP) or constraint satisfaction problems, guaranteeing optimal solutions but with potentially exponential runtime complexity~\cite{mongiovi2020}.
-  
-  \item \textbf{Search-based and metaheuristic methods:} Evolutionary algorithms, genetic algorithms, and other population-based methods that explore the solution space using fitness functions balancing multiple objectives such as suite size and coverage preservation~\cite{hussein2020}.
-  
-  \item \textbf{Data-driven and clustering techniques:} Methods that exploit structural properties of extracted coverage information, using similarity measures, clustering algorithms, or machine-learning techniques to identify representative test cases~\cite{bach2017}.
+  \item \(t_i \in T\): stimulus derived from a sequence sheet (row),
+  \item \(v_j \in V\): system implementation, variant, or version (column),
+  \item \(M_{ij}\): actuation record containing the inputs, outputs, and optional analysis attributes.
 \end{itemize}
 
-This taxonomic framework provides the organisational structure for the literature review presented in Chapter~\ref{chap:literature-review}. Figure~\ref{fig:algorithm-taxonomy} illustrates the hierarchical classification of test-suite minimisation approaches.
+Each actuation record represents the complete observation of executing stimulus \(t_i\) on variant \(v_j\). Core information includes:
+\begin{itemize}
+  \item input parameters for the invoked operations,
+  \item the corresponding outputs or return values,
+  \item exceptions or failure states encountered during execution,
+  \item optional execution traces or method-level invocations.
+\end{itemize}
+
+In addition to these primary fields, SRMs support \emph{analysis attributes}---arbitrary key--value pairs attached at the actuation level to store additional measurements. These may include:
+\begin{itemize}
+  \item non-functional metrics (e.g., execution time, memory usage),
+  \item coverage data such as line, branch, or method coverage,
+  \item mutation-testing results and derived mutation scores,
+  \item static properties or derived complexity measures.
+\end{itemize}
+
+This flexible schema allows SRMs to store both functional and non-functional aspects of software behaviour. Two complementary representations exist:
+\begin{enumerate}
+  \item \textbf{Black-box view:} captures only aggregated input/output data for each test stimulus.
+  \item \textbf{White-box view:} exposes the full internal invocation structure, enabling detailed trace analysis.
+\end{enumerate}
 
 \begin{figure}[H]
   \centering
-  \begin{tabular}{|l|l|l|}
+  \begin{tabular}{c|cccc}
+    & \textbf{Original} & \textbf{Mutant 1} & \textbf{Mutant 2} & \textbf{Mutant 3} \\
     \hline
-    \textbf{Category} & \textbf{Approaches} & \textbf{Complexity} \\
-    \hline
-    \multirow{3}{*}{\textbf{Greedy Heuristics}} & Classical Greedy & $O(nm)$ \\
-    & Harrold--Gupta--Soffa (HGS) & $O(nm \log m)$ \\
-    & Delayed Greedy (Concept Analysis) & $O(n^2m)$ \\
-    \hline
-    \multirow{2}{*}{\textbf{Exact Optimisation}} & Integer Linear Programming & Exponential \\
-    & REDUNET (ILP + CFG) & Exponential \\
-    \hline
-    \multirow{2}{*}{\textbf{Search-Based}} & Genetic Algorithms & $O(gnm)$ \\
-    & Quantum-Inspired GA & $O(gnm)$ \\
-    \hline
-    \multirow{2}{*}{\textbf{Data-Driven}} & Overlap-Aware Selection & $O(n^2m)$ \\
-    & Clustering-Based & $O(n^2 + nm)$ \\
-    \hline
+    \textbf{Test 1} & pass & fail & pass & fail \\
+    \textbf{Test 2} & pass & pass & pass & pass \\
+    \textbf{Test 3} & pass & fail & fail & pass \\
   \end{tabular}
-  \caption{Representative categories of test-suite minimisation algorithms and their asymptotic complexity ($n$ = tests, $m$ = requirements, $g$ = generations).}
-  \label{fig:algorithm-taxonomy}
+  \caption{Example SRM fragment showing per-test outcomes across variants. Behavioural discrepancies indicate killed mutants.}
+  \label{fig:srm-mutation-example}
 \end{figure}
 
-The following chapter expands on these algorithmic categories through a systematic review of existing minimisation approaches.
+\subsection{Coverage and Mutation Integration in SRMs}
+
+LASSO integrates structural coverage and mutation data directly into SRMs. Structural coverage is measured using the JaCoCo tool, which records coverage statistics for each test execution ~\cite{jacoco-counters}. JaCoCo reports entity types (instruction, line, branch, method, and class) and associated metrics (e.g., \texttt{COVEREDCOUNT}, \texttt{TOTALCOUNT}, \texttt{COVEREDRATIO}). These are stored in SRM entries under a dedicated \texttt{sheetId} (e.g., \texttt{JACOCO}) as analysis attributes, enabling fine-grained retrieval via SRMPATH queries.  
+
+Mutation analysis is represented similarly. Each mutant is treated as a separate implementation variant \(v_j\). For every stimulus \(t_i\), the SRM cell \(M_{ij}\) contains the observed actuation of that mutant. A mutant is considered \emph{killed} if the response differs from the original implementation:
+\[
+v_j \text{ is killed by } t_i \iff \text{Response}(t_i, v_j) \neq \text{Response}(t_i, v_\text{orig}).
+\]
+Comparing these responses across columns enables data-driven computation of mutation coverage directly from the SRM:
+\[
+\text{Mutation Score} = 
+\frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\,\%.
+\]
+
+\subsection{Interpretation and Applications}
+
+SRMs unify all relevant execution data—functional outcomes, non-functional metrics, coverage, and mutation results—into a single language-independent structure. This facilitates a wide range of analyses such as regression testing, differential testing, N-version testing, and mutation-based assessment. In the context of LASSO, SRMs form the empirical foundation for subsequent optimisation tasks such as test-suite minimisation and coverage preservation, discussed in later chapters.
+
+
+
+
+
+
+
+
+\section{The Test-Suite Minimisation Problem}
+
+The general optimisation goal of test-suite minimisation was introduced in Section~\ref{sec:problem-statement}. This section provides the formal definition, summarises its computational complexity, and contextualises the problem within the LASSO framework before outlining the principal algorithmic categories that will be examined in detail in Chapter~\ref{chap:literature-review}.
+
+\subsection{Formal Problem Definition}
+
+Let $T = \{t_1, t_2, \ldots, t_n\}$ denote a finite test suite (stimuli in LASSO terminology), and let $R = \{r_1, r_2, \ldots, r_m\}$ represent the set of coverage requirements. Each test $t_i \in T$ covers a subset of requirements $C(t_i) \subseteq R$. The coverage achieved by the full suite is:
+\[
+C(T) = \bigcup_{i=1}^{n} C(t_i).
+\]
+The \emph{test-suite minimisation problem} seeks the smallest subset $S^* \subseteq T$ that preserves the original coverage:
+\[
+S^* = \arg \min_{S \subseteq T} |S| \quad \text{subject to} \quad C(S) = C(T).
+\]
+This is equivalent to the classical \emph{minimum set-cover problem}.
+
+\subsection{Computational Complexity}
+
+Test-suite minimisation is NP-complete~\cite{yoo2012}, as no polynomial-time algorithm can guarantee optimal solutions for arbitrary instances. Practical implementations therefore rely on approximation algorithms~\cite{chvatal1979} and heuristics~\cite{harrold1993} that trade off exactness for scalability. The classical greedy algorithm achieves a logarithmic approximation ratio of $O(\ln m)$, where $m$ is the number of requirements.
+
+\subsection{Test-Suite Minimisation in the LASSO Context}
+
+Within the LASSO framework, the problem is formulated over the data contained in the \emph{Stimulus--Response Matrix} (SRM). Each stimulus $t_i$ corresponds to one row in the SRM and each response object $M_{ij}$ (for system variant $v_j$) includes coverage and mutation attributes collected during execution. For a given system under test (column $v_j$), the requirement set $C(t_i)$ of each stimulus is derived from JaCoCo coverage metrics (e.g., \texttt{LINE\_COVEREDCOUNT}, \texttt{BRANCH\_COVEREDCOUNT}) and mutation-testing results stored in SRM attributes.
+
+The minimisation objective in LASSO is therefore to select a subset of stimuli whose collective coverage and mutation information preserve the full coverage profile recorded in the SRM:
+\[
+C(S^*)_{\text{SRM}} = C(T)_{\text{SRM}}.
+\]
+The minimised suite can then be represented as a reduced SRM that retains the same schema as the original matrix but includes only the selected stimuli (rows).
+
+\subsection{Algorithmic Categories}
+
+Approaches to solving the test-suite minimisation problem fall into several main categories, each offering distinct trade-offs between solution quality and computational efficiency:
+
+\begin{itemize}
+  \item \textbf{Greedy heuristics:} Iteratively select the test covering the largest number of uncovered requirements. The Harrold--Gupta--Soffa (HGS) heuristic~\cite{harrold1993} extends this idea by prioritising rare requirements.
+  
+  \item \textbf{Exact optimisation:} Formulate the problem as an integer linear program (ILP) or constraint-satisfaction model. These yield optimal results but scale poorly for large $T$ and $R$~\cite{mongiovi2020}.
+  
+  \item \textbf{Search-based methods:} Use genetic or evolutionary algorithms that balance suite size and coverage preservation through multi-objective fitness functions~\cite{hussein2020}.
+  
+  \item \textbf{Data-driven methods:} Exploit structural similarity or clustering in coverage data to identify representative tests~\cite{bach2017}.
+\end{itemize}
+
+These algorithmic classes provide the theoretical and practical foundation for the detailed comparison and evaluation presented in Chapter~\ref{chap:literature-review}.
