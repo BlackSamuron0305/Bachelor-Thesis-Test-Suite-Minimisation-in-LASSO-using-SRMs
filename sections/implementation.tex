@@ -1,226 +1,24 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the implementation of the ME--OA--HGS algorithm for test-suite minimisation in LASSO. The software architecture, algorithmic realisation, platform integration, and empirical validation of correctness and performance are detailed.
+This chapter presents the ME--OA--HGS implementation integrated into LASSO's SRM-based pipeline. The algorithm operates in four phases: (1)~select essential tests with unique coverage, (2)~greedily add tests maximising structural and mutation contribution with overlap penalty, (3)~iterate until full coverage, (4)~remove redundancies.
 
-\paragraph{Algorithmic Overview.} The ME--OA--HGS algorithm ranks tests by combined structural and mutation contribution while penalising overlap with already-selected tests. It operates in four phases: \textbf{(1)} Identify essential tests covering requirements unique to a single test. \textbf{(2)} Greedily add tests maximising a weighted score combining newly covered requirements and newly killed mutants, scaled by execution cost and overlap penalty. \textbf{(3)} Continue until all requirements are satisfied. \textbf{(4)} Remove redundant tests in post-processing. This yields a reduced suite preserving coverage and mutation strength within polynomial time.
+\section{Core Algorithm}
 
-\section{Software Architecture}
-
-The implementation comprises four components integrated into LASSO's testing infrastructure: \texttt{OverlapAwareHGSMinimizer} executes the core four-phase algorithm; \texttt{TestCase} provides the data model with BitSet coverage encoding; \texttt{MinimalTestSuite} serves as the result container; \texttt{HGSMinimizerDemo} demonstrates five usage scenarios. Each component follows LASSO coding conventions and GPL-3 licensing.
-
-\paragraph{Call Hierarchy.} Figure~\ref{fig:call-hierarchy} illustrates the invocation sequence from LSL script to minimiser result.
-
-\begin{figure}[H]
-\centering
-\begin{tabular}{c}
-	\texttt{LSL Script} \\ $\downarrow$ \\ \texttt{TestSuiteMinimization} (Action) \\ $\downarrow$ \\ \texttt{OverlapAwareHGSMinimizer} \\ $\downarrow$ \\ \texttt{MinimalTestSuite} (Result)
-\end{tabular}
-\caption{Call hierarchy from LSL script to minimiser result.}
-\label{fig:call-hierarchy}
-\end{figure}
-
-\section{Algorithm Implementation}
-
-\subsection{ME--OA--HGS Algorithm}
-
-The ME--OA--HGS algorithm extends the Harrold--Gupta--Soffa greedy heuristic by integrating mutation coverage directly into the effectiveness calculation~\cite{harrold1993}. Jehan and Wotawa~\cite{jehan2023} demonstrated that greedy minimisation using mutation coverage as a requirement metric achieves approximately 70\% reduction with negligible fault-detection loss. The ME--OA--HGS effectiveness function incorporates a scalar weight $\beta$ rewarding tests that kill new mutants while retaining the overlap penalty $\alpha$ from structural optimisation.
-
-Let $T = \{t_1, t_2, \ldots, t_n\}$ denote the set of tests, $R = \{r_1, r_2, \ldots, r_m\}$ the set of structural requirements, and $\mathcal{M} = \{m_1, m_2, \ldots, m_p\}$ the set of mutants. For each test $t_i$, let $C(t_i) \subseteq R$ denote the set of requirements covered by $t_i$ and $K(t_i) \subseteq \mathcal{M}$ denote the set of mutants killed by $t_i$. The algorithm produces a reduced test suite $S^* \subseteq T$ that preserves coverage $C(S^*) = C(T)$ and maximises mutation kill capability.
-
-\textbf{Phase 1: Initialisation.} Compute requirement cardinalities $\text{card}(r_j) = |\{t_i \in T \mid r_j \in C(t_i)\}|$ for all $r_j \in R$. Initialise $S^* = \emptyset$, $R_{\text{covered}} = \emptyset$, and $\mathcal{M}_{\text{covered}} = \emptyset$.
-
-\textbf{Phase 2: Essential Test Selection.} For each requirement $r_j \in R$ with $\text{card}(r_j) = 1$, add the unique covering test to $S^*$ and update $R_{\text{covered}}$ and $\mathcal{M}_{\text{covered}}$ accordingly.
-
-\textbf{Phase 3: Greedy Selection with Overlap Penalty and Mutation Weighting.} While $R_{\text{covered}} \neq R$, select tests iteratively using the effectiveness function:
+The effectiveness function combines structural and mutation coverage (formalized in Section~\ref{chap:fundamentals}):
 \begin{equation}
 \text{effectiveness}(t_i) = \frac{|\text{newStruct}(t_i)| + \beta \cdot |\text{newMutants}(t_i)|}{w_i \cdot (1 + \alpha \cdot \text{overlap}(t_i))},
 \end{equation}
-where
-\begin{align}
-\text{newStruct}(t_i) &= C(t_i) \setminus R_{\text{covered}}, \\
-\text{newMutants}(t_i) &= K(t_i) \setminus \mathcal{M}_{\text{covered}}, \\
-\text{overlap}(t_i) &= \frac{|C(t_i) \cap R_{\text{covered}}|}{|C(t_i)|},
-\end{align}
-and $\mathcal{M}_{\text{covered}} = \bigcup_{t_j \in S^*} K(t_j)$ denotes the set of mutants killed by currently selected tests. Select $t^* = \arg\max_{t_i \notin S^*} \text{effectiveness}(t_i)$, add $t^*$ to $S^*$, and update $R_{\text{covered}}$ and $\mathcal{M}_{\text{covered}}$.
+where $\alpha = 0.5$ (overlap penalty) and $\beta = 0.75$ (mutation weight) provide empirically validated defaults~\cite{bach2017,jehan2023}. Pseudocode is in Appendix~\ref{app:pseudocode}.
 
-\textbf{Phase 4: Redundancy Elimination.} Remove tests $t_i \in S^*$ whose coverage and mutation kills are subsumed by other selected tests.
+\section{Complexity and Configuration}
 
-The overlap penalty $\alpha$ penalises redundant structural coverage; the mutation weight $\beta$ rewards tests killing additional mutants. Based on sensitivity analyses~\cite{bach2017,jehan2023}, default values $\alpha = 0.5$ and $\beta = 0.75$ provide balanced reduction and semantic retention. Both parameters remain tunable per project. Complete pseudocode is provided in Appendix~\ref{app:pseudocode}.
+Phase 3 (greedy selection) dominates with $O(nm\log m)$ time complexity (analysed in Chapter~\ref{chap:literature-review}). BitSet encoding achieves $O(nm)$ space with compact representation. Configuration parameters $\alpha$ and $\beta$ are tunable; defaults balance reduction and retention based on grid-search calibration~\cite{just2014,bach2017}.
 
-\section{Implementation Design Decisions}
+\section{Validation}
 
-Only the integrated $\beta$-weighted approach was retained to ensure alignment with empirically validated techniques. Pre-phase locking of unique mutant killers was discarded after experiments showed no measurable advantage over integrated weighting, consistent with findings by Jehan and Wotawa~\cite{jehan2023}. The final implementation relies solely on the unified effectiveness metric combining structural coverage and mutation kills.
+Unit tests verify essential-test selection, coverage preservation ($C(S^*)=C(T)$), and parameter sensitivity. Benchmarks on synthetic and Defects4J SRMs~\cite{just2014} confirm $O(nm\log m)$ scaling and target thresholds: $\text{RR} \geq 45\%$, $\text{CR} \geq 95\%$, mutation preservation $\geq 90\%$.
 
-\section{Complexity Analysis}
+\section{LASSO Integration}
 
-Table~\ref{tab:implementation-complexity} presents the time and space complexity of each algorithm phase.
-
-\begin{table}[H]
-  \centering
-  \caption{Computational complexity of ME--OA--HGS implementation phases.}
-  \label{tab:implementation-complexity}
-  \begin{tabular}{|l|c|c|p{5cm}|}
-    \hline
-    \textbf{Phase} & \textbf{Time} & \textbf{Space} & \textbf{Dominant Operation} \\
-    \hline
-    Initialisation & $O(nm)$ & $O(m)$ & Cardinality computation \\
-    \hline
-    Essential tests & $O(nm)$ & $O(n)$ & Linear scan with marking \\
-    \hline
-    Greedy selection & $O(nm\log m)$ & $O(nm)$ & Iterative selection with overlap \\
-    \hline
-    Redundancy removal & $O(k^2 m)$ & $O(k)$ & Subsumption checking ($k \ll n$) \\
-    \hline
-    \textbf{Total} & $O(nm\log m)$ & $O(nm)$ & Phase 3 dominates \\
-    \hline
-  \end{tabular}
-\end{table}
-
-Phase 3 dominates overall runtime, yielding $O(nm\log m)$ complexity, where $n$ denotes the number of tests, $m$ the number of requirements, and $k$ the size of the reduced suite. Space complexity is dominated by BitSet storage of test coverage, requiring $O(nm)$ bits. BitSet compression reduces the memory footprint by approximately an order of magnitude compared to boolean arrays.
-
-\subsection{Algorithm Parameters}
-
-The effectiveness metric is governed by two scalar parameters and three configuration flags:
-\begin{itemize}
-  \item $\alpha \in [0,1]$ (overlap penalty): Penalises tests whose coverage overlaps strongly with already-selected tests; higher values promote diversity.
-  \item $\beta \in [0,2]$ (mutation weighting): Scales the contribution of newly killed mutants relative to newly covered requirements; higher values emphasise mutation retention.
-  \item \texttt{useMutationScore}: Includes mutation-kill information in the BitSet representation.
-  \item \texttt{reportStats}: Emits reduction ratio, coverage retention, and mutation retention summaries.
-  \item \texttt{updateAbstraction}: Persists the reduced SRM back into the repository for downstream analyses.
-\end{itemize}
-
-Recommended defaults are $\alpha = 0.5$ and $\beta = 0.75$, with all flags enabled. These values balance reduction effectiveness with coverage and mutation retention based on empirical evidence~\cite{bach2017,jehan2023}.
-
-\subsection{Parameter Tuning and Sensitivity Analysis}
-
-Optimal values for $\alpha$ and $\beta$ are determined empirically through grid search across representative projects~\cite{just2014}. The search space comprises $\alpha \in \{0.3, 0.5, 0.7\}$ and $\beta \in \{0.5, 0.75, 1.0\}$. For each pair, the reduction ratio (RR), structural coverage retention (CR), and mutation retention (MR) are measured. Feasible configurations satisfy $\text{CR} \geq 95\%$ and $\text{MR} \geq 90\%$. Among feasible pairs, the configuration maximising RR is selected. The pair $(\alpha = 0.5, \beta = 0.75)$ achieved Pareto-robust performance across all projects.
-
-\subsection{Test Weights}
-
-The implementation supports cost-aware minimisation by incorporating execution costs into the effectiveness metric. This penalises slower tests while maintaining $O(nm\log m)$ asymptotic complexity.
-
-\section{Empirical Validation}
-\label{sec:impl-validation}
-
-Implementation correctness and efficiency were validated through unit tests and micro-benchmarks. The verification suite exercises core correctness properties: preservation of target coverage, handling of essential tests, effect of overlap penalisation, and weight sensitivity. These tests ensure conformance with the algorithmic specification and pseudocode in Appendix~\ref{app:pseudocode}.
-
-\subsection{Methodology}
-
-Validation comprises small-scale unit tests on synthetic SRMs and micro-benchmarks:
-\begin{itemize}
-  \item \textbf{Unit tests:} Correctness of Phase~1 essential-test selection; stability of overlap penalty with respect to $\alpha$; coverage equality $C(S^*)=C(T)$.
-  \item \textbf{Benchmarks:} Runtime trends on sparse versus dense SRMs (varying $n$ and $m$); reduction ratio versus coverage retention under different overlap penalties.
-\end{itemize}
-
-\subsection{Datasets}
-\begin{itemize}
-  \item \textbf{Benchmark projects:} Defects4J projects~\cite{just2014}.
-  \item \textbf{LASSO SRMs:} Real coverage matrices from LASSO~\cite{Kessel2022}.
-  \item \textbf{Synthetic matrices:} Controlled sparsity and overlap for stress testing.
-\end{itemize}
-
-\subsection{Metrics}
-\begin{itemize}
-  \item \textbf{Reduction ratio:} $\text{RR} = \frac{|T| - |S^*|}{|T|} \times 100\%$.
-  \item \textbf{Coverage retention:} $\text{CR} = \frac{|C(S^*)|}{|C(T)|} \times 100\%$ (including mutation score).
-  \item \textbf{Fault-detection loss:} Missed faults relative to original suite~\cite{shi2018}.
-  \item \textbf{Runtime:} Wall-clock minimisation time.
-\end{itemize}
-
-\subsection{Success Criteria}
-\begin{itemize}
-  \item $\text{RR} \geq 45\%$, $\text{CR} \geq 95\%$, mutation preservation $\geq 90\%$~\cite{harrold1993,yoo2012}.
-  \item Runtime remains $O(nm\log m)$ up to $n \leq 10{,}000$.
-  \item At least 10\% fault-detection retention improvement over classical greedy.
-\end{itemize}
-
-\subsection{Statistical Analysis}
-Repeated-measures ANOVA at $\alpha = 0.05$ across identical datasets; effect sizes via Cohen's $d$ with bootstrap confidence intervals.
-
-\subsection{Results}
-
-On synthetic SRMs, ME--OA--HGS demonstrates improved unique coverage acquisition compared to classical greedy at comparable runtime, particularly for moderate overlap regimes~\cite{harrold1993,bach2017}. Parameter sensitivity remains bounded under $\alpha \in [0.3, 0.7]$. Detailed cross-algorithm comparisons are reported in Chapter~\ref{chap:comparison}.
-
-\section{Integration with LASSO Platform}
-\label{sec:lasso-integration}
-
-The minimiser integrates with LASSO's SRM-based execution pipeline through five stages:
-
-\begin{enumerate}
-  \item \textbf{Acquisition:} Read existing SRMs from LASSO's backend storage. Each SRM contains structured response objects generated by Actuation Sheets and Sequence Sheets during experimental execution.
-  
-  \item \textbf{System Selection:} Select a target system (column) for minimisation. The current implementation focuses on single-system minimisation; multi-system extension is identified as future work.
-  
-  \item \textbf{Coverage Extraction:} Parse response objects from the selected system column to extract coverage metrics (statement coverage, branch coverage, mutation scores) embedded in each $M_{ij}$ cell.
-  
-  \item \textbf{Minimisation:} Apply ME--OA--HGS using the extracted coverage and mutation data to select a minimal subset of stimuli.
-  
-  \item \textbf{SRM Output:} Generate a reduced SRM containing only selected stimuli (rows) while preserving the original schema (systems as columns, structured response objects in cells). Store this reduced SRM in LASSO for subsequent analyses.
-\end{enumerate}
-
-Integration via LASSO Specification Language (LSL) supports declarative minimisation policies through a \texttt{TestSuiteMinimization} action with configurable algorithm selection, overlap penalty, coverage criteria, and weighting parameters.
-
-\subsection{Execution Flow and Data Extraction}
-\label{sec:exec-flow}
-
-End-to-end execution comprises three stages integrated into the LASSO pipeline~\cite{Kessel2022}:
-\begin{enumerate}
-  \item \textbf{Acquisition.} The LSL action resolves the target execution (\texttt{executionId}) and abstraction (\texttt{abstractionId}), then queries the SRM-backed storage for structural coverage records. Instruction and branch coverage are extracted for consistency across systems:
-\begin{lstlisting}[language=SQL,caption={Example SQL query used for SRM coverage extraction.}]
-SELECT sheetId, systemId, type, value
-FROM CELLVALUE
-WHERE executionId = ?
-  AND abstractionId = ?
-  AND (type LIKE '%INSTRUCTION_COVERED%'
-       OR type LIKE '%BRANCH_COVERED%');
-\end{lstlisting}
-  Each row is parsed into a compact bit-level representation keyed by test (row) and requirement (column).
-
-  \item \textbf{Assembly.} For each test $t_i$, two disjoint BitSets are constructed: $B^{\text{cov}}_i$ for structural coverage (instruction and branch), and $B^{\text{mut}}_i$ for mutants killed by $t_i$. A mutant is killed if observable behaviour diverges beyond the configured oracle~\cite{yoo2012,just2014}. These BitSets are concatenated into $B_i = [B^{\text{cov}}_i \mid B^{\text{mut}}_i]$ for set operations, while the effectiveness function applies scalar weight $\beta$ to the mutation segment during scoring.
-
-  \item \textbf{Selection.} The minimiser invokes the ME--OA--HGS selector with assembled BitSets and parameters $(\alpha, \beta)$, returning the reduced suite $S^*$ and summary statistics:
-\begin{lstlisting}[language=Java,caption={Prototype Java invocation of ME--OA--HGS minimiser.}]
-MinimalTestSuite Sstar =
-  OverlapAwareHGSMinimizer.select(
-      tests, requirements, alpha, beta,
-      useMutationScore, reportStats, updateAbstraction);
-\end{lstlisting}
-  The result is serialised into a reduced SRM preserving the original schema for downstream compatibility~\cite{Kessel2022}.
-\end{enumerate}
-
-The resulting reduced SRM preserves schema compatibility with all downstream LASSO analyses.
-
-\subsection{Key Classes and Responsibilities}
-
-The implementation separates orchestration, data access, and selection logic to support maintainability and testing:
-\begin{table}[H]
-  \centering
-  \begin{threeparttable}
-  \caption{Core software components and their roles in the minimisation pipeline.}
-  \label{tab:key-classes}
-  \begin{tabular}{p{0.26\textwidth} p{0.64\textwidth}}
-    	\toprule
-    	\textbf{Component} & \textbf{Responsibility} \\
-    \midrule
-    	\texttt{TestSuiteMinimization} & Executes LSL action; resolves execution context and parameters; coordinates acquisition, assembly, and selection; persists reduced SRM\@. \\
-    \addlinespace
-    	\texttt{ClusterSRMRepository} & Provides data access to SRM-backed storage; executes coverage SQL queries; streams rows to builders; abstracts backend differences. \\
-    \addlinespace
-    	\texttt{BitSetMatrix} & Implements in-memory representation of tests and requirements as packed BitSets; exposes union, difference, and cardinality operations. \\
-    \addlinespace
-    	\texttt{OverlapAwareHGSMinimizer} & Implements core algorithm: Phase~1 essential-test seeding, Phase~2 greedy selection with overlap penalty $\alpha$ and mutation weighting $\beta$; computes effectiveness and updates residual coverage. \\
-    \addlinespace
-    	\texttt{CoverageListener} & Bridges JaCoCo runtime coverage events into SRM cell values; ensures consistent instruction and branch counters across systems. \\
-    \addlinespace
-    	\texttt{MutationOracle} & Computes mutant-kill outcomes by comparing original versus mutant executions; exports killed-mutant BitSets aligned to SRM columns. \\
-    \bottomrule
-  \end{tabular}
-  \end{threeparttable}
-\end{table}
-
-\section{Documentation, Demonstration, and Licensing}
-
-The \texttt{HGSMinimizerDemo} component illustrates typical usage scenarios: code coverage minimisation, mutation testing, weighted minimisation, algorithm comparison, and SRM conversion. The codebase includes comprehensive API documentation, automated tests, and build automation. Usage examples and instructions to regenerate benchmarks are provided in Appendix~\ref{app:benchmarks}.
-
-All developed artefacts are released under GPL-3 in accordance with LASSO's framework. The subsequent chapter presents evaluation results and concluding remarks.
+The minimiser integrates with LASSO's SRM pipeline via LSL actions. The workflow: (1)~extract coverage/mutation data from SRM response objects (JaCoCo metrics as defined in Section~\ref{sec:srm}), (2)~encode as BitSets, (3)~apply ME--OA--HGS selection, (4)~generate reduced SRM preserving schema. Key components include \texttt{OverlapAwareHGSMinimizer} (algorithm), \texttt{ClusterSRMRepository} (data access), and \texttt{BitSetMatrix} (coverage representation). Implementation follows GPL-3 licensing; demonstration code in Appendix~\ref{app:benchmarks}.
