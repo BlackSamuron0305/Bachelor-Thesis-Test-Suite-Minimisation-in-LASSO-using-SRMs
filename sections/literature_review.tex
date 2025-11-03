@@ -1,10 +1,10 @@
 \chapter{Minimization Algorithms}\label{chap:literature-review}
 
-This chapter presents a systematic survey of test-suite minimisation approaches documented in the academic literature. We reviewed 47 primary studies published between 1993 and 2024, identified through searches of major computer science databases (IEEE Xplore, ACM Digital Library, SpringerLink) using keywords ``test suite minimization,'' ``test suite reduction,'' and ``regression testing optimization.'' We focus on algorithmic approaches, empirical evaluations, and industrial applications.
-
-We organise the review according to the taxonomic framework established in Chapter~\ref{chap:fundamentals}, examining greedy heuristics, exact optimisation methods, search-based approaches, and data-driven techniques. This systematic analysis forms the empirical foundation for the criteria-based comparative evaluation in Chapter~\ref{chap:evaluation}.
+This chapter surveys test-suite minimisation algorithms from the academic literature. We organise the review by algorithm category, following the taxonomic framework established in Chapter~\ref{chap:fundamentals}. For each category---greedy heuristics, exact optimisation methods, search-based approaches, and data-driven techniques---we provide a general explanation of the approach and examine selected representative algorithms that illustrate the category's key characteristics and trade-offs.
 
 \section{Greedy Heuristics}
+
+Greedy heuristics iteratively select tests that cover the largest number of currently uncovered requirements until all requirements are satisfied~\cite{yoo2012,khan2020}. These algorithms operate in polynomial time and provide practical solutions with predictable performance characteristics. The fundamental greedy approach can be refined by incorporating additional selection criteria, such as requirement rarity or overlap penalties, to improve coverage retention while maintaining computational efficiency~\cite{harrold1993,bach2017}.
 
 \subsection{Classical Greedy}
 
@@ -13,7 +13,7 @@ The classical greedy algorithm iteratively selects the test case covering the ma
 \subsection{Harrold--Gupta--Soffa}
 
 Harrold, Gupta, and Soffa proposed a refined greedy heuristic that prioritises requirements based on their rarity~\cite{harrold1993}. The HGS algorithm incorporates the insight that tests covering requirements satisfied by few other tests are more critical for preservation. Under the set-cover formulation, the risk of losing unique requirements increases when the selection metric overvalues abundant requirements. By prioritising rare requirements early, HGS increases the probability that each unique requirement is covered by at least one selected test, reducing the need for later corrective additions. This strategy preserves the greedy nature and the $O(\ln m)$ approximation ratio inherited from set cover~\cite{chvatal1979} while improving expected retention on practical instances with skewed cardinality distributions.
-
+ 
 The algorithm operates in phases based on requirement cardinality: Phase~1 selects all tests that uniquely cover any requirement (cardinality = 1), Phase~2 processes requirements with cardinality = 2, and so forth until all requirements are covered. Empirical studies demonstrate that HGS achieves 45--70\,\% reduction while maintaining 95--98\,\% coverage retention~\cite{harrold1993}. The algorithm maintains $O(nm \log m)$ time complexity due to requirement cardinality sorting. Overlap-aware extensions refine HGS by penalising redundant selections and further improve retention without altering the underlying approximation class~\cite{bach2017}.
 
 \subsection{Delayed Greedy}
@@ -21,6 +21,8 @@ The algorithm operates in phases based on requirement cardinality: Phase~1 selec
 Tallam and Gupta's delayed greedy algorithm~\cite{tallam2005} uses concept lattices to eliminate implied redundancies before greedy selection. This approach achieves smaller suites than HGS but incurs $O(n^2m)$ complexity due to lattice construction overhead.
 
 \section{Exact Optimisation Approaches}
+
+Exact optimisation methods formulate test-suite minimisation as integer linear programming (ILP) or constraint-satisfaction problems, seeking optimal solutions under specified objective functions~\cite{yoo2012,khan2020}. These approaches guarantee optimality or near-optimality but are NP-hard, often exhibiting exponential runtime growth with problem size. Exact methods may leverage additional structural information, such as control-flow graphs, to improve solution quality, though such inputs are not available in black-box SRM-only settings~\cite{mongiovi2020}.
 
 \subsection{ILP and REDUNET}
 
@@ -32,9 +34,11 @@ Approaches that enrich optimisation with structural constraints (e.g., control-f
 
 \section{Search-Based and Metaheuristic Approaches}
 
+Search-based software engineering treats test-suite minimisation as a multi-objective optimisation problem, balancing competing objectives such as suite size reduction and adequacy preservation~\cite{yoo2012,khan2020}. Metaheuristic algorithms---including genetic algorithms, simulated annealing, and particle swarm optimisation---evolve candidate solutions according to fitness functions that encode these trade-offs. These methods provide flexibility and can escape local optima, but require careful parameter tuning and typically exhibit higher computational overhead than greedy heuristics~\cite{hussein2020}.
+
 \subsection{Genetic Algorithms}
 
-Search-based software engineering treats test-suite minimisation as a multi-objective optimisation problem balancing suite size and adequacy. Genetic algorithms (GAs) evolve test subsets according to a fitness function that trades coverage retention against suite size~\cite{yoo2012}. GAs provide flexibility but require careful parameter tuning (e.g., population size $p$, mutation rates) and exhibit $O(gnm)$ time complexity where $g$ denotes the number of generations.
+Genetic algorithms (GAs) evolve test subsets according to a fitness function that trades coverage retention against suite size~\cite{yoo2012}. GAs provide flexibility but require careful parameter tuning (e.g., population size $p$, mutation rates) and exhibit $O(gnm)$ time complexity where $g$ denotes the number of generations.
 
 \subsection{Quantum-Inspired GA}
 
@@ -45,6 +49,8 @@ Hussein et al.\ propose a quantum-inspired genetic algorithm (QIGA) that uses qu
 Metaheuristics such as simulated annealing and particle swarm optimisation (PSO) have been explored for test-suite minimisation~\cite{yoo2012}. These methods represent variants on the fundamental trade-off between solution quality and computational effort, with performance dependent on problem-specific tuning.
 
 \section{Data-Driven and Similarity-Based Approaches}
+
+Data-driven methods utilise structural properties of coverage data to identify redundancies and select representative test cases~\cite{bach2017,khan2020}. These approaches analyse similarity or overlap between test coverage vectors, applying clustering, distance metrics, or machine-learning techniques to group related tests and select diverse representatives. Data-driven methods align naturally with SRM-based representations, as they operate directly on coverage information without requiring additional program structure. However, computing pairwise similarities typically incurs $O(n^2 m)$ computational cost, which must be managed in large-scale settings~\cite{bach2017}.
 
 \subsection{Similarity-Based Methods}
 
