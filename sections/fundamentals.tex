@@ -201,16 +201,27 @@ The minimised suite can then be represented as a reduced SRM that retains the sa
 
 \subsection{Algorithmic Categories}
 
-Approaches to solving the test-suite minimisation problem fall into several main categories, each offering distinct trade-offs between solution quality and computational efficiency:
+The wide range of approaches to test-suite minimisation can be organised by their underlying optimisation strategy. 
+Following established classifications in the literature~\cite{yoo2012,kaur2020,bach2017}, 
+algorithms can be broadly grouped into four categories, each offering distinct trade-offs between 
+solution quality and computational efficiency:
 
 \begin{itemize}
-  \item \textbf{Greedy heuristics:} Iteratively select the test covering the largest number of uncovered requirements. The Harrold--Gupta--Soffa (HGS) heuristic~\cite{harrold1993} extends this idea by prioritising rare requirements.
+  \item \textbf{Greedy heuristics:} Iteratively select the test covering the largest number of uncovered requirements. 
+  The Harrold--Gupta--Soffa (HGS) heuristic~\cite{harrold1993} extends this idea by prioritising rare requirements 
+  to retain unique coverage elements.
   
-  \item \textbf{Exact optimisation:} Formulate the problem as an integer linear program (ILP) or constraint-satisfaction model. These yield optimal results but scale poorly for large $T$ and $R$~\cite{mongiovi2020}.
+  \item \textbf{Exact optimisation:} Formulate the problem as an integer linear program (ILP) or constraint-satisfaction 
+  model. These methods guarantee optimality but exhibit exponential growth in runtime for large $T$ and $R$~\cite{mongiovi2020}.
   
-  \item \textbf{Search-based methods:} Use genetic or evolutionary algorithms that balance suite size and coverage preservation through multi-objective fitness functions~\cite{hussein2020}.
+  \item \textbf{Search-based methods:} Employ genetic or other evolutionary algorithms that balance suite size and coverage 
+  preservation using multi-objective fitness functions~\cite{hussein2020}.
   
-  \item \textbf{Data-driven methods:} Exploit structural similarity or clustering in coverage data to identify representative tests~\cite{bach2017}.
+  \item \textbf{Data-driven methods:} Utilise structural similarity, clustering, or machine-learning models derived from 
+  coverage data to identify representative or diverse test cases~\cite{bach2017}.
 \end{itemize}
 
-These algorithmic classes provide the theoretical and practical foundation for the detailed comparison and evaluation presented in Chapter~\ref{chap:literature-review}.
+These algorithmic classes provide a conceptual framework for analysing existing test-suite minimisation 
+techniques and form the basis for the systematic evaluation presented in 
+Chapter~\ref{chap:literature-review}.
+
