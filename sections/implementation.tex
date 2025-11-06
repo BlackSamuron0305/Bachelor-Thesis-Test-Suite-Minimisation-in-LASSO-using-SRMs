@@ -1,19 +1,19 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the ME--OA--HGS implementation integrated into LASSO's SRM-based pipeline. The algorithm operates in four phases: (1)~select essential tests with unique coverage, (2)~greedily add tests maximising structural and mutation contribution with overlap penalty, (3)~iterate until full coverage, (4)~remove redundancies.
+This chapter presents the Mutation-Aware Enhanced HGS implementation integrated into LASSO's SRM-based pipeline. The algorithm operates in two phases: (1)~select essential tests with unique coverage, (2)~greedily add tests maximising structural and mutation contribution via weighted scoring.
 
 \section{Core Algorithm}
 
-The effectiveness function combines structural and mutation coverage (formalized in Section~\ref{chap:fundamentals}):
+The weighted scoring function combines structural and mutation coverage:
 \begin{equation}
-\text{effectiveness}(t_i) = \frac{|\text{newStruct}(t_i)| + \beta \cdot |\text{newMutants}(t_i)|}{w_i \cdot (1 + \alpha \cdot \text{overlap}(t_i))},
+\text{score}(t_i) = |\text{newCoverage}(t_i)| + \beta \cdot |\text{newMutants}(t_i)|,
 \end{equation}
-where $\alpha = 0.5$ (overlap penalty) and $\beta = 0.75$ (mutation weight) provide empirically validated defaults~\cite{bach2017,jehan2023}. Pseudocode is in Appendix~\ref{app:pseudocode}.
+where $\beta = 0.7$ (mutation weight) provides the default coverage-dominant configuration. When $\beta = 0$, the algorithm reproduces the empirically validated Enhanced HGS baseline~\cite{gladston2015}. The parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting) but remains unused in the current implementation. Pseudocode is in Appendix~\ref{app:pseudocode}.
 
 \section{Complexity and Configuration}
 
-Phase 3 (greedy selection) dominates with $O(nm\log m)$ time complexity (analysed in Chapter~\ref{chap:literature-review}). BitSet encoding achieves $O(nm)$ space with compact representation. Configuration parameters $\alpha$ and $\beta$ are tunable; defaults balance reduction and retention based on grid-search calibration~\cite{just2014,bach2017}.
+Phase 2 (greedy selection) dominates with $O(nm)$ time complexity (analysed in Chapter~\ref{chap:comparison}). BitSet encoding achieves $O(nm)$ space with compact representation. Configuration parameter $\beta$ is tunable via grid search; $\beta = 0.7$ balances reduction and retention as a conservative starting point~\cite{jehan2023}.
 
 \section{Validation}
 
@@ -21,4 +21,4 @@ Unit tests verify essential-test selection, coverage preservation ($C(S^*)=C(T)$
 
 \section{LASSO Integration}
 
-The minimiser integrates with LASSO's SRM pipeline via LSL actions. The workflow: (1)~extract coverage/mutation data from SRM response objects (JaCoCo metrics as defined in Section~\ref{sec:srm}), (2)~encode as BitSets, (3)~apply ME--OA--HGS selection, (4)~generate reduced SRM preserving schema. Key components include \texttt{OverlapAwareHGSMinimizer} (algorithm), \texttt{ClusterSRMRepository} (data access), and \texttt{BitSetMatrix} (coverage representation). Implementation follows GPL-3 licensing; demonstration code in Appendix~\ref{app:benchmarks}.
+The minimiser integrates with LASSO's SRM pipeline via LSL actions. The workflow: (1)~extract coverage/mutation data from SRM response objects (JaCoCo metrics as defined in Section~\ref{sec:srm}), (2)~encode as BitSets representing the requirements matrix, (3)~apply Mutation-Aware Enhanced HGS selection with configurable $\beta$-parameter, (4)~generate reduced SRM preserving schema. Mutants are encoded as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring unified treatment with structural coverage elements. Key components include \texttt{EnhancedHGSMinimizer} (algorithm), \texttt{ClusterSRMRepository} (data access), and \texttt{BitSetMatrix} (requirements-matrix representation). Implementation follows GPL-3 licensing; demonstration code in Appendix~\ref{app:benchmarks}.

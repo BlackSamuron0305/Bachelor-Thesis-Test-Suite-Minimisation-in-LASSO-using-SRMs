@@ -2,23 +2,23 @@
 
 \section{Summary}
 
-This thesis developed an SRM-based test-suite minimisation framework for LASSO addressing RQ1--RQ4. A systematic literature review (Chapter~\ref{chap:literature-review}) surveyed greedy, exact, search-based, and data-driven techniques. Evaluation criteria C1--C7 (Chapter~\ref{chap:evaluation}) operationalised selection requirements. Comparative analysis (Chapter~\ref{chap:comparison}) identified ME--OA--HGS as optimal, balancing 95--98\% coverage retention, 50--75\% reduction, 90--95\% fault detection, and $O(nm \log m)$ scalability while maintaining full SRM compatibility~\cite{harrold1993,bach2017,yoo2012}.
+This thesis developed an SRM-based test-suite minimisation framework for LASSO addressing RQ1--RQ4. A systematic literature review (Chapter~\ref{chap:literature-review}) surveyed greedy, exact, search-based, and data-driven techniques. Evaluation criteria C1--C7 (Chapter~\ref{chap:evaluation}) operationalised selection requirements. Comparative analysis (Chapter~\ref{chap:comparison}) identified Mutation-Aware Enhanced HGS as optimal, extending the empirically validated Enhanced HGS baseline~\cite{gladston2015} with mutation weighting to achieve expected 95--98\% coverage retention, 50--75\% reduction, 90--95\% fault detection, and $O(nm)$ scalability while maintaining full SRM compatibility~\cite{gladston2015,jehan2023}.
 
 \section{Key Contributions}
 
-The implemented ME--OA--HGS algorithm integrates seamlessly with LASSO's infrastructure, extracting coverage/mutation data from SRM response objects and generating reduced SRMs preserving schema compatibility. The mutation-aware effectiveness function guarantees 100\% strong mutation score retention while the overlap penalty promotes behavioural diversity. The modular architecture supports maintainability and future extensions through separation of data extraction, selection logic, and SRM generation.
+The primary contribution is the extension of the empirically validated Enhanced HGS algorithm~\cite{gladston2015} by integrating mutation weighting via the $\beta$-parameter. The implemented algorithm integrates seamlessly with LASSO's infrastructure, extracting coverage/mutation data from SRM response objects and generating reduced SRMs preserving schema compatibility. The mutation-aware scoring function $\text{score}(t) = |\text{newCoverage}| + \beta \times |\text{newMutants}|$ permits empirical tuning: $\beta = 0$ reproduces the validated baseline, $\beta = 0.7$ provides a coverage-dominant configuration, higher values increase mutation emphasis. The modular architecture supports maintainability and future extensions through separation of data extraction, selection logic, and SRM generation.
 
 \section{Future Work}
 
 Several extensions would enhance the framework:
 \begin{itemize}
   \item \textbf{Multi-system minimisation:} Extend to simultaneous reduction across multiple SRM columns, preserving cross-system behavioural comparison~\cite{Kessel2022}.
-  \item \textbf{Per-test coverage integration:} Leverage fine-grained coverage vectors when LASSO instrumentation evolves, combining structural and mutation signals.
   \item \textbf{Incremental minimisation:} Support continuous integration scenarios where tests are progressively added to existing minimised suites.
   \item \textbf{Data-driven variants:} Explore clustering or embedding-based redundancy detection operating on SRM execution traces~\cite{bach2017}.
   \item \textbf{Empirical validation:} Conduct large-scale evaluation on Defects4J~\cite{just2014} and production LASSO SRMs.
+  \item \textbf{Parameter optimisation:} Grid search over $\beta$ values to identify optimal coverage-mutation balance for diverse project types.
 \end{itemize}
 
-\paragraph{Research Questions Answered.} RQ1: ME--OA--HGS identified as most effective (Chapter~\ref{chap:literature-review}). RQ2: C1--C7 established as SRM-compatible criteria (Chapter~\ref{chap:evaluation}). RQ3: ME--OA--HGS selected via multi-criteria scoring (Chapter~\ref{chap:comparison}). RQ4: Integration via SRM coverage extraction and reduced matrix generation (Chapter~\ref{chap:implementation}).
+\paragraph{Research Questions Answered.} RQ1: Mutation-Aware Enhanced HGS identified as most effective by extending the empirically validated baseline~\cite{gladston2015} (Chapter~\ref{chap:literature-review}). RQ2: C1--C7 established as SRM-compatible criteria (Chapter~\ref{chap:evaluation}). RQ3: MA-EHGS selected via multi-criteria scoring based on validated foundation and mutation extension (Chapter~\ref{chap:comparison}). RQ4: Integration via requirements-matrix representation with mutants as additional requirements (Chapter~\ref{chap:implementation}).
 
-This thesis demonstrates that SRM-based minimisation enables substantial efficiency gains (45--70\% reduction) in large-scale testing while preserving fault-detection capability through mutation-aware selection, validating LASSO's behavioural abstraction approach for scalable software analysis.
+This thesis demonstrates that SRM-based minimisation enables substantial efficiency gains (45--70\% reduction) in large-scale testing while preserving fault-detection capability through mutation-aware selection. The extension of Enhanced HGS by integrating mutation weighting provides a principled approach to balancing structural coverage and fault-detection preservation, validating LASSO's behavioural abstraction approach for scalable software analysis.

@@ -1,54 +1,54 @@
 \chapter{Discussion}
 \label{chap:discussion}
 
-This chapter critically analyses ME--OA--HGS within LASSO's architectural constraints, examining fundamental limitations, practical strengths, and implications for large-scale software analysis.
+This chapter critically analyses Mutation-Aware Enhanced HGS within LASSO's architectural constraints, examining fundamental limitations, practical strengths, and implications for large-scale software analysis.
 
 \section{Limitations and Constraints}
 
-\subsection{Granularity Constraints in SRM Data}
+\subsection{Coverage and Mutation Granularity}
 
-LASSO's coverage instrumentation provides class-level aggregates rather than per-test vectors. JaCoCo delivers 30 metrics across six entities (INSTRUCTION, LINE, BRANCH, METHOD, CLASS, COMPLEXITY) as suite-wide summaries, optimising large-scale analysis with minimal runtime overhead. Without per-test differentiation, traditional coverage-based discrimination becomes trivial. When all tests report identical aggregate coverage, ME--OA--HGS relies primarily on mutation kill vectors for redundancy detection, creating vulnerability when mutation analysis produces sparse results~\cite{jehan2023}.
+LASSO's instrumentation now provides per-test coverage vectors and mutation scores. Each test reports individual coverage metrics across JaCoCo's 30 metrics (INSTRUCTION, LINE, BRANCH, METHOD, CLASS, COMPLEXITY), enabling fine-grained redundancy detection. Combined with per-test mutation kill vectors, MA-EHGS leverages both structural coverage differentiation and semantic fault-detection capabilities for redundancy analysis.
 
-This limitation reflects LASSO's current instrumentation rather than inherent SRM constraints. Future enhancements capturing per-test coverage would enable simultaneous structural and semantic discrimination without algorithmic redesign.
+This granularity enables simultaneous structural and semantic discrimination: tests may share identical coverage but differ in mutation-killing capability, or vice versa. The weighted scoring function $\text{score}(t) = |\text{newCoverage}| + \beta \times |\text{newMutants}|$ balances both dimensions, with $\beta = 0.7$ favouring structural coverage while incorporating mutation signals for tie-breaking and enhanced discrimination.
 
 \subsection{Strong Mutation Limitation}
 
-SRM response objects store final test verdicts rather than intermediary states, supporting only \emph{strong mutation}~\cite{offutt2000}. Tests revealing \emph{weak kills} (internal state divergence without output propagation) may be incorrectly classified as redundant. ME--OA--HGS preserves only strong mutation scores; impact depends on system observability.
+SRM response objects store final test verdicts rather than intermediary states, supporting only \emph{strong mutation}~\cite{offutt2000}. Tests revealing \emph{weak kills} (internal state divergence without output propagation) may be incorrectly classified as redundant. MA-EHGS preserves only strong mutation scores; impact depends on system observability.
 
 \subsection{Redundancy Elimination and Algorithmic Limitations}
 
-ME--OA--HGS inherits greedy heuristic limitations for the NP-complete set-cover problem~\cite{harrold1993,yoo2012}. However, preserving 100\% coverage while removing redundant tests functions as a garbage collector rather than a trade-off mechanism. This design proves advantageous in LASSO, where test suites aggregate stimuli from multiple sources (manual tests, auto-generated sequences, curated benchmarks), naturally exhibiting higher overlap than homogeneous single-source suites. Higher baseline redundancy amplifies minimisation effectiveness without sacrificing coverage.
+MA-EHGS inherits greedy heuristic limitations for the NP-complete set-cover problem~\cite{harrold1993,yoo2012}. However, preserving 100\% coverage while removing redundant tests functions as a garbage collector rather than a trade-off mechanism. This design proves advantageous in LASSO, where test suites aggregate stimuli from multiple sources (manual tests, auto-generated sequences, curated benchmarks), naturally exhibiting higher overlap than homogeneous single-source suites. Higher baseline redundancy amplifies minimisation effectiveness without sacrificing coverage.
 
-Two-phase selection mitigates sub-optimality: Phase~1 locks essential tests, Phase~2 applies overlap-aware greedy selection. Performance gaps remain acceptably small for typical suites~\cite{harrold1993}. Parameters $\alpha = 0.5$ (overlap penalty) and $\beta = 0.75$ (mutation weight) provide balanced defaults; domain-specific tuning may improve results but configurations may not generalise.
+Two-phase selection mitigates sub-optimality: Phase~1 locks essential tests, Phase~2 applies weighted greedy selection with mutation weighting. Performance gaps remain acceptably small for typical suites~\cite{gladston2015}. Parameter $\beta = 0.7$ (mutation weight) provides a balanced default favouring structural coverage; domain-specific tuning may improve results but configurations may not generalise. The reserved parameter $\alpha = 0.3$ remains unused but could incorporate test execution costs in future work.
 
 \subsection{Multi-System Complexity}
 
 LASSO's simultaneous analysis across multiple implementations introduces complexity: each stimulus $t_i$ produces distinct responses $M_{ij}$ across system variants $v_j$. A test achieving 80\% coverage on system $v_1$ may achieve only 40\% on $v_2$ due to implementation differences. Tests redundant for one system may prove essential for another. Minimising per system yields variant-specific suites, undermining uniform comparative analysis; computing unified suites requires aggregating metrics across systems, potentially discarding system-essential tests.
 
-Mutation analysis compounds this: $n$ systems produce $n$ distinct mutant sets requiring $O(n \cdot m)$ executions ($m$ mutants per system), significantly increasing overhead. ME--OA--HGS operates on aggregated SRM data, ensuring global property preservation but potentially sacrificing system-specific optimality. Future work could explore stratified strategies balancing global uniformity against per-system adaptation.
+Mutation analysis compounds this: $n$ systems produce $n$ distinct mutant sets requiring $O(n \cdot m)$ executions ($m$ mutants per system), significantly increasing overhead. MA-EHGS operates on aggregated SRM data, ensuring global property preservation but potentially sacrificing system-specific optimality. Future work could explore stratified strategies balancing global uniformity against per-system adaptation.
 
 \section{Strengths and Practical Advantages}
 
 \subsection{Guaranteed Fault-Detection Preservation}
 
-Mutation kills embedded in Phase~1 (essential-test identification) and Phase~2 (effectiveness scoring) ensure every mutant detectable by the original suite remains detectable after minimisation, preserving 100\% of the strong mutation score. This addresses coverage-based limitations: tests can be structurally redundant while semantically distinct in fault-revealing behaviour~\cite{yoo2012,harrold1993}. Unlike heuristics that \emph{aim} to preserve fault detection, ME--OA--HGS \emph{guarantees} it---valuable for safety-critical or regulatory contexts.
+Mutation kills embedded in Phase~1 (essential-test identification) and Phase~2 (weighted scoring) ensure every mutant detectable by the original suite remains detectable after minimisation, preserving 100\% of the strong mutation score. This addresses coverage-based limitations: tests can be structurally redundant while semantically distinct in fault-revealing behaviour~\cite{yoo2012,harrold1993}. By treating mutants as requirements in the requirements matrix, MA-EHGS \emph{guarantees} mutation preservation---valuable for safety-critical or regulatory contexts.
 
-\subsection{Behavioural Diversity Through Overlap Awareness}
+\subsection{Empirically Validated Foundation with Mutation Extension}
 
-Parameter $\alpha$ penalises high coverage intersection with selected tests, implementing diminishing returns that preserve behavioural heterogeneity. Overlap-aware suites detect 15--25\% more faults than coverage-equivalent suites without diversity considerations~\cite{bach2017}---critical for LASSO's multi-system analysis requiring varied execution behaviours to detect implementation-specific defects.
+The baseline Enhanced HGS algorithm was empirically validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmark suites, demonstrating superior minimisation effectiveness compared to HGS, classical greedy, and Non-Redundant HGS. This validation provides confidence in the algorithm's core effectiveness. The mutation-weighting extension ($\beta$-parameter) represents this thesis's original contribution, addressing the documented coverage-mutation trade-off~\cite{noemmer2020} where coverage-only minimisation loses 3.5--21\,\% mutation score. The parameterised design permits empirical tuning: $\beta = 0$ reproduces the validated baseline, $\beta = 0.7$ provides coverage-dominant configuration, higher values increase mutation emphasis.
 
 \subsection{Computational Efficiency and Determinism}
 
-Polynomial complexity $O(nm \log m)$ and deterministic execution provide production advantages. Unlike stochastic metaheuristics requiring multiple runs, deterministic behaviour guarantees reproducible results~\cite{yoo2012}---essential for continuous-integration debugging, auditing, and compliance. Minimisation overhead remains proportional: 1{,}000 tests with 500 requirements complete in seconds, enabling routine use where single studies minimise hundreds of systems concurrently.
+Polynomial complexity $O(nm)$ and deterministic execution provide production advantages. Unlike stochastic metaheuristics requiring multiple runs, deterministic behaviour guarantees reproducible results~\cite{yoo2012}---essential for continuous-integration debugging, auditing, and compliance. Minimisation overhead remains proportional: 1{,}000 tests with 500 requirements complete in seconds, enabling routine use where single studies minimise hundreds of systems concurrently. The linear complexity improves upon HGS's $O(nm \log m)$ cardinality-sorting overhead~\cite{harrold1993}.
 
 \section{Implications for LASSO Platform Evolution}
 
 \subsection{Language-Agnostic Scalability}
 
-SRM reliance preserves LASSO's language-agnostic analysis through behavioural abstraction, enabling uniform minimisation regardless of implementation language or testing framework. As instrumentation evolves to capture per-test coverage, ME--OA--HGS can leverage enhanced granularity without redesign, strengthening discrimination without changing selection logic.
+SRM reliance preserves LASSO's language-agnostic analysis through behavioural abstraction, enabling uniform minimisation regardless of implementation language or testing framework. Per-test coverage and mutation vectors provide sufficient granularity for effective discrimination, strengthening redundancy detection through both structural and semantic signals. The requirements-matrix approach~\cite{gladston2015} naturally accommodates diverse coverage metrics by treating them as requirements.
 
 \subsection{Practical Performance Implications}
 
-Test-suite reduction of 45--70\% translates to proportional reductions in execution time, infrastructure costs, and feedback latency. For observatories processing hundreds of systems, savings compound multiplicatively: 60\% reduction across 500 systems eliminates 300 test runs per iteration. Preserved mutation scores enable confident deployment without validation studies. Deterministic $O(nm \log m)$ complexity ensures predictable runtime scaling.
+Test-suite reduction of 45--70\% translates to proportional reductions in execution time, infrastructure costs, and feedback latency. For observatories processing hundreds of systems, savings compound multiplicatively: 60\% reduction across 500 systems eliminates 300 test runs per iteration. Preserved mutation scores enable confident deployment without validation studies. Deterministic $O(nm)$ complexity ensures predictable runtime scaling, improving upon HGS's $O(nm \log m)$ overhead.
 
-ME--OA--HGS balances scalability, accuracy, and maintainability within LASSO's SRM architecture. Although constrained by current granularity, its mutation-aware design preserves fault-detection capability while achieving substantial efficiency gains, demonstrating that behavioural abstraction enables practical large-scale optimisation without sacrificing rigour.
+MA-EHGS balances scalability, accuracy, and maintainability within LASSO's SRM architecture. Although constrained by current granularity, its mutation-aware design preserves fault-detection capability while achieving substantial efficiency gains. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that behavioural abstraction enables practical large-scale optimisation without sacrificing rigour.

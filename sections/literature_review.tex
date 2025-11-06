@@ -1,97 +1,58 @@
 \chapter{Minimization Algorithms}\label{chap:literature-review}
 
-This chapter surveys test-suite minimisation algorithms, organised by category: greedy heuristics, exact optimisation, search-based approaches, and data-driven techniques. For each category, we examine representative algorithms illustrating key characteristics and trade-offs.
+This chapter surveys test-suite minimisation algorithms across four categories: greedy heuristics, exact optimisation, search-based approaches, and data-driven techniques.
 
 \section{Greedy Heuristics}
 
-Greedy heuristics iteratively select tests covering the most uncovered requirements until complete coverage is achieved~\cite{yoo2012,khan2020}. These algorithms operate in polynomial time with predictable performance. Refinements incorporate requirement rarity or overlap penalties to improve retention while maintaining efficiency~\cite{harrold1993,bach2017}.
+Greedy heuristics iteratively select tests covering the most uncovered requirements until complete coverage is achieved~\cite{yoo2012,khan2020}, operating in polynomial time with predictable performance.
 
 \subsection{Classical Greedy}
 
-Classical greedy iteratively selects tests covering the most uncovered requirements until complete coverage~\cite{chvatal1979,yoo2012}. Time complexity is $O(nm)$ ($n$ tests, $m$ requirements) with $O(\ln m)$ approximation ratio, optimal for polynomial-time set-cover~\cite{chvatal1979}.
-
-Empirical studies show 60--93\,\% reduction (median 67\,\%) maintaining 100\,\% structural coverage~\cite{noemmer2020}. However, mutation scores drop 3.5--21\,\%: Apache projects lose 3.5--9.5\,\%, others 14--21\,\%~\cite{noemmer2020}, demonstrating structural coverage inadequately proxies test quality.
+Classical greedy iteratively selects tests covering the most uncovered requirements~\cite{chvatal1979,yoo2012}, achieving $O(nm)$ complexity with $O(\ln m)$ approximation ratio. Empirical studies show 60--93\,\% reduction (median 67\,\%) maintaining 100\,\% structural coverage, but mutation scores drop 3.5--21\,\%~\cite{noemmer2020}.
 
 \subsection{Harrold--Gupta--Soffa}
 
-HGS prioritises requirements by rarity~\cite{harrold1993}, recognising tests covering rare requirements are more critical. Prioritising rare requirements early increases probability each unique requirement is covered, reducing corrective additions. This preserves $O(\ln m)$ approximation while improving retention on instances with skewed cardinality distributions~\cite{chvatal1979}.
- 
-The algorithm operates in phases by cardinality: Phase~1 selects tests uniquely covering any requirement, Phase~2 processes cardinality = 2, continuing until complete coverage. Time complexity is $O(nm \log m)$ from cardinality sorting.
-
-Empirical evaluation shows minimal improvement over classical greedy. HGS produces suites 0.37--2.92\,\% smaller~\cite{noemmer2020}. Mutation differences (0.09--4.88\,\%) are statistically insignificant ($p \gg 0.05$)~\cite{noemmer2020}. JavaScript applications show approximately 70\,\% reduction with preserved mutation coverage~\cite{jehan2023}. Performance differences fall within error margins, suggesting cardinality-based prioritisation provides limited benefit when overlap is moderate.
+HGS prioritises requirements by rarity~\cite{harrold1993}, operating in phases by cardinality with $O(nm \log m)$ complexity. HGS produces suites 0.37--2.92\,\% smaller than classical greedy with mutation differences (0.09--4.88\,\%) statistically insignificant ($p \gg 0.05$)~\cite{noemmer2020}.
 
 \subsection{Delayed Greedy}
 
-Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate implied redundancies before greedy selection. The lattice identifies subsumption: if test $t_i$ covers all requirements of $t_j$ plus additional requirements, $t_j$ is redundant. After removing subsumed tests via lattice analysis, greedy selection proceeds on the reduced set. Three phases: object reduction, attribute reduction, greedy selection. Polynomial complexity, though exact bound unstated~\cite{tallam2005}.
+Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate redundancies before greedy selection. It produces suites equal to or smaller than classical greedy in 75\,\% of cases~\cite{tallam2005,yoo2012}, achieving 65--74\,\% reduction while maintaining mutation scores~\cite{jehan2023}. Polynomial complexity, though exact bound unstated~\cite{tallam2005}.
 
-Delayed greedy produces suites equal to or smaller than classical greedy in 75\,\% of cases, equal to or smaller than HGS in 64\,\%~\cite{tallam2005,yoo2012}, guaranteeing 100\,\% coverage retention. JavaScript implementations achieve 65--74\,\% reduction maintaining mutation scores~\cite{jehan2023}. Faster runtime than classical greedy despite lattice overhead, suggesting redundancy elimination reduces greedy selection cost~\cite{jehan2023}.
+\subsection{Enhanced HGS}
 
-\subsection{Mutation-Enhanced Overlap-Aware HGS}
-
-Recent empirical findings demonstrate that greedy minimisation techniques incorporating mutation coverage as a selection criterion achieve superior fault-detection retention compared to approaches relying solely on structural coverage metrics. Jehan and Wotawa~\cite{jehan2023} established mutation coverage as a quantitatively validated proxy for test-suite effectiveness, providing empirical grounding for mutation-aware selection strategies. Concurrently, Bach et al.~\cite{bach2017} identified overlap-based redundancy analysis as an effective mechanism for improving coverage retention within fixed time budgets.
-
-Building upon HGS's rarity-based prioritisation~\cite{harrold1993} and integrating both overlap-aware redundancy penalties~\cite{bach2017} and mutation coverage~\cite{jehan2023}, we introduce a mutation-enhanced variant that unifies these complementary techniques. This extension recognises that structural code coverage alone provides an incomplete measure of test quality; mutation coverage offers a stronger indicator of fault-detection capability~\cite{jia2011,jehan2023}. The mutation-enhanced algorithm operates in two phases:
-
-\textbf{Phase 1: Rarity-Based Seeding.} Following the original HGS approach, the algorithm identifies and selects tests that uniquely cover rare requirements. However, the notion of ``requirement'' is extended to include both structural coverage elements (lines, branches, methods) and mutation-detection capabilities. A test that uniquely kills a specific mutant is treated equivalently to a test that uniquely covers a structural element. This unified view ensures that tests with unique fault-detection capabilities are prioritised alongside tests with unique structural coverage.
-
-\textbf{Phase 2: Weighted Greedy Selection with Overlap Penalty.} After seeding with rare-requirement tests, the algorithm proceeds with iterative greedy selection. At each iteration, candidate tests are scored using a composite metric that combines three factors:
-\begin{enumerate}
-  \item \textbf{Coverage gain}: the number of uncovered structural requirements that the test would add to the selected suite.
-  \item \textbf{Mutation gain}: the number of previously undetected mutants that the test can kill.
-  \item \textbf{Overlap penalty}: the degree of redundancy with already-selected tests, computed over both structural coverage and mutation detection.
-\end{enumerate}
-
-The scoring function applies configurable weights to each factor, allowing adjustment based on domain priorities. The overlap penalty explicitly discourages selection of tests that duplicate existing coverage or mutation-detection capabilities, thereby promoting diversity in the minimised suite. The mutation-enhanced approach maintains $O(nm \log m)$ base complexity from HGS, with additional $O(n^2 m)$ overhead from overlap computation. The integration of mutation data requires preprocessing to map test-mutant kill relationships, but this information is typically available in modern testing frameworks with integrated mutation analysis.
+Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation on Siemens benchmarks demonstrated smaller suites than HGS and classical greedy while maintaining coverage~\cite{gladston2015}. This thesis extends Enhanced HGS by integrating mutation weighting via a $\beta$-parameter.
 
 \section{Exact Optimisation Approaches}
 
-Exact methods formulate minimisation as ILP or constraint-satisfaction problems, seeking optimal solutions~\cite{yoo2012,khan2020}. These guarantee optimality but are NP-hard with exponential runtime growth. Methods may leverage control-flow graphs to improve solution quality~\cite{mongiovi2020}.
+Exact methods formulate minimisation as ILP or constraint-satisfaction problems~\cite{yoo2012,khan2020}, guaranteeing optimality but exhibiting NP-hard exponential runtime.
 
 \subsection{ILP and REDUNET}
 
-ILP minimises test costs covering all requirements. Guarantees optimal solutions but is NP-hard with exponential runtime. Complexity bounds: $(m\Delta)^{O(m)}$ ($m$ constraints, $\Delta$ maximum coefficient)~\cite{yoo2012}. When terminating within practical limits, ILP produces minimal set-cover with 100\,\% coverage retention~\cite{yoo2012}. No mutation analyses reported for standalone ILP.
-
-REDUNET~\cite{mongiovi2020} addresses scalability via hybrid optimisation integrating CFG analysis with network algorithms. Achieves greater than 3$\times$ speedup over HGS and ILP, completing in fractions of seconds~\cite{mongiovi2020}. Guarantees 100\,\% coverage (optimal) with up to 90\,\% reduction~\cite{mongiovi2020}. However, CFG reliance precludes SRM-only integration; no mutation analysis reported.
-
-\subsection{Constraint and Graph Extensions}
-
-Approaches that enrich optimisation with structural constraints (e.g., control-flow or dependency graphs) can improve objective faithfulness at the cost of requiring additional program analysis inputs.
+ILP guarantees optimal solutions with $(m\Delta)^{O(m)}$ complexity~\cite{yoo2012}. REDUNET~\cite{mongiovi2020} achieves $>3\times$ speedup via hybrid CFG-network optimisation with up to 90\,\% reduction, but CFG reliance precludes SRM-only integration.
 
 \section{Search-Based and Metaheuristic Approaches}
 
-Search-based engineering treats minimisation as multi-objective optimisation balancing suite size and adequacy~\cite{yoo2012,khan2020}. Metaheuristics (genetic algorithms, simulated annealing, particle swarm) evolve solutions via fitness functions. These provide flexibility and escape local optima but require parameter tuning with higher overhead than greedy heuristics~\cite{hussein2020}.
+Search-based methods treat minimisation as multi-objective optimisation~\cite{yoo2012,khan2020}, providing flexibility but requiring parameter tuning with higher overhead than greedy heuristics.
 
 \subsection{Genetic Algorithms}
 
-GAs evolve test subsets trading coverage retention against suite size~\cite{yoo2012}. Maintain candidate populations, applying selection, crossover, and mutation operators. Time complexity $O(gnm)$ ($g$ generations, $n$ tests, $m$ requirements), space $O(pnm)$ ($p$ population size).
-
-Multi-objective framework produces Pareto fronts trading suite size against coverage~\cite{yoo2012}. Supports simultaneous optimisation of coverage, execution cost, fault detection history. Require parameter tuning (population size, mutation rates, crossover, selection pressure) with significantly longer runtime than greedy. Original framework excludes mutation coverage; post-2012 implementations incorporate mutation with implementation-dependent results. No systematic mutation-aware GA evaluation reported.
+GAs evolve test subsets with $O(gnm)$ complexity, producing Pareto fronts trading coverage against suite size~\cite{yoo2012}. They require parameter tuning with longer runtime than greedy methods. No systematic mutation-aware GA evaluation has been reported.
 
 \subsection{Quantum-Inspired GA}
 
-QIGA uses quantum superposition and rotation operators to improve convergence over classical GAs~\cite{hussein2020}. Employs quantum measurement operators exploring solution space without prior probability assumptions, theoretically enabling faster convergence. Maintains $O(gnm)$ time and $O(pnm)$ space complexity.
-
-Original work provides no empirical runtime, coverage retention, or reduction data~\cite{hussein2020}. Theoretical framework suggests matching or exceeding classical GA via improved exploration, requiring empirical validation. No mutation evaluation conducted; practical applicability to large-scale SRMs unverified.
-
-\subsection{Simulated Annealing and PSO}
-
-Metaheuristics such as simulated annealing and particle swarm optimisation (PSO) have been explored for test-suite minimisation~\cite{yoo2012}. These methods represent variants on the fundamental trade-off between solution quality and computational effort, with performance dependent on problem-specific tuning.
+QIGA~\cite{hussein2020} uses quantum operators for improved convergence, maintaining $O(gnm)$ complexity. The original work provides no empirical runtime, coverage, or mutation data, requiring empirical validation.
 
 \section{Data-Driven and Similarity-Based Approaches}
 
-Data-driven methods utilise coverage data properties to identify redundancies~\cite{bach2017,khan2020}. Analyse similarity or overlap between coverage vectors, applying clustering, distance metrics, or machine learning to select diverse representatives. Operate directly on coverage without requiring program structure. Pairwise similarities incur $O(n^2 m)$ cost requiring management at scale~\cite{bach2017}.
+Data-driven methods utilise coverage properties to identify redundancies~\cite{bach2017,khan2020}, operating directly on coverage without requiring program structure.
 
 \subsection{Similarity-Based Methods}
 
-Compute distance metrics (Jaccard, cosine, Euclidean) over coverage vectors, cluster tests by behavioural similarity, select representatives reducing redundancy~\cite{bach2017,khan2020}. Operate directly on coverage without program structure. Base complexity $O(n^2 m)$ ($n$ tests, $m$ requirements).
-
-FAST-R achieves near-linear scalability via random projection, coreset clustering, k-means++, locality-sensitive hashing~\cite{khan2020}. Coverage retention depends on similarity threshold and clustering parameters. No mutation evaluation reported; focus remains on structural diversity rather than fault-detection capability, representing a gap in understanding similarity correspondence between coverage and mutation-detection effectiveness.
+These compute distance metrics over coverage vectors with base complexity $O(n^2 m)$. FAST-R achieves near-linear scalability via random projection and clustering~\cite{khan2020}. No mutation evaluation has been reported.
 
 \subsection{Overlap-Aware Methods}
 
-Overlap-aware algorithms consider pairwise test intersections prioritising unique coverage. Compute overlap metrics penalising tests duplicating existing coverage, promoting diversity. Complexity $O(n^2 m)$ ($n$ tests, $m$ requirements).
-
-Bach et al.\ achieved 50\,\% higher coverage within fixed time budgets versus classical greedy~\cite{bach2017}. Reaching 90\,\% coverage required 19--25 hours versus 74--110 hours (74--77\,\% savings)~\cite{bach2017}. Runtime measurements confirm industrial-scale scalability, completing under 10 seconds~\cite{bach2017}. Overhead offset by improved retention and reduced duplication. No mutation evaluation reported; effectiveness validated within fixed time-budget CI/CD frameworks.
+Overlap-aware algorithms penalise tests duplicating existing coverage with $O(n^2 m)$ complexity. Bach et al.\ achieved 50\,\% higher coverage within fixed time budgets versus classical greedy, completing under 10 seconds~\cite{bach2017}. No mutation evaluation reported.
 
 Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
 
@@ -110,7 +71,9 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
       \hline
       Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005} \\
       \hline
-      ME--OA--HGS & $O(nm \log m)$ & $O(nm + n^2)$ & This work \\
+      Enhanced HGS & $O(nm)$ & $O(nm)$ & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & $O(nm)$ & $O(nm)$ & This work \\
       \hline
       ILP-Based & Exponential & $O(nm)$ & \cite{mongiovi2020} \\
       \hline
@@ -136,14 +99,12 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
 
 \section{Summary}
 
-The surveyed literature reveals four principal findings informing LASSO algorithm selection.
+The surveyed literature reveals four principal findings informing LASSO algorithm selection:
 
-\textbf{Greedy variants exhibit minimal practical differences.} Classical greedy, HGS, and delayed greedy produce statistically indistinguishable results across coverage and mutation metrics ($p \gg 0.05$)~\cite{noemmer2020}. Differences fall within error, suggesting refinements provide limited benefit when overlap is moderate. Classical greedy: $O(nm)$; HGS: $O(nm\log m)$~\cite{harrold1993}; delayed greedy: $O(n^2 m)$~\cite{tallam2005}.
+\textbf{Greedy variants exhibit minimal practical differences.} Classical greedy, HGS, and delayed greedy produce statistically indistinguishable results ($p \gg 0.05$)~\cite{noemmer2020}, suggesting refinements provide limited benefit when overlap is moderate.
 
-\textbf{Coverage-mutation trade-off is substantial.} Coverage-based minimisation consistently degrades fault-detection. Studies document mutation losses of 3.5--21\,\% despite 100\,\% coverage~\cite{noemmer2020}, with similar degradation (10--20\,\%)~\cite{rothermel1998}, demonstrating coverage inadequately proxies quality, validating mutation-aware strategies.
+\textbf{Coverage-mutation trade-off is substantial.} Coverage-based minimisation consistently degrades fault-detection with losses of 3.5--21\,\% despite 100\,\% coverage~\cite{noemmer2020,rothermel1998}.
 
-\textbf{Scalability leaders employ diverse strategies.} REDUNET achieves optimal coverage with greater than 3$\times$ speedup via hybrid ILP-network optimisation~\cite{mongiovi2020} but requires CFGs unavailable in SRM-only settings. Similarity-based approaches achieve near-linear scalability but lack mutation evaluation~\cite{khan2020}. Overlap-aware methods show 74--77\,\% time savings in CI~\cite{bach2017}. Greedy variants maintain polynomial scalability suitable for large SRMs.
+\textbf{Scalability leaders employ diverse strategies.} REDUNET achieves $>3\times$ speedup but requires CFGs unavailable in SRM-only settings~\cite{mongiovi2020}. Overlap-aware methods show 74--77\,\% time savings~\cite{bach2017}. Greedy variants maintain polynomial scalability.
 
-\textbf{Mutation analysis gap is widespread.} Most algorithms lack mutation evaluation. Only post-2020 studies systematically assess fault-detection preservation~\cite{noemmer2020,jehan2023}. REDUNET, overlap-aware, genetic algorithms, QIGA, standalone ILP, similarity-based all lack mutation data, limiting understanding of fault-detection characteristics. This motivates mutation-enhanced approaches integrating mutation metrics directly.
-
-Each category presents distinct trade-offs between quality, efficiency, and input requirements. Selection depends on available data, scalability requirements, and quality objectives.
+\textbf{Mutation analysis gap is widespread.} Most algorithms lack mutation evaluation, limiting understanding of fault-detection characteristics and motivating mutation-enhanced approaches.

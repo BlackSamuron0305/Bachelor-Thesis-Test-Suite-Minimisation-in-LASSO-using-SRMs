@@ -28,16 +28,16 @@ The \emph{mutation score} expresses the proportion of mutants detected by the te
 \[
 \text{Mutation Score} = \frac{\text{Number of mutants killed}}{\text{Total number of mutants}} \times 100\,\%.
 \]
-A mutant is considered \emph{killed} when a test produces a different observable outcome for the mutant than for the original program. This typically means that the test passes on the original system but fails when executed on the mutant. Conversely, if a test yields the same outcome on both versions, the mutant \emph{survives}.
+A mutant is considered \emph{killed} when a test detects the introduced fault. The detection criterion depends on the mutation testing approach. Conversely, if a test does not detect the fault, the mutant \emph{survives}.
 
 \paragraph{Mutation Types.}
 Two main types of mutation testing are commonly distinguished~\cite{offutt2000}:
 \begin{enumerate}
-  \item \textbf{Weak Mutation:} a mutant is detected if the program’s internal state immediately after executing the mutated statement differs from that of the original program. Detection is based on local state divergence rather than final output.
-  \item \textbf{Strong Mutation:} a mutant is detected only if this internal divergence propagates to the program’s externally observable behaviour, such as output values or test verdicts. This form requires execution to completion and comparison of final results.
+  \item \textbf{Weak Mutation:} a mutant is detected if the program's internal state immediately after executing the mutated statement differs from that of the original program. Detection is based on inspecting local state divergence rather than final output, without requiring the test to fail.
+  \item \textbf{Strong Mutation:} a mutant is detected only if the internal divergence propagates to the program's externally observable behaviour, such as output values or test verdicts. This requires execution to completion and comparison of final results, typically causing the test to fail on the mutant while passing on the original program.
 \end{enumerate}
 
-Weak mutation focuses on local sensitivity to code changes, while strong mutation measures externally visible behavioural differences. Both flavours aim to approximate a test suite’s fault-detection capability, with the mutation score serving as a quantitative indicator of test effectiveness.
+Weak mutation focuses on local sensitivity to code changes, while strong mutation measures externally visible behavioural differences. Both flavours aim to approximate a test suite's fault-detection capability, with the mutation score serving as a quantitative indicator of test effectiveness.
 
 
 \section{Stimulus--Response Matrices}\label{sec:srm}
@@ -100,12 +100,6 @@ where \(t_i \in T\) (stimulus/row), \(v_j \in V\) (system variant/column), \(M_{
 Core information: input parameters, outputs/return values, exceptions/failures, optional execution traces.
 
 SRMs support \emph{analysis attributes}---key--value pairs storing additional measurements: non-functional metrics (execution time, memory), coverage data (line, branch, method), mutation results/scores, static properties/complexity.
-
-Flexible schema stores functional and non-functional behaviour via two representations:
-\begin{enumerate}
-  \item \textbf{Black-box:} aggregated input/output data per stimulus.
-  \item \textbf{White-box:} full internal invocation structure for detailed trace analysis.
-\end{enumerate}
 
 \begin{figure}[H]
   \centering
