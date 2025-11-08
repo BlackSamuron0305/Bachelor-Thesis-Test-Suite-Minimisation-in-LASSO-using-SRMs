@@ -1,7 +1,7 @@
 # GitHub Copilot Instructions
 
 ## Project Overview
-Bachelor thesis: **Test Suite Minimization in LASSO Using Stimulus-Response Matrices**. LaTeX academic paper implementing the Harrold-Gupta-Soffa (HGS) algorithm with overlap-aware heuristics for test suite reduction in the LASSO platform. Language-independent approach operating on SRM representations.
+Bachelor thesis: **Test Suite Minimisation in LASSO Using Stimulus-Response Matrices**. LaTeX academic paper implementing the Harrold-Gupta-Soffa (HGS) algorithm with overlap-aware heuristics for test suite reduction in the LASSO platform. Language-independent approach operating on SRM representations.
 
 ## Critical Rules
 1. **Always make direct edits using tools** - Never provide summaries or descriptions of changes
@@ -113,7 +113,7 @@ Note: Use `--` for en-dash in names (e.g., `Harrold--Gupta--Soffa`)
 - **Arena**: LASSO component for executing tests across multiple systems
 
 ### Research Questions (sections/introduction.tex)
-- **RQ1**: Most effective minimization techniques (literature)
+- **RQ1**: Most effective minimisation techniques (literature)
 - **RQ2**: Evaluation criteria for SRM environment
 - **RQ3**: Optimal algorithmic approach (HGS+overlap)
 - **RQ4**: Integration into LASSO pipeline

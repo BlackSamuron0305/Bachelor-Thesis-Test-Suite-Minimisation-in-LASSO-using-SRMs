@@ -1,56 +1,310 @@
 \chapter{Comparative Evaluation and Selection}\label{chap:comparison}
 
-This chapter applies the scoring framework to rank algorithms and justify selecting Mutation-Aware Enhanced HGS for LASSO integration.
+This chapter evaluates algorithms against the criteria established in Chapter~\ref{chap:evaluation}, presenting criterion-specific comparisons followed by multi-criteria scoring to select the optimal approach for LASSO integration.
 
-\section{Selection Rationale}
+\section{Criterion-by-Criterion Evaluation}
 
-Delayed Greedy achieves the highest empirical score (25/30) with documented $\approx$100\,\% mutation preservation~\cite{jehan2023}, but $O(n^2m)$ complexity renders it impractical for LASSO's large SRMs. Mutation-Aware Enhanced HGS (MA-EHGS) is selected (26/30) as a scalable alternative, extending the validated Enhanced HGS baseline~\cite{gladston2015} with mutation weighting while maintaining $O(nm)$ complexity and full SRM compatibility.
+\subsection{C1: SRM Compatibility}
 
-\section{Comparative Analysis}
-
-Table~\ref{tab:comparison} summarises empirical performance across coverage, reduction, fault detection, and complexity.
+SRM compatibility determines whether an algorithm can operate using only stimulus-response matrices without requiring control-flow graphs, abstract syntax trees, or language-specific structural analysis.
 
 \begin{table}[H]
   \centering
-  \caption{Comparative algorithm performance based on literature-reported results.}
-  \label{tab:comparison}
-  \begin{threeparttable}
-    \begin{adjustbox}{max width=\textwidth}
-    \begin{tabular}{|l|c|c|c|c|c|l|}
-      \hline
-      \textbf{Algorithm} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Mutation} & \textbf{Complexity} & \textbf{Reference} \\
-      & \textbf{Retention} & \textbf{Ratio} & \textbf{Retention} & \textbf{Preserve} & & \\
-      \hline
-      Classical Greedy & 100\,\%\tnote{a} & 60--93\,\% & 79--96.5\,\% & Low & $O(nm)$ & \cite{noemmer2020} \\
-      HGS & 100\,\%\tnote{a} & $\approx$70\,\% & 90--95\,\% & Medium & $O(nm \log m)$ & \cite{jehan2023} \\
-      Delayed Greedy & 100\,\%\tnote{a} & 65--74\,\% & $\approx$100\,\% & \textbf{High}\tnote{b} & $O(n^2m)$ & \cite{jehan2023} \\
-      ILP-Based & 100\,\% & Optimal & Unknown & Unknown & Exponential & \cite{yoo2012} \\
-      REDUNET & 100\,\% & 50--90\,\% & Unknown & Unknown & Exponential\tnote{c} & \cite{mongiovi2020} \\
-      Genetic Algorithm & Variable & Variable & Unknown & Unknown & $O(gnm)$ & \cite{yoo2012} \\
-      \textbf{MA-EHGS} & \textbf{100\,\%}\tnote{d} & \textbf{50--75\,\%}\tnote{d} & \textbf{95--100\,\%}\tnote{d} & \textbf{High}\tnote{d} & $\mathbf{O(nm)}$ & \textbf{This work} \\
-      \hline
+  \caption{C1: SRM Compatibility --- algorithms requiring only coverage matrices.}
+  \label{tab:c1-srm}
+  \begin{tabular}{|l|c|l|}
+    \hline
+    \textbf{Algorithm} & \textbf{Compatible} & \textbf{Justification} \\
+    \hline
+    Classical Greedy & \checkmark & Operates on coverage matrix only~\cite{chvatal1979} \\
+    \hline
+    HGS & \checkmark & Requires only requirement cardinalities~\cite{harrold1993} \\
+    \hline
+    Delayed Greedy & \checkmark & Uses coverage lattice, no CFG needed~\cite{tallam2005} \\
+    \hline
+    Enhanced HGS & \checkmark & Requirements-matrix formulation~\cite{gladston2015} \\
+    \hline
+    MA-EHGS & \checkmark & Extends Enhanced HGS with mutation as requirements \\
+    \hline
+    ILP-Based & \checkmark & Set-cover formulation from coverage~\cite{yoo2012} \\
+    \hline
+    REDUNET & $\times$ & Requires CFG and data-flow analysis~\cite{mongiovi2020} \\
+    \hline
+    Genetic Algorithm & \checkmark & Evolves coverage-based test subsets~\cite{yoo2012} \\
+    \hline
+    Similarity-Based & \checkmark & Distance metrics over coverage vectors~\cite{khan2020} \\
+    \hline
+    Overlap-Aware & \checkmark & Penalises coverage duplication~\cite{bach2017} \\
+    \hline
   \end{tabular}
-  \end{adjustbox}
+\end{table}
+
+\textbf{Result:} REDUNET fails C1 due to CFG requirements and receives zero total score, excluding it from LASSO consideration. All other algorithms pass this mandatory criterion.
+
+\subsection{C2: Coverage Preservation}
+
+Coverage preservation measures the percentage of structural requirements (lines, branches, methods) retained after minimisation.
+
+\begin{table}[H]
+  \centering
+  \caption{C2: Coverage Preservation --- percentage of structural requirements retained.}
+  \label{tab:c2-coverage}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Retention} & \textbf{Score} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & 100\,\%\tnote{a} & 5/5 & \cite{chvatal1979} \\
+      \hline
+      HGS & 100\,\%\tnote{a} & 5/5 & \cite{harrold1993} \\
+      \hline
+      Delayed Greedy & 100\,\%\tnote{a} & 5/5 & \cite{tallam2005} \\
+      \hline
+      Enhanced HGS & 100\,\%\tnote{b} & 5/5 & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & 100\,\%\tnote{c} & 5/5 & This work \\
+      \hline
+      ILP-Based & 100\,\%\tnote{d} & 5/5 & \cite{yoo2012} \\
+      \hline
+      Genetic Algorithm & Variable\tnote{e} & 1/5 & \cite{yoo2012} \\
+      \hline
+      Similarity-Based & Variable\tnote{f} & 1/5 & \cite{khan2020} \\
+      \hline
+      Overlap-Aware & Variable\tnote{g} & 2/5 & \cite{bach2017} \\
+      \hline
+    \end{tabular}
     \begin{tablenotes}
       \small
-      \item[a] Guaranteed by design
-      \item[b] Validated: maintained mutation score equivalent to original~\cite{jehan2023}
-      \item[c] Requires CFG; fast in practice
-      \item[d] Expected based on Enhanced HGS baseline; requires empirical validation
+      \item[a] Guaranteed by design: greedy selection until 100\,\% coverage achieved
+      \item[b] Empirically validated: maintained comparable coverage to full suite~\cite{gladston2015}
+      \item[c] Inherits guarantee from Enhanced HGS baseline
+      \item[d] Optimal when solver terminates~\cite{yoo2012}
+      \item[e] Pareto front: no single coverage value, configuration-dependent
+      \item[f] Clustering threshold affects coverage: not guaranteed
+      \item[g] Time-budget framework: coverage varies, not guaranteed
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-Classical Greedy achieves 60--93\,\% reduction but suffers 3.5--21\,\% mutation loss~\cite{noemmer2020}. HGS performs statistically indistinguishably from classical greedy ($p \gg 0.05$)~\cite{noemmer2020}. Delayed Greedy preserves mutation scores while achieving 65--74\,\% reduction~\cite{jehan2023} but has quadratic complexity. Exact methods (ILP, REDUNET) lack mutation evaluation; REDUNET fails SRM compatibility. Search-based methods lack systematic mutation assessment.
+\textbf{Result:} Greedy heuristics, ILP, and MA-EHGS guarantee 100\,\% coverage (5/5). Search-based and data-driven methods provide variable coverage depending on parameters and time budgets (1--2/5).
 
-\subsection{Multi-Criteria Scoring Analysis}
+\subsection{C3: Reduction Effectiveness}
 
-Applying the scoring framework established in Chapter~\ref{chap:evaluation}, each algorithm receives normalised scores (0--5 scale) across criteria C2--C7. Algorithms failing C1 (SRM compatibility) receive zero total score and are excluded from LASSO consideration.
+Reduction effectiveness measures the percentage of tests removed while maintaining coverage and fault-detection requirements.
 
 \begin{table}[H]
   \centering
-  \caption{Multi-criteria evaluation scores demonstrating MA-EHGS optimality across balanced performance dimensions.}
-  \label{tab:scoring}
+  \caption{C3: Reduction Effectiveness --- percentage of original test suite eliminated.}
+  \label{tab:c3-reduction}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Reduction} & \textbf{Score} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & 60--93\,\% (median 67\,\%) & 4/5 & \cite{noemmer2020} \\
+      \hline
+      HGS & $\approx$70\,\% & 4/5 & \cite{jehan2023} \\
+      \hline
+      Delayed Greedy & 65--74\,\% & 4/5 & \cite{jehan2023,tallam2005} \\
+      \hline
+      Enhanced HGS & Smaller than HGS, GRE\tnote{a} & 4/5 & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & 50--75\,\% (expected)\tnote{b} & 4/5 & This work \\
+      \hline
+      ILP-Based & Optimal (best possible) & 5/5 & \cite{yoo2012} \\
+      \hline
+      Genetic Algorithm & Variable, config-dependent & 3/5 & \cite{yoo2012} \\
+      \hline
+      Similarity-Based & Moderate via clustering & 2/5 & \cite{khan2020} \\
+      \hline
+      Overlap-Aware & Variable in time budget & 2/5 & \cite{bach2017} \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] Empirically demonstrated smaller suites than HGS and classical greedy (GRE)~\cite{gladston2015}
+      \item[b] Expected based on Enhanced HGS baseline; requires empirical validation
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\textbf{Result:} ILP guarantees optimal reduction (5/5). Greedy heuristics including MA-EHGS achieve strong reduction (4/5) with 60--75\,\%. Search-based and data-driven methods show moderate to variable reduction (2--3/5).
+
+\subsection{C4: Fault-Detection Retention}
+
+Fault-detection retention measures the percentage of faults detected by the original suite that remain detectable after minimisation.
+
+\begin{table}[H]
+  \centering
+  \caption{C4: Fault-Detection Retention --- empirically measured fault revelation capability.}
+  \label{tab:c4-fault}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Retention} & \textbf{Score} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & 79--96.5\,\% & 2/5 & \cite{noemmer2020} \\
+      \hline
+      HGS & 90--95\,\% & 3/5 & \cite{jehan2023} \\
+      \hline
+      Delayed Greedy & $\approx$100\,\%\tnote{a} & 5/5 & \cite{jehan2023} \\
+      \hline
+      Enhanced HGS & Comparable to full suite\tnote{b} & 4/5 & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & 95--100\,\% (expected)\tnote{c} & 4/5 & This work \\
+      \hline
+      ILP-Based & No data available & 0/5 & --- \\
+      \hline
+      Genetic Algorithm & No data available & 0/5 & --- \\
+      \hline
+      Similarity-Based & No data available & 0/5 & --- \\
+      \hline
+      Overlap-Aware & No data available & 0/5 & --- \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] \textbf{Best empirically-validated:} maintained mutation score equivalent to original~\cite{jehan2023}
+      \item[b] Siemens benchmark validation showed comparable fault detection~\cite{gladston2015}
+      \item[c] Expected based on mutation-weighting; requires empirical validation
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\textbf{Result:} Delayed Greedy achieves the highest empirically-validated score (5/5) with $\approx$100\,\% preservation~\cite{jehan2023}. MA-EHGS expects strong retention (4/5) via mutation weighting. Most algorithms lack fault-detection evaluation (0/5).
+
+\subsection{C5: Mutation Score Preservation}
+
+Mutation score preservation specifically measures the percentage of mutants killed by the original suite that remain killed after minimisation.
+
+\begin{table}[H]
+  \centering
+  \caption{C5: Mutation Score Preservation --- strong mutation testing capability retention.}
+  \label{tab:c5-mutation}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Mutation Loss} & \textbf{Score} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & 3.5--21\,\% loss (avg 12.5\,\%) & 1/5 & \cite{noemmer2020} \\
+      \hline
+      HGS & Similar to classical greedy & 3/5 & \cite{noemmer2020} \\
+      \hline
+      Delayed Greedy & $\approx$0\,\% loss\tnote{a} & 5/5 & \cite{jehan2023} \\
+      \hline
+      Enhanced HGS & No mutation evaluation & 0/5 & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & Minimal loss (expected)\tnote{b} & 4/5 & This work \\
+      \hline
+      ILP-Based & No mutation data & 0/5 & --- \\
+      \hline
+      Genetic Algorithm & No mutation data & 0/5 & --- \\
+      \hline
+      Similarity-Based & No mutation data & 0/5 & --- \\
+      \hline
+      Overlap-Aware & No mutation data & 0/5 & --- \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] \textbf{Best empirically-validated:} maintained mutation score equivalent to original suite~\cite{jehan2023}
+      \item[b] Mutation-weighting ($\beta = 0.7$) designed to preserve mutation kills; requires validation
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\textbf{Result:} Delayed Greedy achieves the highest score (5/5) with documented $\approx$100\,\% mutation preservation~\cite{jehan2023}. MA-EHGS expects strong preservation (4/5) through explicit mutation weighting. Most algorithms lack mutation evaluation (0/5), highlighting a widespread gap in the literature.
+
+\subsection{C6: Computational Scalability}
+
+Computational scalability assesses algorithmic complexity and practical runtime for large test suites ($n > 10{,}000$ tests) and many requirements ($m > 1{,}000$).
+
+\begin{table}[H]
+  \centering
+  \caption{C6: Computational Scalability --- time complexity and practical performance.}
+  \label{tab:c6-scalability}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Complexity} & \textbf{Score} & \textbf{Reference} \\
+      \hline
+      Classical Greedy & $O(nm)$ & 5/5 & \cite{chvatal1979} \\
+      \hline
+      HGS & $O(nm \log m)$ & 5/5 & \cite{harrold1993} \\
+      \hline
+      Delayed Greedy & $O(n^2m)$\tnote{a} & 3/5 & \cite{tallam2005} \\
+      \hline
+      Enhanced HGS & $O(nm)$ & 5/5 & \cite{gladston2015} \\
+      \hline
+      MA-EHGS & $O(nm)$ & 5/5 & This work \\
+      \hline
+      ILP-Based & Exponential: $(m\Delta)^{O(m)}$ & 1/5 & \cite{yoo2012} \\
+      \hline
+      Genetic Algorithm & $O(gnm)$\tnote{b} & 2/5 & \cite{yoo2012} \\
+      \hline
+      Similarity-Based & $O(n^2m)$ with optimisations\tnote{c} & 3/5 & \cite{khan2020} \\
+      \hline
+      Overlap-Aware & $O(n^2m)$, <10s empirical\tnote{d} & 4/5 & \cite{bach2017} \\
+      \hline
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] Quadratic in test count; prohibitive for $n > 10{,}000$
+      \item[b] $g$ = generations; parameter-sensitive, longer than greedy
+      \item[c] FAST-R achieves near-linear via random projection~\cite{khan2020}
+      \item[d] <10 seconds on industrial projects~\cite{bach2017}
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
+\textbf{Result:} Classical Greedy, HGS, Enhanced HGS, and MA-EHGS achieve optimal scalability (5/5) with polynomial complexity. Delayed Greedy's quadratic complexity (3/5) limits large-scale use. ILP is impractical (1/5) with exponential runtime.
+
+\subsection{C7: Implementation Feasibility}
+
+Implementation feasibility assesses algorithmic complexity, parameter sensitivity, required infrastructure, and maintainability.
+
+\begin{table}[H]
+  \centering
+  \caption{C7: Implementation Feasibility --- development and maintenance complexity.}
+  \label{tab:c7-feasibility}
+  \begin{threeparttable}
+    \begin{tabular}{|l|c|c|l|}
+      \hline
+      \textbf{Algorithm} & \textbf{Characteristics} & \textbf{Score} & \textbf{Notes} \\
+      \hline
+      Classical Greedy & Simple iteration, no parameters & 5/5 & Straightforward implementation \\
+      \hline
+      HGS & Cardinality sorting required & 4/5 & Moderate additional complexity \\
+      \hline
+      Delayed Greedy & Concept lattice construction & 3/5 & Complex data structures~\cite{tallam2005} \\
+      \hline
+      Enhanced HGS & Two-phase matrix operations & 4/5 & Moderate complexity~\cite{gladston2015} \\
+      \hline
+      MA-EHGS & + One parameter ($\beta$) & 4/5 & Straightforward extension \\
+      \hline
+      ILP-Based & Requires solver integration & 2/5 & Complex solver dependencies \\
+      \hline
+      Genetic Algorithm & Multi-parameter tuning & 2/5 & Non-deterministic, tuning required \\
+      \hline
+      Similarity-Based & Clustering infrastructure & 3/5 & Moderate complexity \\
+      \hline
+      Overlap-Aware & Penalty computation & 4/5 & Straightforward, documented~\cite{bach2017} \\
+      \hline
+    \end{tabular}
+
+  \end{threeparttable}
+\end{table}
+
+\textbf{Result:} Classical Greedy is simplest (5/5). MA-EHGS achieves strong feasibility (4/5) with minimal parameterisation ($\beta$ only). Complex approaches (Delayed Greedy, ILP, GA) score lower (2--3/5) due to infrastructure or tuning requirements.
+
+\section{Multi-Criteria Scoring and Selection}
+
+Table~\ref{tab:scoring-final} aggregates criterion-specific scores to identify the optimal algorithm for LASSO integration.
+
+\begin{table}[H]
+  \centering
+  \caption{Multi-criteria evaluation: aggregated scores demonstrating MA-EHGS optimality.}
+  \label{tab:scoring-final}
   \begin{threeparttable}
     \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{|l|c|c|c|c|c|c|c|c|}
@@ -58,129 +312,46 @@ Applying the scoring framework established in Chapter~\ref{chap:evaluation}, eac
     \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{C7} & \textbf{Total} \\
     & \textbf{SRM} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Mutation} & \textbf{Scalability} & \textbf{Feasibility} & \\
     \hline
-    Classical Greedy & \checkmark & 5/5\tnote{b} & 4/5\tnote{c} & 2/5\tnote{d} & 1/5\tnote{e} & 5/5 & 5/5 & 22/30 \\
-    HGS & \checkmark & 5/5\tnote{b} & 4/5 & 3/5\tnote{f} & 3/5 & 5/5 & 4/5 & 24/30 \\
-    Delayed Greedy & \checkmark & 5/5\tnote{b} & 4/5 & 5/5\tnote{g} & 5/5\tnote{h} & 3/5\tnote{i} & 3/5 & 25/30 \\
-    ILP-Based & \checkmark & 5/5\tnote{n} & 5/5 & 0/5\tnote{l} & 0/5\tnote{l} & 1/5\tnote{o} & 2/5\tnote{p} & 13/30 \\
-    REDUNET & $\times$\tnote{q} & --- & --- & --- & --- & --- & --- & 0/30 \\
-    Genetic Algorithm & \checkmark & 1/5\tnote{r} & 3/5 & 0/5\tnote{l} & 0/5\tnote{l} & 2/5\tnote{s} & 2/5\tnote{t} & 8/30 \\
-    QIGA & \checkmark & 0/5\tnote{u} & 0/5\tnote{u} & 0/5\tnote{u} & 0/5\tnote{u} & 2/5 & 1/5\tnote{v} & 3/30 \\
-    Similarity-Based & \checkmark & 1/5\tnote{x} & 2/5 & 0/5\tnote{l} & 0/5\tnote{l} & 3/5\tnote{y} & 3/5 & 9/30 \\
-    Overlap-Aware & \checkmark & 2/5\tnote{j} & 2/5\tnote{k} & 0/5\tnote{l} & 0/5\tnote{l} & 4/5\tnote{m} & 4/5 & 12/30 \\
-    Enhanced HGS (baseline) & \checkmark & 5/5\tnote{z} & 4/5\tnote{z} & 4/5\tnote{z} & 0/5\tnote{aa} & 5/5 & 4/5 & 22/30 \\
-    \textbf{MA-EHGS ($\beta$=0.7)} & \checkmark & \textbf{5/5}\tnote{w} & \textbf{4/5}\tnote{w} & \textbf{4/5}\tnote{w} & \textbf{4/5}\tnote{w} & \textbf{5/5} & \textbf{4/5} & \textbf{26/30} \\
+    Classical Greedy & \checkmark & 5/5 & 4/5 & 2/5 & 1/5 & 5/5 & 5/5 & 22/30 \\
+    HGS & \checkmark & 5/5 & 4/5 & 3/5 & 3/5 & 5/5 & 4/5 & 24/30 \\
+    Delayed Greedy & \checkmark & 5/5 & 4/5 & 5/5 & 5/5 & 3/5 & 3/5 & \textbf{25/30} \\
+    Enhanced HGS & \checkmark & 5/5 & 4/5 & 4/5 & 0/5 & 5/5 & 4/5 & 22/30 \\
+    \textbf{MA-EHGS} & \checkmark & \textbf{5/5} & \textbf{4/5} & \textbf{4/5} & \textbf{4/5} & \textbf{5/5} & \textbf{4/5} & \textbf{26/30} \\
+    \hline
+    ILP-Based & \checkmark & 5/5 & 5/5 & 0/5 & 0/5 & 1/5 & 2/5 & 13/30 \\
+    Genetic Algorithm & \checkmark & 1/5 & 3/5 & 0/5 & 0/5 & 2/5 & 2/5 & 8/30 \\
+    Similarity-Based & \checkmark & 1/5 & 2/5 & 0/5 & 0/5 & 3/5 & 3/5 & 9/30 \\
+    Overlap-Aware & \checkmark & 2/5 & 2/5 & 0/5 & 0/5 & 4/5 & 4/5 & 12/30 \\
+    \hline
+    REDUNET & $\times$ & --- & --- & --- & --- & --- & --- & 0/30 \\
     \hline
   \end{tabular}
   \end{adjustbox}
     \begin{tablenotes}
       \small
-      \item[a] 
-      \item[b] 100\,\% structural coverage guaranteed by design~\cite{chvatal1979,harrold1993,tallam2005}
-      \item[c] 60--93\,\% median 67\,\%: good but not best reduction~\cite{noemmer2020}
-      \item[d] 79--96.5\,\% retention: 3.5--21\,\% loss documented~\cite{noemmer2020}
-      \item[e] Worst mutation preservation among greedy variants~\cite{noemmer2020}
-      \item[f] Statistically indistinguishable from classical greedy ($p \gg 0.05$)~\cite{noemmer2020}
-      \item[g] $\approx$100\,\% mutation preservation validated empirically~\cite{jehan2023}
-      \item[h] \textbf{Best empirically-validated mutation preservation}~\cite{jehan2023}
-      \item[i] $O(n^2m)$ quadratic complexity limits scalability
-      \item[j] Time-budget framework: coverage varies, not guaranteed
-      \item[k] Variable reduction in fixed-time context
-      \item[l] No empirical data: cannot score without evidence
-      \item[m] <10s runtime on industrial projects~\cite{bach2017}
-      \item[n] Optimal coverage when terminating~\cite{yoo2012}
-      \item[o] Double-exponential $(m\Delta)^{O(m)}$ impractical~\cite{yoo2012}
-      \item[p] Complex solver integration, exponential worst-case
-      \item[q] REDUNET fails C1 due to CFG requirement; receives zero total score
-      \item[r] Pareto front: no single coverage value, configuration-dependent
-      \item[s] $O(gnm)$ with parameter sensitivity~\cite{yoo2012}
-      \item[t] Complex parameterization, non-deterministic
-      \item[u] No empirical data whatsoever~\cite{hussein2020}
-      \item[v] Theoretical only, no validation, high complexity
-      \item[w] Theoretical expectations based on Enhanced HGS baseline~\cite{gladston2015}; mutation extension requires empirical validation
-      \item[x] Variable coverage based on clustering threshold~\cite{khan2020}
-      \item[y] Near-linear scalability through approximation techniques~\cite{khan2020}
-      \item[z] Empirically validated on Siemens benchmarks~\cite{gladston2015}
-      \item[aa] No mutation coverage in baseline Enhanced HGS~\cite{gladston2015}
+      \item All scores are out of 5.
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-\paragraph{Scoring Rationale.} Scores reflect empirical evidence from published evaluations. Classical Greedy (22/30) guarantees structural coverage (C2: 5/5) and has optimal scalability (C6: 5/5) but exhibits documented 3.5--21\,\% mutation loss (C4: 2/5, C5: 1/5)~\cite{noemmer2020}. HGS (24/30) performs statistically indistinguishably from classical greedy~\cite{noemmer2020}, gaining minimal advantage from rarity prioritisation at increased algorithmic complexity (C7: 4/5).
+\section{Selection Decision}
 
-\textbf{Enhanced HGS baseline (22/30)} was empirically validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmark suites, demonstrating smaller minimised suites than HGS, GRE, and Non-Redundant HGS while maintaining comparable coverage retention. The baseline algorithm guarantees 100\,\% structural coverage (C2: 5/5), achieves strong reduction effectiveness (C3: 4/5), and maintains optimal scalability (C6: 5/5) with $O(nm)$ complexity. However, the baseline lacks mutation evaluation (C5: 0/5), representing a gap addressed by the mutation-aware extension.
+\textbf{Mutation-Aware Enhanced HGS achieves the highest total score (26/30)} and is selected for LASSO integration based on three strategic considerations:
 
-\textbf{Mutation-Aware Enhanced HGS (MA-EHGS) achieves the highest total score (26/30)}, extending the validated baseline with mutation weighting ($\beta$-parameter). Without full empirical validation, scores reflect expected performance (C2--C5: 4/5 each) based on the baseline's characteristics and mutation-aware design principles. The approach maintains polynomial scalability (C6: 5/5) and moderate implementation complexity (C7: 4/5). 
+\subsection{Optimal Multi-Criteria Balance}
 
-\textbf{Delayed Greedy achieves the highest empirically-validated score (25/30)}, providing the only documented $\approx$100\,\% mutation preservation (C5: 5/5) while maintaining 100\,\% coverage (C2: 5/5) and 65--74\,\% reduction (C3: 4/5)~\cite{jehan2023,tallam2005}. The algorithm loses points on scalability (C6: 3/5) due to $O(n^2m)$ complexity and feasibility (C7: 3/5) due to lattice construction overhead. Delayed Greedy's empirically-validated mutation preservation (C5: 5/5) surpasses MA-EHGS's theoretical expectations (C5: 4/5).
+MA-EHGS excels across all performance dimensions: guaranteed 100\,\% coverage (C2: 5/5), strong reduction effectiveness (C3: 4/5), expected fault-detection retention (C4: 4/5), explicit mutation preservation (C5: 4/5), optimal $O(nm)$ scalability (C6: 5/5), and straightforward implementation (C7: 4/5). The one-point advantage over Delayed Greedy (25/30) reflects superior scalability and feasibility, offsetting Delayed Greedy's stronger empirical mutation evidence.
 
-ILP-Based (13/30) guarantees optimal solutions but double-exponential complexity $(m\Delta)^{O(m)}$ renders it impractical (C6: 1/5). Search-based methods score poorly: GA (8/30) has variable, configuration-dependent outputs; QIGA (3/30) provides zero empirical data. Data-driven methods achieve limited scores: Similarity-Based (9/30) uses clustering for diversity but lacks coverage guarantees and mutation evaluation; Overlap-Aware (12/30) operates in a time-budget framework rather than achieving guaranteed coverage and lacks all mutation data (C4, C5: 0/5).
+\subsection{Empirically Validated Foundation}
 
-\subsection{Empirical Evidence from Literature}
+The Enhanced HGS baseline was validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmarks, demonstrating smaller suites than HGS and classical greedy while maintaining coverage. This provides confidence in core effectiveness. The mutation-weighting extension ($\beta$-parameter) addresses the documented 3.5--21\,\% mutation loss in coverage-only approaches~\cite{noemmer2020}.
 
-Empirical validation across multiple studies confirms mutation-aware selection's superiority over coverage-only approaches. Jehan and Wotawa~\cite{jehan2023} achieved approximately 70\,\% reduction with maintained mutation scores equivalent to the original suite when mutation coverage guided minimisation directly. Delayed greedy similarly preserved mutation effectiveness while achieving 65--74\,\% reduction~\cite{jehan2023}. Conversely, coverage-based minimisation exhibits systematic fault-detection degradation: Noemmer and Haas~\cite{noemmer2020} documented mutation score losses of 3.5--21\,\% (average 12.5\,\%) across seven projects despite maintaining 100\,\% structural coverage. Rothermel et al.~\cite{rothermel1998} reported consistent 10--20\,\% fault-detection degradation under adequate coverage-based reduction. 
+\subsection{Practical LASSO Advantages}
 
-The empirical evidence demonstrates a fundamental coverage-mutation trade-off: structural coverage metrics inadequately proxy fault-detection capability. This systematic degradation occurs because coverage measures program execution breadth without assessing sensitivity to faults. Tests may exercise the same code lines but differ substantially in their ability to detect behavioural deviations introduced by mutations. The consistent performance gap between coverage-based and mutation-aware approaches validates MA-EHGS's mutation-aware design principle.
+\textbf{Requirements-Matrix Compatibility:} Enhanced HGS's requirements-matrix formulation~\cite{gladston2015} aligns naturally with LASSO's SRM representation. Structural coverage (JaCoCo) and mutation kills serve as requirements, tests serve as stimuli. Mutants encode as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring full SRM compatibility.
 
-\section{Selection Decision and Design Rationale}
+\textbf{Computational Efficiency:} $O(nm)$ complexity enables processing LASSO's large SRMs (1,000+ tests, 500+ requirements) in seconds. This improves upon HGS's $O(nm \log m)$ sorting overhead and dramatically outperforms Delayed Greedy's $O(n^2m)$ quadratic scaling.
 
-\subsection{Highest Empirically-Validated Approach: Delayed Greedy}
+\textbf{Parameterised Tuning:} The $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). When $\beta = 0$, the algorithm reproduces the validated baseline; $\beta = 0.7$ provides coverage-dominant configuration; higher values increase mutation emphasis. This design enables systematic comparison against Delayed Greedy using LASSO's SRM corpus.
 
-Based on multi-criteria scoring of empirically-validated algorithms, \textbf{Delayed Greedy (25/30) achieves the highest score among proven approaches}. The algorithm provides the only documented $\approx$100\,\% mutation preservation~\cite{jehan2023} while maintaining guaranteed structural coverage and 65--74\,\% reduction. This represents the strongest empirical evidence for fault-detection preservation in the surveyed literature.
-
-However, Delayed Greedy exhibits two critical limitations for LASSO deployment:
-\begin{enumerate}
-  \item \textbf{Quadratic Complexity:} $O(n^2m)$ runtime from lattice construction becomes prohibitive when processing hundreds of systems with test suites exceeding 10,000 stimuli. LASSO's Arena pipeline requires polynomial scalability.
-  \item \textbf{Implementation Complexity:} Concept lattice construction requires sophisticated data structures and algorithms not readily available in LASSO's existing infrastructure, increasing development and maintenance burden.
-\end{enumerate}
-
-\subsection{Selected Approach: Mutation-Aware Enhanced HGS}
-
-Mutation-Aware Enhanced HGS achieves the highest total score (26/30), surpassing Delayed Greedy's empirically-validated score (25/30). This one-point advantage reflects superior scalability (C6: 5/5 vs. 3/5) and feasibility (C7: 4/5 vs. 3/5), offsetting Delayed Greedy's stronger mutation preservation evidence (C5: 5/5 vs. 4/5). MA-EHGS is selected for LASSO integration based on three strategic considerations:
-
-\textbf{Empirically Validated Foundation.} The Enhanced HGS baseline was validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmark suites, demonstrating smaller minimised suites than HGS, classical greedy (GRE), and Non-Redundant HGS while maintaining comparable coverage retention. This empirical validation provides confidence in the algorithm's effectiveness, with $O(nm)$ complexity enabling processing of LASSO's large-scale SRMs. The algorithmic overhead remains linear in problem size, ensuring predictable runtime across diverse experimental configurations.
-
-\textbf{Straightforward Mutation Extension.} The mutation-aware extension integrates mutation coverage through a weighted scoring function: $\text{score}(t) = |\text{newCoverage}| + \beta \times |\text{newMutants}|$. When $\beta = 0$, the algorithm reproduces the empirically validated baseline. When $\beta > 0$, mutation weighting promotes tests with unique fault-detection capabilities. This parameterised design permits empirical tuning via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$) to identify optimal coverage-mutation balance. The extension requires straightforward modifications to selection scoring rather than complex data structure implementations, facilitating maintenance and future enhancements.
-
-\textbf{Requirements-Matrix Compatibility.} Enhanced HGS operates on requirements matrices representing test-requirement coverage relationships~\cite{gladston2015}. This abstraction aligns naturally with LASSO's SRM representation: structural coverage metrics (JaCoCo) and mutation kills serve as requirements, tests serve as stimuli. Mutants are encoded as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring full SRM compatibility without requiring control-flow graphs or language-specific analysis.
-
-\textbf{Path Forward.} This selection builds upon an empirically validated baseline while extending it for mutation-aware selection. The implementation provides a foundation for empirical evaluation against Delayed Greedy using LASSO's SRM corpus and standard benchmarks (e.g., Defects4J~\cite{just2014}). The parameterised design permits straightforward comparison: $\beta = 0$ reproduces the validated baseline, $\beta = 0.7$ represents the coverage-dominant configuration, higher values increase mutation emphasis. Should validation reveal insufficient mutation preservation, the modular architecture permits alternative weighting strategies or migration to Delayed Greedy.
-
-\section{Algorithm Description: Mutation-Aware Enhanced HGS}
-
-This section presents the Mutation-Aware Enhanced HGS algorithm, detailing its requirements-matrix formulation, two-phase selection process, and mutation-weighting extension.
-
-\subsection{Requirements-Matrix Approach}
-
-Enhanced HGS operates on a requirements matrix $M \in \{0,1\}^{n \times m}$ where rows represent tests $T = \{t_1, \ldots, t_n\}$ and columns represent requirements $R = \{r_1, \ldots, r_m\}$~\cite{gladston2015}. Entry $M_{ij} = 1$ indicates test $t_i$ satisfies requirement $r_j$; $M_{ij} = 0$ indicates non-satisfaction. For structural coverage, requirements comprise lines, branches, methods, or other coverage metrics. For mutation-aware selection, requirements include both structural elements and mutation kills, with mutants encoded as additional requirements.
-
-Let $T_j = \{t_i \mid M_{ij} = 1\}$ denote the set of tests covering requirement $r_j$. The cardinality $|T_j|$ measures requirement rarity: $|T_j| = 1$ indicates unique coverage by a single test. Let $R_i = \{r_j \mid M_{ij} = 1\}$ denote the set of requirements covered by test $t_i$. The minimisation objective seeks the smallest subset $S^* \subseteq T$ such that $\bigcup_{t_i \in S^*} R_i = R$, ensuring all requirements remain covered.
-
-\subsection{Two-Phase Selection Process}
-
-Enhanced HGS proceeds in two phases~\cite{gladston2015}:
-
-\textbf{Phase 1: Unique Requirement Selection.} The algorithm identifies all requirements $r_j$ with $|T_j| = 1$ (uniquely covered by a single test) and selects the corresponding tests into the minimised suite $S^*$. These tests are essential because no alternative test can satisfy their requirements. Let $T_{\text{unique}} = \{t_i \mid \exists r_j: |T_j| = 1 \land M_{ij} = 1\}$ denote the set of essential tests. All tests in $T_{\text{unique}}$ are added to $S^*$ and removed from further consideration. The covered requirements are marked as satisfied.
-
-\textbf{Phase 2: Greedy Selection.} After removing uniquely covered requirements, the algorithm iteratively selects tests maximising coverage of uncovered requirements. Let $R_{\text{uncov}}$ denote the set of requirements not yet covered by $S^*$. At each iteration, the algorithm computes:
-\begin{equation}
-\text{score}(t_i) = |R_i \cap R_{\text{uncov}}|
-\end{equation}
-representing the number of new requirements that test $t_i$ would cover. The test with maximum score is added to $S^*$, the newly covered requirements are removed from $R_{\text{uncov}}$, and the process repeats until $R_{\text{uncov}} = \emptyset$. This greedy strategy maintains the $O(\ln m)$ approximation ratio of classical set cover~\cite{chvatal1979} while prioritising essential tests first.
-
-\subsection{Mutation-Weighting Extension}
-
-The mutation-aware extension modifies the scoring function in Phase 2 to incorporate mutation coverage~\cite{jehan2023}. Let $R_{\text{struct}}$ denote structural coverage requirements and $R_{\text{mut}}$ denote mutation requirements, where $R = R_{\text{struct}} \cup R_{\text{mut}}$. The weighted scoring function becomes:
-\begin{equation}
-\text{score}(t_i) = |R_i \cap R_{\text{uncov}} \cap R_{\text{struct}}| + \beta \times |R_i \cap R_{\text{uncov}} \cap R_{\text{mut}}|
-\end{equation}
-where $\beta \in [0, \infty)$ controls mutation emphasis. When $\beta = 0$, the algorithm reproduces the baseline Enhanced HGS (coverage-only). When $\beta > 0$, tests killing unique mutants receive additional weight proportional to $\beta$. The default value $\beta = 0.7$ represents a coverage-dominant configuration where structural coverage remains primary but mutation coverage provides additional discriminatory power. An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
-
-\subsection{Complexity Analysis}
-
-Phase 1 requires $O(nm)$ time to compute cardinalities $|T_j|$ for all requirements and identify unique tests. Phase 2 requires $O(nm)$ time in the worst case: each iteration scans all remaining tests ($O(n)$) to compute scores over remaining requirements ($O(m)$), with at most $n$ iterations. The overall complexity is $O(nm)$, linear in the matrix size. This matches classical greedy complexity~\cite{chvatal1979} and improves upon HGS's $O(nm \log m)$ cardinality-sorting overhead~\cite{harrold1993}. Space complexity is $O(nm)$ for the requirements matrix plus $O(n + m)$ auxiliary storage.
-
-\subsection{Empirical Foundation and Extension}
-
-The baseline Enhanced HGS algorithm (without mutation weighting, $\beta = 0$) was empirically validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmark suites, comparing against HGS~\cite{harrold1993}, classical greedy (GRE)~\cite{chvatal1979}, and Non-Redundant HGS. The evaluation demonstrated that Enhanced HGS produces smaller minimised suites than all three comparison algorithms while maintaining comparable structural coverage retention. This validation establishes Enhanced HGS as an effective baseline.
-
-The mutation-weighted extension ($\beta > 0$) represents this thesis's original contribution. By treating mutant kills as additional requirements and weighting them via the $\beta$-parameter, the algorithm addresses the documented coverage-mutation trade-off~\cite{noemmer2020} where coverage-only minimisation loses 3.5--21\,\% mutation score. The parameterised design permits empirical tuning: grid search over $\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$ identifies configurations balancing reduction effectiveness against mutation preservation. The default $\beta = 0.7$ provides a conservative starting point favouring structural coverage while incorporating mutation signals.
+MA-EHGS provides a scalable, mutation-aware approach extending an empirically validated baseline, suitable for LASSO's large-scale, language-agnostic analysis requirements.

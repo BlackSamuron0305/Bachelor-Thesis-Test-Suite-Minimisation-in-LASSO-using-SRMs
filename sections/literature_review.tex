@@ -20,7 +20,29 @@ Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate redundancies
 
 \subsection{Enhanced HGS}
 
-Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation on Siemens benchmarks demonstrated smaller suites than HGS and classical greedy while maintaining coverage~\cite{gladston2015}. This thesis extends Enhanced HGS by integrating mutation weighting via a $\beta$-parameter.
+Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation on Siemens benchmarks demonstrated smaller suites than HGS and classical greedy while maintaining coverage~\cite{gladston2015}.
+
+\subsection{Mutation-Aware Enhanced HGS}
+
+Mutation-Aware Enhanced HGS (MA-EHGS) extends the Enhanced HGS baseline by integrating mutation testing into the selection process. This algorithm represents the contribution of this thesis, addressing the documented coverage-mutation trade-off where coverage-only minimisation loses 3.5--21\,\% mutation score~\cite{noemmer2020}.
+
+\subsubsection{Requirements-Matrix Formulation}
+
+MA-EHGS operates on a requirements matrix $M \in \{0,1\}^{n \times m}$ where rows represent tests $T = \{t_1, \ldots, t_n\}$ and columns represent requirements $R = \{r_1, \ldots, r_m\}$. Entry $M_{ij} = 1$ indicates test $t_i$ satisfies requirement $r_j$. Requirements comprise both structural coverage elements (lines, branches, methods from JaCoCo metrics) and mutation kills. Mutants are encoded as additional requirements, enabling unified treatment of structural and semantic properties.
+
+\subsubsection{Two-Phase Selection with Mutation Weighting}
+
+\textbf{Phase 1: Essential Test Selection.} The algorithm identifies requirements $r_j$ covered by exactly one test ($|T_j| = 1$) and selects these essential tests into the minimised suite $S^*$. This applies to both structural requirements and mutation kills: if only one test kills a particular mutant, that test is essential.
+
+\textbf{Phase 2: Weighted Greedy Selection.} After removing essential tests, the algorithm iteratively selects tests maximising a weighted score combining structural coverage and mutation kills:
+\begin{equation}
+\text{score}(t_i) = |\text{newCoverage}_i| + \beta \times |\text{newMutants}_i|
+\end{equation}
+where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_i$ would satisfy, $|\text{newMutants}_i|$ counts unkilled mutants that $t_i$ would kill, and $\beta \in [0, \infty)$ controls mutation emphasis. The default $\beta = 0.7$ provides coverage-dominant weighting where structural coverage remains primary but mutation coverage provides discriminatory power. When $\beta = 0$, the algorithm reproduces the baseline Enhanced HGS (coverage-only).
+
+\subsubsection{Complexity and Performance}
+
+MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy and improving upon HGS's $O(nm \log m)$ overhead. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
 
 \section{Exact Optimisation Approaches}
 
@@ -37,10 +59,6 @@ Search-based methods treat minimisation as multi-objective optimisation~\cite{yo
 \subsection{Genetic Algorithms}
 
 GAs evolve test subsets with $O(gnm)$ complexity, producing Pareto fronts trading coverage against suite size~\cite{yoo2012}. They require parameter tuning with longer runtime than greedy methods. No systematic mutation-aware GA evaluation has been reported.
-
-\subsection{Quantum-Inspired GA}
-
-QIGA~\cite{hussein2020} uses quantum operators for improved convergence, maintaining $O(gnm)$ complexity. The original work provides no empirical runtime, coverage, or mutation data, requiring empirical validation.
 
 \section{Data-Driven and Similarity-Based Approaches}
 
@@ -80,8 +98,6 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
       REDUNET & Exponential$^*$ & $O(nm + |V| + |E|)$\tnote{a} & \cite{mongiovi2020} \\
       \hline
       Genetic Algorithm & $O(gnm)$\tnote{b} & $O(pnm)$\tnote{c} & \cite{yoo2012} \\
-      \hline
-      QIGA & $O(gnm)$ & $O(pnm)$ & \cite{hussein2020} \\
       \hline
       Similarity-Based & $O(n^2m)$ & $O(nm + n^2)$ & \cite{khan2020} \\
       \hline
