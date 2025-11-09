@@ -44,7 +44,7 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS al
 \end{framed}
 
 \subsection*{Complexity}
-Phase 1 computes cardinalities in $O(nm)$ and selects essential tests in $O(nm)$. Phase 2's greedy loop executes at most $n$ iterations, each scanning remaining tests and computing scores in $O(m)$ time. Overall complexity is $\mathbf{O(nm)}$ for both time and space, matching the analysis in Chapter~\ref{chap:comparison}. When $\beta = 0$, the algorithm reproduces the empirically validated Enhanced HGS baseline~\cite{gladston2015}.
+Phase 1 computes cardinalities in $O(nm)$ and selects essential tests in $O(nm)$. Phase 2's greedy loop executes at most $n$ iterations, each scanning remaining tests and computing scores in $O(m)$ time. Overall complexity is $\mathbf{O(nm)}$ for both time and space, improving upon the original HGS's $O(|T| \cdot \max(|T_i|))$ complexity~\cite{yoo2012}. When $\beta = 0$, the algorithm reproduces the empirically validated Enhanced HGS baseline~\cite{gladston2015}.
 
 \section{Extended Benchmarks and Reproducibility}
 \label{app:benchmarks}

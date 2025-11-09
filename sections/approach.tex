@@ -230,7 +230,7 @@ Computational scalability assesses algorithmic complexity and practical runtime 
       \hline
       Classical Greedy & $O(nm)$ & 5/5 & \cite{chvatal1979} \\
       \hline
-      HGS & $O(nm \log m)$ & 5/5 & \cite{harrold1993} \\
+      HGS & $O(|T| \cdot \max(|T_i|))$ & 5/5 & \cite{yoo2012} \\
       \hline
       Delayed Greedy & $O(n^2m)$\tnote{a} & 3/5 & \cite{tallam2005} \\
       \hline
@@ -253,6 +253,7 @@ Computational scalability assesses algorithmic complexity and practical runtime 
       \item[b] $g$ = generations; parameter-sensitive, longer than greedy
       \item[c] FAST-R achieves near-linear via random projection~\cite{khan2020}
       \item[d] <10 seconds on industrial projects~\cite{bach2017}
+      \item For HGS: $|T|$ is test suite size, $\max(|T_i|)$ is largest group cardinality
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
@@ -350,7 +351,7 @@ The Enhanced HGS baseline was validated by Gladston and Ganesan~\cite{gladston20
 
 \textbf{Requirements-Matrix Compatibility:} Enhanced HGS's requirements-matrix formulation~\cite{gladston2015} aligns naturally with LASSO's SRM representation. Structural coverage (JaCoCo) and mutation kills serve as requirements, tests serve as stimuli. Mutants encode as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring full SRM compatibility.
 
-\textbf{Computational Efficiency:} $O(nm)$ complexity enables processing LASSO's large SRMs (1,000+ tests, 500+ requirements) in seconds. This improves upon HGS's $O(nm \log m)$ sorting overhead and dramatically outperforms Delayed Greedy's $O(n^2m)$ quadratic scaling.
+\textbf{Computational Efficiency:} $O(nm)$ complexity enables processing LASSO's large SRMs (1,000+ tests, 500+ requirements) in seconds. This improves upon HGS's $O(|T| \cdot \max(|T_i|))$ overhead~\cite{yoo2012} and dramatically outperforms Delayed Greedy's $O(n^2m)$ quadratic scaling.
 
 \textbf{Parameterised Tuning:} The $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). When $\beta = 0$, the algorithm reproduces the validated baseline; $\beta = 0.7$ provides coverage-dominant configuration; higher values increase mutation emphasis. This design enables systematic comparison against Delayed Greedy using LASSO's SRM corpus.
 

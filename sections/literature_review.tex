@@ -8,11 +8,11 @@ Greedy heuristics iteratively select tests covering the most uncovered requireme
 
 \subsection{Classical Greedy}
 
-Classical greedy iteratively selects tests covering the most uncovered requirements~\cite{chvatal1979,yoo2012}, achieving $O(nm)$ complexity with $O(\ln m)$ approximation ratio. Empirical studies show 60--93\,\% reduction (median 67\,\%) maintaining 100\,\% structural coverage, but mutation scores drop 3.5--21\,\%~\cite{noemmer2020}.
+Classical greedy iteratively selects tests covering the most uncovered requirements~\cite{chvatal1979,yoo2012}, achieving $O(nm)$ complexity with $O(\ln m)$ approximation ratio. Empirical studies show 60--93\,\% reduction (median 70\,\%) maintaining 100\,\% structural coverage, but mutation scores drop 3.5--21\,\%~\cite{noemmer2020, jehan2023}.
 
 \subsection{Harrold--Gupta--Soffa}
 
-HGS prioritises requirements by rarity~\cite{harrold1993}, operating in phases by cardinality with $O(nm \log m)$ complexity. HGS produces suites 0.37--2.92\,\% smaller than classical greedy with mutation differences (0.09--4.88\,\%) statistically insignificant ($p \gg 0.05$)~\cite{noemmer2020}.
+HGS prioritises requirements by rarity~\cite{harrold1993}, operating in phases by cardinality with runtime complexity of $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the original test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. HGS produces suites 0.37--2.92\,\% smaller than classical greedy with mutation differences (0.09--4.88\,\%) statistically insignificant ($p \gg 0.05$)~\cite{noemmer2020}.
 
 \subsection{Delayed Greedy}
 
@@ -42,7 +42,9 @@ where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_
 
 \subsubsection{Complexity and Performance}
 
-MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy and improving upon HGS's $O(nm \log m)$ overhead. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
+MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The original HGS has runtime complexity $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
+
+%================================================================================================================ everything above is verfied
 
 \section{Exact Optimisation Approaches}
 
@@ -85,7 +87,7 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
       \hline
       Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979} \\
       \hline
-      HGS & $O(nm \log m)$ & $O(nm)$ & \cite{harrold1993} \\
+      HGS & $O(|T| \cdot \max(|T_i|))$\tnote{d} & $O(nm)$ & \cite{yoo2012} \\
       \hline
       Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005} \\
       \hline
@@ -109,6 +111,7 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
       \item[a] $|V|$ and $|E|$ denote control-flow graph vertices and edges.
       \item[b] $g$ denotes number of generations.
       \item[c] $p$ denotes population size.
+      \item[d] $|T|$ is test suite size, $\max(|T_i|)$ is largest group cardinality.
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
