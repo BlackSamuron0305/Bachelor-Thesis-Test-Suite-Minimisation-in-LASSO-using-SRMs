@@ -14,7 +14,7 @@
 	]{scrbook}
 
 \usepackage[left=4cm,right=2.5cm,top=3.7cm,bottom=4cm]{geometry}
-\usepackage[english, ngerman]{babel}    % use German and American hyphenation
+\usepackage[english, ngerman, greek]{babel}    % use German, English and Greek
 \usepackage[utf8]{inputenc}             % umlauts can be written in the usual way
 \usepackage[super]{nth}                 % superscript
 \usepackage{listings}                   % to support code listings
@@ -63,6 +63,8 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \usepackage{amsmath}      % for \text command
 \usepackage{amssymb}      % for \mathbb command
 \usepackage{xspace}       % for better spacing
+\usepackage{tikz}         % for diagrams and figures
+\usetikzlibrary{arrows,shapes}
 % generates a list of abbreviations automatically: 2x latex, makeindex myfile.nlo -s nomencl.ist -o myfile.nls, 2x latex
 \usepackage[intoc]{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
 
