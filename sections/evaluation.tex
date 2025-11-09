@@ -7,55 +7,72 @@ Building upon the fundamentals established in the previous chapter, this chapter
 \subsection{Mandatory Precondition}
 
 \begin{description}
-  \item[\textbf{C1: SRM Compatibility (Mandatory)}] Operates directly on SRM representations without requiring control-flow graphs or language-specific structural analysis~\cite{Kessel2022}. Algorithms failing C1 receive score zero and are excluded.
+  \item[\textbf{C1: SRM Compatibility (Mandatory)}] 
+  The algorithm must operate directly on \emph{Stimulus--Response Matrix} (SRM) representations without requiring control-flow graphs, syntax trees, or language-specific structural analysis~\cite{Kessel2022}. 
+  Algorithms failing C1 receive a score of zero and are excluded. 
+  This precondition guarantees language-independent execution across heterogeneous software systems.
 \end{description}
 
 \subsection{Performance Criteria}
 
 \begin{description}
-  \item[\textbf{C2: Coverage Retention}]
-Measures how much of the original structural code coverage is retained after minimisation. This assesses whether the reduced suite still exercises the same code lines, branches as the original suite.
-  
-  \item[\textbf{C3: Reduction Effectiveness}] Quantifies the percentage of test cases successfully eliminated from the original suite. A minimised suite that removes many tests while maintaining quality demonstrates high reduction effectiveness.
-  
-  \item[\textbf{C4: Fault Detection Retention}] Assesses whether the minimised suite preserves the ability to detect real software defects. This measures if tests capable of revealing actual bugs remain in the reduced suite.
-  
-  \item[\textbf{C5: Mutation-Coverage Preservation}] Evaluates the suite's ability to detect artificially injected faults (mutations) in the code. Mutation testing provides a stronger indicator of test quality than structural coverage alone~\cite{jehan2023,noemmer2020}.
-  
-  \item[\textbf{C6: Computational Scalability}] Examines whether the algorithm can process large SRM matrices efficiently. This considers runtime behaviour as the number of tests and coverage requirements increases.
-  
-  \item[\textbf{C7: Implementation Feasibility}] Evaluates practical aspects including implementation effort, code maintainability, configuration complexity, and integration difficulty within LASSO's architecture.
+  \item[\textbf{C2: Coverage Retention}] 
+  Measures how much of the original structural coverage (instruction, line, branch) is retained after minimisation~\cite{zhu1997}. 
+  High retention indicates that the reduced suite maintains structural adequacy.
+
+  \item[\textbf{C3: Reduction Effectiveness}] 
+  Quantifies the proportion of test cases eliminated while preserving required coverage~\cite{yoo2012}. 
+  A high reduction rate reflects strong elimination of redundant tests and tangible computational savings.
+
+  \item[\textbf{C4: Fault Detection Retention}] 
+  Evaluates whether the minimised suite preserves the ability to reveal real software defects. 
+  Since redundancy with respect to coverage does not imply redundancy with respect to faults~\cite{just2014}, this criterion measures the proportion of defect-revealing tests retained.
+
+  \item[\textbf{C5: Mutation-Coverage Preservation}] 
+  Assesses fault-detection capability via mutation testing~\cite{jehan2023,noemmer2020}. 
+  The mutation score---ratio of killed mutants to total mutants---acts as a fault-based adequacy metric complementing structural coverage.
+
+  \item[\textbf{C6: Computational Scalability}] 
+  Examines algorithm performance on large SRMs as the number of tests and requirements increases. 
+  Methods with near-linear complexity and efficient runtime behaviour are favoured~\cite{Kessel2022,bach2017}.
+
+  \item[\textbf{C7: Implementation Feasibility}] 
+  Considers practical integration factors such as implementation effort, parameter tuning, dependency overhead, and compatibility with LASSO’s architecture~\cite{yoo2012}. 
+  Algorithms imposing heavy maintenance or configuration costs are penalised.
 \end{description}
 
 \subsection{Justification of Criteria}
 \label{sec:criteria-justification}
 
-The seven criteria directly operationalise the research questions established in Section~\ref{sec:rq}, ensuring alignment between theoretical requirements and practical evaluation.
+The seven criteria align directly with the research questions from Section~\ref{sec:rq}, ensuring coherence between theoretical goals and empirical assessment.
 
-\textbf{C1 (SRM Compatibility)} serves as a mandatory gate-keeping criterion because LASSO's architecture fundamentally relies on SRM abstractions for language-independent analysis~\cite{Kessel2022}. Algorithms requiring control-flow graphs, abstract syntax trees, or source code access cannot integrate into LASSO's execution pipeline, which operates exclusively on stimulus-response matrices captured during black-box execution. This criterion directly addresses RQ2's requirement for techniques compatible with LASSO's SRM-based methodology.
+\textbf{C1 (SRM Compatibility)} is mandatory because LASSO operates entirely on SRM abstractions~\cite{Kessel2022}. 
+Language independence requires that algorithms process abstract requirement matrices rather than language-specific artefacts.
 
-\textbf{C2--C5 (Quality Preservation)} collectively address RQ1's central question of identifying the most effective minimisation techniques. C2 (Coverage Retention) measures structural test adequacy through line, branch, and path coverage~\cite{zhu1997}, ensuring the reduced suite maintains broad code exercising capability. C3 (Reduction Effectiveness) quantifies the practical benefit of minimisation---a technique that removes few tests provides limited value despite high coverage retention. C4 (Fault Detection Retention) assesses the suite's ability to reveal real defects using established benchmark sets such as Defects4J~\cite{just2014}, ensuring minimisation does not eliminate tests that catch actual bugs. C5 (Mutation-Coverage Preservation) provides a stronger quality indicator than structural coverage by measuring the suite's ability to detect artificially injected faults~\cite{jehan2023,noemmer2020}, offering a proxy for fault-detection capability when real defects are unavailable.
+\textbf{C2--C5 (Quality Preservation)} address adequacy and fault detection. 
+\textbf{C2} ensures structural completeness; \textbf{C3} quantifies the degree of reduction; \textbf{C4} safeguards against loss of fault-revealing tests as observed in Defects4J benchmarks~\cite{just2014}; and \textbf{C5} measures mutation-score retention, a strong empirical proxy for test effectiveness~\cite{jehan2023}. 
 
-\textbf{C6 (Computational Scalability)} addresses RQ2's scalability dimension, evaluating whether algorithms can process LASSO's large-scale SRM matrices efficiently. LASSO executes thousands of test sequences across multiple system implementations~\cite{Kessel2022}, generating matrices with dimensions exceeding $10^4 \times 10^3$. Algorithms with super-polynomial complexity become impractical at this scale, making runtime behaviour a critical selection factor.
+\textbf{C6 (Computational Scalability)} ensures the algorithm remains feasible for large-scale use cases where SRMs may contain thousands of rows and columns~\cite{Kessel2022,bach2017}. 
 
-\textbf{C7 (Implementation Feasibility)} operationalises RQ3's concern with practical integration into LASSO's existing infrastructure. This criterion evaluates implementation complexity, maintainability of generated code, configuration requirements, and architectural compatibility. Techniques requiring extensive parameter tuning, external dependencies, or substantial modifications to LASSO's pipeline incur higher integration costs and maintenance burden~\cite{yoo2012}.
-
+\textbf{C7 (Implementation Feasibility)} recognises the cost of practical adoption. 
+Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline~\cite{yoo2012}.
 
 \section{Scoring Model}
 
-Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalised score on criterion $C_i$. Let $w_i \ge 0$ denote weights with $\sum_{i=2}^{7} w_i = 1$. The total score is:
+Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalised score on criterion $C_i$. 
+Let $w_i \ge 0$ denote the relative weight for criterion $C_i$, with $\sum_{i=2}^{7} w_i = 1$. 
+The total score is defined as:
 \begin{equation}
-  \text{Score}(A) = 
+  \text{Score}(A) =
   \begin{cases}
-    0 & \text{if } s_1(A) = 0 \text{ (fails C1)} \\
-    \displaystyle\sum_{i=2}^{7} w_i \cdot s_i(A) & \text{otherwise.}
+    0, & \text{if } s_1(A) = 0 \text{ (fails C1)}, \\[3pt]
+    \displaystyle\sum_{i=2}^{7} w_i \cdot s_i(A), & \text{otherwise.}
   \end{cases}
 \end{equation}
 
 \subsection{Rank-Based Point Assignment}
 
-Scores $s_i(A)$ for each criterion $C_i$ are assigned through a ranking-based system. For each performance criterion $C_i$ ($i \in \{2,\ldots,7\}$), algorithms are ranked by their measured performance on that criterion, with the best-performing algorithm receiving the highest score. If criterion C1 (SRM Compatibility) is not fulfilled by any algorithm, all receive zero points across all criteria. 
-
-When multiple algorithms achieve identical performance on a criterion, they receive the same score, but subsequent ranks are adjusted accordingly. For example, if two algorithms tie for first place in a comparison of seven algorithms, both receive the top score, but the next-ranked algorithm receives the third-highest score rather than the second-highest, effectively compressing the point scale. This ensures that tied algorithms are treated equally while preserving the relative spacing between distinct performance levels~\cite{yoo2012}.
-
-Normalisation maps metrics to $[0,1]$ using piecewise-linear functions calibrated to literature ranges~\cite{harrold1993,yoo2012,bach2017}. Weights prioritise coverage, fault detection, and mutation retention (C2, C4, C5), followed by reduction (C3), scalability (C6), and feasibility (C7)~\cite{Kessel2022,yoo2012}.
+Scores $s_i(A)$ for each criterion $C_i$ are derived through rank-based evaluation, following standard regression-testing methodology~\cite{yoo2012}. 
+For each performance criterion ($i \in \{2,\ldots,7\}$), algorithms are ranked by performance; the top-ranked algorithm receives the highest score, and tied algorithms share the same rank. 
+Subsequent ranks are offset accordingly (e.g., a tie for first shifts the next rank to third). 
+This ensures equitable treatment of equivalent performers while maintaining meaningful differentiation across criteria.
