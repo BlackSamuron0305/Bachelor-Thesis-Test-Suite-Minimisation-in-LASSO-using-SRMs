@@ -44,86 +44,91 @@ where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_
 
 MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The original HGS has runtime complexity $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
 
-%================================================================================================================ everything above is verfied
+%================================================================================================================
 
 \section{Exact Optimisation Approaches}
 
-Exact methods formulate minimisation as ILP or constraint-satisfaction problems~\cite{yoo2012,khan2020}, guaranteeing optimality but exhibiting NP-hard exponential runtime.
 
-\subsection{ILP and REDUNET}
+Exact approaches formulate test suite minimisation as integer linear programming (ILP), SAT, or constraint satisfaction problems~\cite{yoo2012,khan2020,rothermel2002,harrold1993}. These formulations guarantee optimality, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
 
-ILP guarantees optimal solutions with $(m\Delta)^{O(m)}$ complexity~\cite{yoo2012}. REDUNET~\cite{mongiovi2020} achieves $>3\times$ speedup via hybrid CFG-network optimisation with up to 90\,\% reduction, but CFG reliance precludes SRM-only integration.
+\subsection{ILP, SAT, and REDUNET}
+
+ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,rothermel2002}. SAT and CSP-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances.
+
+REDUNET~\cite{mongiovi2020} achieves $>3\times$ speedup via hybrid control-flow graph (CFG) network optimisation, as demonstrated experimentally (see Table~2 in~\cite{mongiovi2020}), with up to $90\%$ reduction in suite size. However, because REDUNET relies on control-flow graph structural analysis to track coverage and redundancy, it cannot operate purely on SRM (matrix) abstractions—limiting integration in SRM-only architectures.
+
+
+%===================================================
 
 \section{Search-Based and Metaheuristic Approaches}
 
-Search-based methods treat minimisation as multi-objective optimisation~\cite{yoo2012,khan2020}, providing flexibility but requiring parameter tuning with higher overhead than greedy heuristics.
+
+Search-based methods formulate test suite minimisation as multi-objective optimisation problems~\cite{yoo2012,khan2020}, offering flexibility but requiring extensive parameter tuning and incurring higher computational overhead than greedy heuristics~\cite{yoo2012}.
 
 \subsection{Genetic Algorithms}
 
-GAs evolve test subsets with $O(gnm)$ complexity, producing Pareto fronts trading coverage against suite size~\cite{yoo2012}. They require parameter tuning with longer runtime than greedy methods. No systematic mutation-aware GA evaluation has been reported.
+Genetic Algorithms (GAs) and other metaheuristics are widely applied to test suite minimisation. GAs evolve candidate test subsets over multiple generations and generally require significant parameter tuning~\cite{yoo2012}, with longer runtimes than greedy methods. Pareto-optimal fronts can trade off suite size against coverage~\cite{yoo2012}. Systematic empirical evaluations of mutation-aware GA minimisation remain limited in the surveyed literature~\cite{khan2020}.
+
+%===================================================
+
 
 \section{Data-Driven and Similarity-Based Approaches}
 
-Data-driven methods utilise coverage properties to identify redundancies~\cite{bach2017,khan2020}, operating directly on coverage without requiring program structure.
 
-\subsection{Similarity-Based Methods}
-
-These compute distance metrics over coverage vectors with base complexity $O(n^2 m)$. FAST-R achieves near-linear scalability via random projection and clustering~\cite{khan2020}. No mutation evaluation has been reported.
+Data-driven and coverage-aware methods exploit coverage overlap and similarity patterns to identify redundancies~\cite{bach2017,yoo2012,khan2020}, operating directly on coverage without requiring program structure.
 
 \subsection{Overlap-Aware Methods}
 
-Overlap-aware algorithms penalise tests duplicating existing coverage with $O(n^2 m)$ complexity. Bach et al.\ achieved 50\,\% higher coverage within fixed time budgets versus classical greedy, completing under 10 seconds~\cite{bach2017}. No mutation evaluation reported.
+Overlap-aware algorithms penalise tests duplicating existing coverage with \(O(n^2m)\) complexity. Bach et al.\ achieved 50\% higher coverage within fixed time budgets versus classical greedy, completing under 10~seconds~\cite{bach2017}.
 
 Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
 
-\begin{table}[H]
+
+\begin{table}[htbp]
   \centering
-  \caption{Computational complexity of representative test-suite minimisation algorithms.}
+  \caption{Computational complexity of representative test suite minimisation algorithms.}
   \label{tab:literature-complexity}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
-      \textbf{Algorithm} & \textbf{Time Complexity} & \textbf{Space Complexity} & \textbf{Reference} \\
-      \hline
-      Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979} \\
-      \hline
-      HGS & $O(|T| \cdot \max(|T_i|))$\tnote{d} & $O(nm)$ & \cite{yoo2012} \\
-      \hline
-      Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005} \\
-      \hline
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      \textbf{Algorithm} & \textbf{Time} & \textbf{Space} & \textbf{Reference} \\
+      \midrule
+      Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979,yoo2012} \\
+      HGS & $O(|T| \cdot \max|T_i|)$\tnote{a} & $O(nm)$ & \cite{yoo2012,harrold1993} \\
+      Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005,yoo2012} \\
       Enhanced HGS & $O(nm)$ & $O(nm)$ & \cite{gladston2015} \\
-      \hline
-      MA-EHGS & $O(nm)$ & $O(nm)$ & This work \\
-      \hline
-      ILP-Based & Exponential & $O(nm)$ & \cite{mongiovi2020} \\
-      \hline
-      REDUNET & Exponential$^*$ & $O(nm + |V| + |E|)$\tnote{a} & \cite{mongiovi2020} \\
-      \hline
-      Genetic Algorithm & $O(gnm)$\tnote{b} & $O(pnm)$\tnote{c} & \cite{yoo2012} \\
-      \hline
-      Similarity-Based & $O(n^2m)$ & $O(nm + n^2)$ & \cite{khan2020} \\
-      \hline
+      MA-EHGS (Proposed) & $O(nm)$ & $O(nm)$ & This work \\
+      \midrule
+      ILP/SAT & Exponential\tnote{b} & $O(nm)$ & \cite{yoo2012,elbaum2002} \\
+      REDUNET & Exponential\tnote{c} & $O(nm + |V| + |E|)$\tnote{d} & \cite{mongiovi2020} \\
+      \midrule
+      Genetic Algorithm & $O(gnm)$\tnote{e} & $O(pnm)$\tnote{f} & \cite{yoo2012,khan2020} \\
       Overlap-Aware & $O(n^2m)$ & $O(nm + n^2)$ & \cite{bach2017} \\
-      \hline
+      \bottomrule
     \end{tabular}
     \begin{tablenotes}
-      \small
-      \item[a] $|V|$ and $|E|$ denote control-flow graph vertices and edges.
-      \item[b] $g$ denotes number of generations.
-      \item[c] $p$ denotes population size.
-      \item[d] $|T|$ is test suite size, $\max(|T_i|)$ is largest group cardinality.
+      \footnotesize
+      \item[a] $|T|$ is test suite size; $\max|T_i|$ is largest group cardinality.
+      \item[b] Worst-case: $(m\Delta)^{O(m)}$ where $\Delta$ = max tests per requirement.
+      \item[c] Uses ILP with CFG optimization; fast in practice (fractions of seconds).
+      \item[d] $|V|$, $|E|$ denote control-flow graph vertices and edges.
+      \item[e] $g$ = number of generations; requires parameter tuning.
+      \item[f] $p$ = population size; assumes $O(nm)$ fitness evaluation.
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
+
 \section{Summary}
 
-The surveyed literature reveals four principal findings informing LASSO algorithm selection:
+The literature yields five concise findings for SRM-based minimisation.
 
-\textbf{Greedy variants exhibit minimal practical differences.} Classical greedy, HGS, and delayed greedy produce statistically indistinguishable results ($p \gg 0.05$)~\cite{noemmer2020}, suggesting refinements provide limited benefit when overlap is moderate.
+	extbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{noemmer2020,yoo2012}; Enhanced HGS gives only marginal size gains while preserving mutation behaviour.
 
-\textbf{Coverage-mutation trade-off is substantial.} Coverage-based minimisation consistently degrades fault-detection with losses of 3.5--21\,\% despite 100\,\% coverage~\cite{noemmer2020,rothermel1998}.
+	extbf{Coverage–mutation gap.} Coverage-only reduction frequently reduces mutant detection (3.5--21\% loss) despite preserving structural coverage~\cite{noemmer2020,jehan2023}, showing that structural redundancy does not imply semantic redundancy and motivating mutation-aware selection.
 
-\textbf{Scalability leaders employ diverse strategies.} REDUNET achieves $>3\times$ speedup but requires CFGs unavailable in SRM-only settings~\cite{mongiovi2020}. Overlap-aware methods show 74--77\,\% time savings~\cite{bach2017}. Greedy variants maintain polynomial scalability.
+	extbf{Exact methods vs.\ scalability.} ILP/SAT formulations guarantee optimality (set-cover) but face exponential worst-case complexity~\cite{garey1979,yoo2012}; REDUNET improves practical speed using CFG analysis but cannot operate on SRM-only inputs~\cite{mongiovi2020}.
 
-\textbf{Mutation analysis gap is widespread.} Most algorithms lack mutation evaluation, limiting understanding of fault-detection characteristics and motivating mutation-enhanced approaches.
+	extbf{Overlap-aware/data-driven gains.} Overlap-aware and similarity-based approaches deliver practical scalability and improved empirical quality (e.g., ~50\% coverage gains under time budgets) while trading runtime and tuning complexity~\cite{bach2017,khan2020}.
+
+	extbf{Empirical gap in mutation evaluation.} Systematic mutation-preservation studies are scarce~\cite{jehan2023,noemmer2020}. This gap motivates MA-EHGS: integrate mutation information into greedy scoring to retain fault-detection while keeping polynomial complexity.
