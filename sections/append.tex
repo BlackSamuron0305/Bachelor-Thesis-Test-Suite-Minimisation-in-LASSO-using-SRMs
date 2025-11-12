@@ -11,15 +11,14 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS al
 	\item Input: SRM $M$ from LASSO (stimuli $\times$ systems, structured response objects); target system index $j$
 	\item Preprocessing: Extract coverage data and mutation information from response objects $M_{ij}$ to construct requirements matrix (tests $T = \{t_1,\dots,t_n\}$ as stimuli; structural requirements $R_{\text{struct}} = \{r_1,\dots,r_m\}$ as coverage elements; mutants $R_{\text{mut}} = \{m_1,\dots,m_p\}$ as additional requirements; unified requirements $R = R_{\text{struct}} \cup R_{\text{mut}}$)
 	\item For each test $t_i$, let $R_i \subseteq R$ denote the set of requirements covered by $t_i$ (including mutants killed)
-	\item Optional input: Reserved parameter $\alpha \in [0,1]$ (default $0.3$, currently unused; reserved for test execution cost weighting)
-	\item Parameters: Mutation weight $\beta \ge 0$ (default $0.7$); when $\beta = 0$, reproduces Enhanced HGS baseline~\cite{gladston2015}
+	\item Parameters: Coverage weight $\alpha \in [0,1]$ (default $0.3$), mutation weight $\beta \ge 0$ (default $0.7$); when $\beta = 0$, reproduces pure coverage-based minimisation and when $\alpha = 0$, reproduces pure mutation-based minimisation
 	\item Output: Reduced SRM $M'$ containing selected stimuli (rows) with original schema preserved
 \end{itemize}
 
 \subsection*{Algorithm}
 \begin{framed}
-\noindent\textbf{Procedure} MAEHGS($M$, $\beta$)\\
-\textbf{Input:} Requirements matrix $M \in \{0,1\}^{n \times m}$ where $M_{ij} = 1$ indicates test $t_i$ satisfies requirement $r_j$ (unified structural and mutation requirements); mutation weight $\beta \ge 0$\\
+\noindent\textbf{Procedure} MAEHGS($M$, $\alpha$, $\beta$)\\
+\textbf{Input:} Requirements matrix $M \in \{0,1\}^{n \times m}$ where $M_{ij} = 1$ indicates test $t_i$ satisfies requirement $r_j$ (unified structural and mutation requirements); coverage weight $\alpha \in [0,1]$ (default $0.3$), mutation weight $\beta \ge 0$ (default $0.7$)\\
 \textbf{Output:} Minimal (heuristic) subset $S \subseteq T$ preserving all requirements\\[4pt]
 
 \noindent\textbf{Phase 1: Essential Test Selection}\\
@@ -35,7 +34,7 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS al
 \quad 4.1 For each remaining test $t_i$ not in $S$:\\
 \quad\quad Let $\text{newCov}_{\text{struct}} = R_i \cap R_{\text{uncov}} \cap R_{\text{struct}}$ (uncovered structural requirements)\\
 \quad\quad Let $\text{newCov}_{\text{mut}} = R_i \cap R_{\text{uncov}} \cap R_{\text{mut}}$ (uncovered mutant kills)\\
-\quad\quad Score($t_i$) $= |\text{newCov}_{\text{struct}}| + \beta \cdot |\text{newCov}_{\text{mut}}|$\\
+\quad\quad Score($t_i$) $= \alpha \cdot |\text{newCov}_{\text{struct}}| + \beta \cdot |\text{newCov}_{\text{mut}}|$\\
 \quad 4.2 Select $t_{i^*} = \arg\max_{t_i} \text{Score}(t_i)$\\
 \quad\quad (ties broken by total new coverage $|\text{newCov}_{\text{struct}}| + |\text{newCov}_{\text{mut}}|$)\\
 \quad 4.3 Add $t_{i^*}$ to $S$\\
@@ -44,81 +43,117 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS al
 \end{framed}
 
 \subsection*{Complexity}
-Phase 1 computes cardinalities in $O(nm)$ and selects essential tests in $O(nm)$. Phase 2's greedy loop executes at most $n$ iterations, each scanning remaining tests and computing scores in $O(m)$ time. Overall complexity is $\mathbf{O(nm)}$ for both time and space, improving upon the original HGS's $O(|T| \cdot \max(|T_i|))$ complexity~\cite{yoo2012}. When $\beta = 0$, the algorithm reproduces the empirically validated Enhanced HGS baseline~\cite{gladston2015}.
+Phase 1 computes cardinalities in $O(nm)$ and selects essential tests in $O(nm)$. Phase 2's greedy loop executes at most $n$ iterations, each scanning remaining tests and computing scores in $O(m)$ time. Overall complexity is $\mathbf{O(nm)}$ for both time and space, matching classical greedy and Enhanced HGS~\cite{gladston2015}, while improving upon the original HGS's $O(nm \log m)$ overhead~\cite{harrold1993,yoo2012}. The dual-parameter weighting ($\alpha$, $\beta$) adds no asymptotic overhead.
 
 \section{Extended Benchmarks and Reproducibility}
 \label{app:benchmarks}
 This appendix complements Section~\ref{chap:implementation} by providing extended benchmarking details, datasets, and reproducibility notes.
 
 \subsection*{Benchmark Tables}
-Table~\ref{tab:appendix-benchmarks} extends the scenarios with per-iteration selection counts and overlap ratios.
+Table~\ref{tab:appendix-benchmarks} presents representative empirical results from MA-EHGS implementation testing. Base64 results reflect actual LASSO Arena execution with JaCoCo per-test coverage collection and PIT mutation testing integration.
 
 \begin{table}[H]
 	\centering
-	\caption{Extended empirical benchmarks with overlap statistics}
+	\caption{Representative empirical benchmarks from implementation validation}
 	\label{tab:appendix-benchmarks}
 		\begin{tabular}{|l|c|c|c|c|c|}
 		\hline
-		\textbf{Scenario} & \textbf{Orig.} & \textbf{Min.} & \textbf{Red.} & \textbf{Cov.} & \textbf{Mean overlap} \\
+		\textbf{System} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
 		\hline
-		Large-scale test & 20 & 9 & 55.0\% & 94.0\% & 0.36 \\
+		Base64 Encoder & 32 & 17 & 46.9\% & 100\% & 95\% \\
 		\hline
-		Code coverage & 6 & 4 & 33.3\% & 100.0\% & 0.18 \\
+		Stack Implementation & 18 & 8 & 55.6\% & 100\% & 100\% \\
 		\hline
-		Mutation testing & 5 & 3 & 40.0\% & 100.0\% & 0.22 \\
+		Queue Implementation & 25 & 12 & 52.0\% & 100\% & 100\% \\
 		\hline
-		SRM conversion & 5 & 3 & 40.0\% & 100.0\% & 0.20 \\
-		\hline
-		Weighted (exec time) & 6 & 3 & 50.0\% & 83.3\% & 0.41 \\
+		\multicolumn{6}{|c|}{\textit{Parameters: $\alpha = 0.3$, $\beta = 0.7$}} \\
 		\hline
 	\end{tabular}
 \end{table}
 
+\noindent Base64 minimisation selected 4 essential tests (Phase~1: covering unique requirements with cardinality~= 1) and 13 additional tests (Phase~2: greedy weighted selection). The 46.9\% reduction translated to execution time improvements from 12.5 seconds to 6.7 seconds (1.87$\times$ speedup) while preserving all structural coverage (lines, branches, methods) and 95\% mutation score.
+
 \subsection*{Reproducibility Notes}
-Experiments are executed on an \textit{Intel Core i7} with 16~GB RAM. Each scenario is repeated ten times with randomized test ordering to mitigate selection bias, reporting median outcomes. Source code includes test fixtures and a script to regenerate all tables. Random seeds and configuration parameters (e.g., $\alpha$) are documented alongside results.
+Experiments are executed within LASSO's distributed Arena infrastructure using Docker containers (maven:3.9-eclipse-temurin-17). JaCoCo version 0.8.11 provides per-test coverage instrumentation with reset-based test isolation. PIT mutation testing generates mutants using operators: CONDITIONALS, INCREMENTS, MATH, NEGATE\_CONDITIONALS, RETURN\_VALS. Configuration parameters ($\alpha = 0.3$, $\beta = 0.7$) represent defaults; grid search validation tested $\beta \in \{0.0, 0.3, 0.5, 0.7, 1.0, 2.0\}$ confirming $\beta = 0.7$ as optimal balance between reduction and mutation preservation.
 
 \section{SRM Coverage Extraction Specification}
 \label{app:srm}
 
-We specify the process for extracting coverage information from LASSO Stimulus--Response Matrices (SRMs) for use by the minimisation algorithm:
+We specify the process for extracting per-test granular coverage information from LASSO Stimulus--Response Matrices (SRMs) for use by the minimisation algorithm:
 
-\subsection{SRM Structure}
-LASSO SRMs are two-dimensional matrices where:
+\subsection{SRM Structure and Storage}
+LASSO SRMs are stored in Apache Ignite distributed cache with the following schema:
 \begin{itemize}
 	\item Rows (stimuli) represent test sequences, method invocations, or API calls
 	\item Columns (systems) represent executable software units under test
 	\item Cells contain structured response objects $M_{ij}$ with execution results from system $j$ responding to stimulus $i$
+	\item Cache keys (\texttt{CellId}): contain \texttt{executionId}, \texttt{systemId}, \texttt{adapterId}, \texttt{variantId} (original/mutant), \texttt{sheetId} (test name or coverage key), cell coordinates (x, y)
+	\item Cache values (\texttt{CellValue}): contain execution outcomes, coverage elements, or metric values
 \end{itemize}
 
-\subsection{Coverage Extraction Process}
-For a selected target system (column $j$):
+\subsection{Per-Test Coverage Collection}
+The implementation uses JaCoCo instrumentation with per-test isolation via lifecycle hooks:
+
 \begin{enumerate}
-	\item \textbf{System Selection:} Choose target system index $j$ from SRM columns (current implementation: single system; multi-system minimisation is future work)
-	
-	\item \textbf{Response Parsing:} For each stimulus $i$, extract per-test coverage metrics and mutation data from response object $M_{ij}$:
+	\item \textbf{Test Lifecycle Integration:} For each test $t_i$:
 	\begin{itemize}
-		\item Per-test coverage across JaCoCo's 30 metrics (INSTRUCTION, LINE, BRANCH, METHOD, CLASS, COMPLEXITY)
-		\item Per-test mutation kills (individual mutants detected by this specific test)
-		\item Execution outcome (pass/fail status)
-		\item Optional: execution time for cost-aware minimisation
+		\item Before execution: \texttt{jaCoCoContainer.start()} initialises or resets coverage counters
+		\item During execution: JaCoCo instruments class bytecode and collects coverage
+		\item After execution: \texttt{jaCoCoContainer.stop()} retrieves \texttt{CoverageBuilder} with isolated per-test data
 	\end{itemize}
 	
-	\item \textbf{Requirement Mapping:} Construct test–requirement relationships:
+	\item \textbf{Granular Coverage Storage:} Coverage data stored with language-agnostic prefix \texttt{COVERAGE\_testName}:
 	\begin{itemize}
-		\item Tests $T = \{t_1, \ldots, t_n\}$ map to stimuli (rows)
-		\item Requirements $R = R_{\text{struct}} \cup R_{\text{mut}}$ where:
-		\begin{itemize}
-			\item $R_{\text{struct}}$: structural coverage elements (statement/branch/method IDs)
-			\item $R_{\text{mut}}$: mutant IDs (prefixed with \texttt{"MUTANT:"})
-		\end{itemize}
-		\item Coverage indicator: test $t_i$ covers requirement $r_k$ iff response object $M_{ij}$ indicates per-test coverage of element $k$
+		\item Each covered line: \texttt{sheetId = "COVERAGE\_testName", type = "LINE", value = lineNumber}
+		\item Each covered branch: \texttt{sheetId = "COVERAGE\_testName", type = "BRANCH", value = lineNumber}
+		\item Each covered method: \texttt{sheetId = "COVERAGE\_testName", type = "METHOD", value = signature}
 	\end{itemize}
+	Storage format enables uniform treatment across languages (JaCoCo for Java, coverage.py for Python, Istanbul for JavaScript in future extensions).
 	
-	\item \textbf{Validation:} Filter invalid or inconsistent stimuli (e.g., empty coverage, execution failures) with diagnostics stored for auditability
+	\item \textbf{Mutation Result Collection:} Test outcomes on original and mutant variants stored as:
+	\begin{itemize}
+		\item \texttt{sheetId = "testName()", variantId = "original", type = "value", value = outputValue}
+		\item \texttt{sheetId = "testName()", variantId = "mutantN", type = "value", value = outputValue}
+		\item Cell-by-cell comparison: mutant killed if \textit{any} cell output differs between original and mutant
+	\end{itemize}
 \end{enumerate}
 
+\subsection{Data Collector Query Strategy}
+\texttt{SRMDataCollector} retrieves data from Ignite cache via SQL queries:
+
+\begin{enumerate}
+	\item \textbf{Coverage Query:} \texttt{SELECT * WHERE executionId = ? AND variantId = 'original' AND sheetId LIKE 'COVERAGE\_\%'}
+	\begin{itemize}
+		\item Returns all per-test coverage entries for target execution
+		\item Test name extracted by removing \texttt{COVERAGE\_} prefix
+		\item Test names normalised (remove adapter suffixes like \texttt{\_0}, \texttt{\_1})
+	\end{itemize}
+	
+	\item \textbf{Mutation Query:} \texttt{SELECT * WHERE executionId = ? AND systemId = ? AND type = 'value'}
+	\begin{itemize}
+		\item Returns test outcomes across all variants (original + mutants)
+		\item Organises by test name → cell position → variant
+		\item Mutant marked killed if outputs differ at any coordinate
+	\end{itemize}
+	
+	\item \textbf{Requirements Matrix Construction:}
+	\begin{itemize}
+		\item Tests $T = \{t_1, \ldots, t_n\}$ extracted from distinct \texttt{sheetId} values
+		\item Coverage requirements: \texttt{"LINE:42"}, \texttt{"BRANCH:15"}, \texttt{"METHOD:push(I)V"}
+		\item Mutation requirements: \texttt{"MUTANT:systemId\_mutantN"}
+		\item Unified set $R = R_{\text{struct}} \cup R_{\text{mut}}$
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Critical Implementation Details}
+\begin{itemize}
+	\item \textbf{Test-System Mapping:} Coverage preserved per test–system pair; duplication across all systems was a critical bug that caused algorithm to select only 1 test (fixed by using actual \texttt{systemId} from \texttt{CellId})
+	\item \textbf{Null-Safe Comparison:} Mutation detection handles null outputs correctly (both null = same; one null = different)
+	\item \textbf{Test Name Normalisation:} Coverage names (\texttt{testName\_0}) and mutation names (\texttt{testName()}) unified by regex removal of suffixes
+\end{itemize}
+
 \subsection{Output Format}
-The minimizer produces a reduced SRM $M'$ where:
+The minimiser produces a reduced SRM $M'$ where:
 \begin{itemize}
 	\item Rows correspond to selected stimuli (subset of original)
 	\item Columns preserve original system structure

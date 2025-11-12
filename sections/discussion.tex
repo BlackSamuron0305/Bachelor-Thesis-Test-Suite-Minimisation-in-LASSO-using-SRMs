@@ -1,78 +1,71 @@
 \chapter{Discussion}
 \label{chap:discussion}
 
-This chapter critically analyses Mutation-Aware Enhanced HGS within LASSO's architectural constraints, examining its strategic advantages followed by fundamental limitations and practical considerations for large-scale software analysis.
+This chapter critically analyses test suite minimisation from two perspectives: general advantages and disadvantages inherent to the technique, followed by specific considerations for the Mutation-Aware Enhanced HGS implementation within LASSO's architectural constraints.
 
-\section{Strategic Advantages of MA-EHGS}
+\section{General Advantages and Disadvantages of Test Suite Minimisation}
+\label{sec:discussion:general}
 
-\subsection{Guaranteed Fault-Detection Preservation}
+Test suite minimisation represents a sophisticated optimisation challenge where no single approach universally excels. This section examines inherent trade-offs and fundamental constraints independent of specific algorithmic implementations.
 
-Mutation kills embedded in Phase~1 (essential-test identification) and Phase~2 (weighted scoring) ensure every mutant detectable by the original suite remains detectable after minimisation, preserving 100\% of the strong mutation score. This addresses coverage-based limitations: tests can be structurally redundant while semantically distinct in fault-revealing behaviour~\cite{yoo2012,harrold1993}. By treating mutants as requirements in the requirements matrix, MA-EHGS \emph{guarantees} mutation preservation---valuable for safety-critical or regulatory contexts where fault-detection capability must be demonstrable.
+\subsection{Practical Performance Benefits}
 
-Unlike coverage-only approaches that lose 3.5--21\,\% mutation score~\cite{noemmer2020}, MA-EHGS's explicit mutation weighting ($\beta = 0.7$) prioritises tests killing unique mutants during greedy selection. This design principle directly addresses the fundamental coverage-mutation trade-off: structural coverage metrics inadequately proxy fault-detection capability because coverage measures program execution breadth without assessing sensitivity to faults~\cite{rothermel1998}.
+Empirical evidence from large-scale industrial environments underscores the significant performance gains achievable through test suite minimisation. Bach et al.~\cite{bach2017} observed that over 90\% of test cases in a major industrial project (SAP) were redundant in terms of line coverage, with full test execution requiring several tens of hours. Applying minimisation techniques in such contexts can reduce execution time from many hours to just a few hours---or even minutes---without compromising coverage quality.
 
-\subsection{Empirically Validated Foundation with Mutation Extension}
+These reductions yield immediate and measurable benefits. A 50--75\% shrinkage in test suites translates directly into lower computational demands, reduced infrastructure expenditure, and substantial cost savings. Minimised test execution drastically decreases CPU hours, memory allocation, and cloud consumption, which in turn cuts operational costs and energy usage. In continuous integration pipelines running hundreds of builds per day, the cumulative effect can be dramatic: a 60\% reduction across 500 daily builds eliminates roughly 300 redundant test executions per cycle~\cite{yoo2012}, saving both time and significant financial resources.
 
-The baseline Enhanced HGS algorithm was empirically validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmark suites, demonstrating superior minimisation effectiveness compared to HGS, classical greedy, and Non-Redundant HGS. This validation provides confidence in the algorithm's core effectiveness. The mutation-weighting extension ($\beta$-parameter) represents this thesis's original contribution, addressing the documented coverage-mutation trade-off where coverage-only minimisation loses fault-detection capability~\cite{noemmer2020}.
+Shorter test cycles also enhance developer productivity. Compressing test execution times from hours to minutes accelerates feedback loops, allowing defects to surface earlier and be resolved faster. The ability to detect critical failures almost immediately reshapes development practices, especially in agile environments that rely on frequent integration and rapid iteration.
 
-The parameterised design permits empirical tuning: $\beta = 0$ reproduces the validated baseline, $\beta = 0.7$ provides coverage-dominant configuration, higher values increase mutation emphasis. This flexibility enables grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$) to identify optimal configurations for specific application domains or testing objectives.
 
-\subsection{Computational Efficiency and Determinism}
+\subsection{The Absence of a Perfect Solution}
 
-Polynomial complexity $O(nm)$ and deterministic execution provide production advantages over alternative approaches. Unlike stochastic metaheuristics requiring multiple runs, deterministic behaviour guarantees reproducible results~\cite{yoo2012}---essential for continuous-integration debugging, auditing, and compliance. Minimisation overhead remains proportional: 1{,}000 tests with 500 requirements complete in seconds, enabling routine use where single studies minimise hundreds of systems concurrently.
+Despite these compelling advantages, test suite minimisation remains an inherently complex optimisation problem with no universally optimal solution. The difficulty arises from conflicting objectives and problem-specific constraints that vary across application domains. Minimisation confronts multiple competing goals: maximising reduction while preserving coverage, maintaining fault-detection capability, ensuring computational feasibility, and adapting to diverse system characteristics. No technique satisfies all objectives simultaneously across all contexts.
 
-The linear complexity improves upon HGS's $O(nm \log m)$ cardinality-sorting overhead~\cite{harrold1993} and dramatically outperforms Delayed Greedy's $O(n^2m)$ quadratic scaling~\cite{tallam2005}. For LASSO's Arena pipeline processing hundreds of systems with test suites exceeding 10,000 stimuli, this scalability advantage becomes critical.
+Different application domains prioritise these objectives differently. Safety-critical systems demand absolute fault-detection preservation, favouring conservative approaches that sacrifice reduction potential. High-frequency continuous integration pipelines prioritise execution speed, accepting greater risk of fault-detection loss. Large-scale observatories require language-agnostic solutions operating on behavioural abstractions, excluding techniques dependent on source code analysis.
 
-\subsection{Language-Agnostic SRM Compatibility}
+This multi-objective optimisation creates a complex solution space where trade-offs vary by context. Conservative approaches produce larger minimised suites with stronger guarantees; aggressive approaches achieve greater reduction with weaker assurances. The optimal balance depends on deployment context, testing objectives, and acceptable risk levels.
 
-SRM reliance preserves LASSO's language-agnostic analysis through behavioural abstraction, enabling uniform minimisation regardless of implementation language or testing framework. Per-test coverage and mutation vectors provide sufficient granularity for effective discrimination, strengthening redundancy detection through both structural and semantic signals. The requirements-matrix approach~\cite{gladston2015} naturally accommodates diverse coverage metrics by treating them as requirements---JaCoCo's 30 metrics (INSTRUCTION, LINE, BRANCH, METHOD, CLASS, COMPLEXITY) and mutation kills integrate seamlessly.
+Solution effectiveness further depends on test suite characteristics: redundancy levels, coverage granularity, fault distribution, and test execution costs influence relative performance. Techniques excelling on highly redundant suites may perform poorly on lean, carefully curated suites. This context-dependence necessitates approach selection tailored to specific environments rather than universal prescription.
 
-This abstraction eliminates the need for control-flow graphs, abstract syntax trees, or language-specific analysis, distinguishing MA-EHGS from approaches like REDUNET~\cite{mongiovi2020} that require CFG information unavailable in SRM-only settings. The language-independent design enables comparative analysis across heterogeneous system implementations without adapting the minimisation algorithm.
+\subsection{The Coverage Limitation}
 
-\subsection{Practical Performance Implications}
+Compounding these challenges, structural coverage metrics inadequately capture fault-detection capability. Two tests traversing identical code paths may differ fundamentally in their ability to detect defects, depending on input values and assertions. Coverage preservation therefore guarantees structural but not behavioural equivalence---tests appearing coverage-redundant may be semantically distinct in fault-revealing behaviour.
 
-Test-suite reduction of 50--75\% translates to proportional reductions in execution time, infrastructure costs, and feedback latency. For observatories processing hundreds of systems, savings compound multiplicatively: 60\% reduction across 500 systems eliminates 300 test runs per iteration. Preserved mutation scores enable confident deployment without validation studies demonstrating fault-detection equivalence.
+Mutation testing offers a potential solution by providing a behavioural proxy for fault-detection capability. Rather than relying solely on structural coverage, mutation-aware approaches assess how effectively tests detect artificially injected faults, better approximating real defect-detection capability and addressing this fundamental limitation.
 
-Deterministic $O(nm)$ complexity ensures predictable runtime scaling across diverse experimental configurations, improving resource planning for continuous-integration pipelines. The guaranteed coverage and mutation preservation eliminates the need for post-minimisation validation, streamlining deployment in production environments.
 
-\section{Limitations and Constraints}
 
-\subsection{Coverage and Mutation Granularity}
 
-LASSO's instrumentation now provides per-test coverage vectors and mutation scores. Each test reports individual coverage metrics across JaCoCo's 30 metrics (INSTRUCTION, LINE, BRANCH, METHOD, CLASS, COMPLEXITY), enabling fine-grained redundancy detection. Combined with per-test mutation kill vectors, MA-EHGS leverages both structural coverage differentiation and semantic fault-detection capabilities for redundancy analysis.
 
-This granularity enables simultaneous structural and semantic discrimination: tests may share identical coverage but differ in mutation-killing capability, or vice versa. The weighted scoring function $\text{score}(t) = |\text{newCoverage}| + \beta \times |\text{newMutants}|$ balances both dimensions, with $\beta = 0.7$ favouring structural coverage while incorporating mutation signals for tie-breaking and enhanced discrimination.
 
-\subsection{Strong Mutation Limitation}
 
-SRM response objects store final test verdicts rather than intermediary states, supporting only \emph{strong mutation}~\cite{offutt2000}. Tests revealing \emph{weak kills} (internal state divergence without output propagation) may be incorrectly classified as redundant. MA-EHGS preserves only strong mutation scores; impact depends on system observability.
+\section{Thesis-Specific Considerations for MA-EHGS in LASSO}
+\label{sec:discussion:specific}
 
-This limitation affects systems with low output diversity where internal state changes do not propagate to observable responses. For highly observable systems with comprehensive assertions, strong mutation approximates total mutation effectiveness well~\cite{offutt2000}. However, minimised suites may miss subtle defects detectable through weak mutation analysis.
+Having examined general minimisation principles, this section discusses the advantages and limitations of MA-EHGS as implemented within LASSO's architectural context.
 
-\subsection{Greedy Heuristic Sub-Optimality}
+\subsection{Advantages of the Approach}
 
-MA-EHGS inherits greedy heuristic limitations for the NP-complete set-cover problem~\cite{harrold1993,yoo2012}. The $O(\ln m)$ approximation ratio guarantees the minimised suite is at most $\ln m$ times larger than the optimal solution~\cite{chvatal1979}, but local optima may prevent achieving globally minimal suites.
+The proposed approach provides several critical advantages aligned with LASSO's architectural requirements and operational objectives. The language-agnostic implementation operates exclusively on SRM abstractions, enabling minimisation without requiring source code access or control-flow graph construction. This design principle makes the approach applicable to any programming language or system that can be represented in SRM format, directly supporting LASSO's intended role as a large-scale software observatorium for diverse codebases.
 
-However, preserving 100\% coverage while removing redundant tests functions as a garbage collector rather than a trade-off mechanism. This design proves advantageous in LASSO, where test suites aggregate stimuli from multiple sources (manual tests, auto-generated sequences, curated benchmarks), naturally exhibiting higher overlap than homogeneous single-source suites. Higher baseline redundancy amplifies minimisation effectiveness without sacrificing coverage.
+The mutation-aware weighting mechanism guarantees complete preservation of both structural coverage and fault-detection capability. As long as neither $\alpha$ (coverage weight) nor $\beta$ (mutation weight) equals zero, the algorithm ensures 100\% coverage retention and 100\% mutation score retention~\cite{gladston2015}. This property directly implies maximal fault-detection preservation, addressing the fundamental coverage limitation discussed in Section~\ref{sec:discussion:general} where structural metrics alone inadequately capture defect-revealing behaviour.
 
-Two-phase selection mitigates sub-optimality: Phase~1 locks essential tests (uniquely covering requirements), Phase~2 applies weighted greedy selection with mutation weighting. Performance gaps relative to optimal solutions remain acceptably small for typical suites~\cite{gladston2015}.
+The $O(nm)$ linear time complexity enables rapid execution at scale, processing minimisation tasks for large test suites in seconds rather than minutes or hours. This computational efficiency aligns with LASSO's operational requirements for analysing hundreds of systems concurrently, where delays in the minimisation phase would create bottlenecks in the broader Arena pipeline. Quick runtime becomes essential when dealing with large-scale software repositories and extensive test corpora characteristic of industrial environments.
 
-\subsection{Parameter Sensitivity}
 
-The $\beta$-parameter controls mutation emphasis in Phase~2 scoring. While $\beta = 0.7$ provides a conservative default favouring structural coverage, domain-specific tuning may improve results. However, optimal configurations may not generalise across application domains, testing objectives, or fault types.
+\subsection{Limitations of the Implementation}
 
-Grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$) enables systematic exploration but requires empirical validation on representative test suites. The reserved parameter $\alpha = 0.3$ remains unused but could incorporate test execution costs in future work, introducing additional tuning complexity.
+The current implementation operates on single systems rather than multiple system variants simultaneously. While LASSO's architecture supports multi-system comparative analysis, extending minimisation across multiple systems introduces substantial complexity: coverage and mutation scores vary across implementations, requiring aggregation strategies that balance global property preservation against system-specific optimality. Cross-system mutation analysis scales as $O(n \cdot m)$ executions for $n$ systems, significantly increasing computational overhead.
 
-\subsection{Multi-System Complexity}
+The approach depends on specific tooling infrastructure for metric collection. Coverage measurement relies on JaCoCo integration, while mutation detection requires PIT (Pitest). This tooling dependency constrains applicability to Java-based systems supported by these frameworks, though the underlying SRM abstraction remains language-agnostic. Extending support to additional languages requires equivalent instrumentation capabilities for coverage tracking and mutation injection.
 
-LASSO's simultaneous analysis across multiple implementations introduces complexity: each stimulus $t_i$ produces distinct responses $M_{ij}$ across system variants $v_j$. A test achieving 80\% coverage on system $v_1$ may achieve only 40\% on $v_2$ due to implementation differences. Tests redundant for one system may prove essential for another.
+Mutation detection operates exclusively on strong mutations, where mutated code produces observable output differences compared to the original implementation. Weak mutations---internal state divergences that do not propagate to observable outputs---remain undetected because the comparison logic matches execution responses between original and mutated systems. Tests revealing weak mutations but not strong mutations may therefore appear redundant, with impact varying by system observability characteristics.
 
-Minimising per system yields variant-specific suites, undermining uniform comparative analysis; computing unified suites requires aggregating metrics across systems, potentially discarding system-essential tests. Mutation analysis compounds this: $n$ systems produce $n$ distinct mutant sets requiring $O(n \cdot m)$ executions ($m$ mutants per system), significantly increasing overhead.
+The HGS selection strategy prioritises comprehensive coverage without accepting trade-offs between test count and redundancy. When test $t_1$ covers requirements $\{1, \ldots, 20\}$ and test $t_2$ covers requirements $\{1, \ldots, 21\}$, both tests are retained because $t_2$ provides unique coverage of requirement 21. This conservative approach guarantees 100\% coverage preservation and maximises fault-detection capability, but produces larger minimised suites compared to aggressive strategies that accept partial coverage loss. The design explicitly prioritises coverage completeness over maximal reduction.
 
-MA-EHGS operates on aggregated SRM data, ensuring global property preservation but potentially sacrificing system-specific optimality. Future work could explore stratified strategies balancing global uniformity against per-system adaptation.
+\subsection{Implications for LASSO Platform Evolution}
 
-\section{Implications for LASSO Platform Evolution}
+MA-EHGS provides a pragmatic solution balancing LASSO's architectural constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains (50--75\% reduction) while preserving fault-detection capability. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
 
-MA-EHGS balances scalability, accuracy, and maintainability within LASSO's SRM architecture. The mutation-aware design preserves fault-detection capability while achieving substantial efficiency gains (50--75\% reduction). The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that behavioural abstraction enables practical large-scale optimisation without sacrificing rigour.
+The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment in LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the configurable design accommodates diverse user preferences---from pure coverage-based minimisation ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$)---acknowledging that optimal configurations reflect domain-specific trade-offs rather than universal prescriptions.
 
-The strategic advantages---guaranteed mutation preservation, linear complexity, language-agnostic compatibility, and deterministic behaviour---position MA-EHGS as a production-ready solution for LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the approach provides a solid foundation for empirical evaluation and incremental enhancement.
