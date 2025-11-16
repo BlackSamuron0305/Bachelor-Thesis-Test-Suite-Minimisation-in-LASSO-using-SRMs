@@ -54,20 +54,18 @@ Table~\ref{tab:appendix-benchmarks} presents representative empirical results fr
 
 \begin{table}[H]
 	\centering
-	\caption{Representative empirical benchmarks from implementation validation}
+	\caption{Representative empirical benchmarks from implementation validation.}
 	\label{tab:appendix-benchmarks}
-		\begin{tabular}{|l|c|c|c|c|c|}
-		\hline
+	\begin{tabular}{lccccc}
+		\toprule
 		\textbf{System} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
-		\hline
-		Base64 Encoder & 32 & 17 & 46.9\% & 100\% & 95\% \\
-		\hline
-		Stack Implementation & 18 & 8 & 55.6\% & 100\% & 100\% \\
-		\hline
-		Queue Implementation & 25 & 12 & 52.0\% & 100\% & 100\% \\
-		\hline
-		\multicolumn{6}{|c|}{\textit{Parameters: $\alpha = 0.3$, $\beta = 0.7$}} \\
-		\hline
+		\midrule
+		Base64 Encoder & 32 & 17 & 46.9\,\% & 100\,\% & 95\,\% \\
+		Stack Implementation & 18 & 8 & 55.6\,\% & 100\,\% & 100\,\% \\
+		Queue Implementation & 25 & 12 & 52.0\,\% & 100\,\% & 100\,\% \\
+		\midrule
+		\multicolumn{6}{c}{\textit{Parameters: $\alpha = 0.3$, $\beta = 0.7$}} \\
+		\bottomrule
 	\end{tabular}
 \end{table}
 

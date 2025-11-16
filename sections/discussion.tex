@@ -63,9 +63,40 @@ Mutation detection operates exclusively on strong mutations, where mutated code 
 
 The HGS selection strategy prioritises comprehensive coverage without accepting trade-offs between test count and redundancy. When test $t_1$ covers requirements $\{1, \ldots, 20\}$ and test $t_2$ covers requirements $\{1, \ldots, 21\}$, both tests are retained because $t_2$ provides unique coverage of requirement 21. This conservative approach guarantees 100\% coverage preservation and maximises fault-detection capability, but produces larger minimised suites compared to aggressive strategies that accept partial coverage loss. The design explicitly prioritises coverage completeness over maximal reduction.
 
+The current approach and implementation were validated similarly to unit tests in object-oriented programming, lacking comprehensive integration testing. While unit-test validation ensures algorithmic correctness and basic functionality, it does not assess end-to-end performance in real LASSO pipelines, potentially overlooking issues in data extraction, SRM generation, or multi-system interactions.
+
 \subsection{Implications for LASSO Platform Evolution}
 
 MA-EHGS provides a pragmatic solution balancing LASSO's architectural constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains (50--75\% reduction) while preserving fault-detection capability. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
 
 The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment in LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the configurable design accommodates diverse user preferences---from pure coverage-based minimisation ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$)---acknowledging that optimal configurations reflect domain-specific trade-offs rather than universal prescriptions.
+
+\section{Future Work}
+\label{sec:discussion:future}
+
+The limitations identified in Section~\ref{sec:discussion:specific} highlight several directions for extending the MA-EHGS approach and improving its applicability within LASSO.
+
+\subsection{Multi-Language Support}
+
+The current prototype relies on Java tooling (JaCoCo and PIT). Extending MA-EHGS to Python, JavaScript, and other ecosystems requires integrating equivalent coverage and mutation frameworks and normalising their outputs into a unified SRM representation. Key challenges include ensuring metric granularity consistency and mapping language-specific mutation operators.
+
+\subsection{Multisystem Minimisation}
+
+LASSO’s multi-system SRMs motivate minimisation across several implementations simultaneously. Future work should investigate strategies for aggregating coverage and mutation information across systems, balancing global preservation with computational feasibility. This includes studying conservative union-based vs.\ intersection-based preservation strategies and quantifying the increased overhead of cross-system mutation execution.
+
+\subsection{Integration Testing Validation}
+
+Validation has so far focused on isolated unit tests. End-to-end integration tests within LASSO’s Arena pipeline are needed to evaluate data extraction reliability, SRM generation correctness, and performance under realistic workloads (large-scale SRMs and many parallel systems). This ensures robustness for production deployment.
+
+\subsection{Alpha–Beta Benchmarking}
+
+The current defaults for $\alpha$ and $\beta$ are theoretically motivated but not empirically optimised. A systematic grid search across parameter combinations could identify configurations that maximise reduction while preserving coverage and mutation scores for different system types. Such benchmarking could be integrated as an LSL action.
+
+\subsection{Weak Mutation Support}
+
+MA-EHGS currently considers only strong mutants. Capturing weak mutants would require deeper instrumentation to detect internal state divergences. Although more costly, this would provide finer behavioural insight and improve minimisation quality for systems with complex internal logic.
+
+\subsection{LLM-Assisted Gap Analysis}
+
+Large language models could assist in identifying and generating tests for uncovered coverage or mutation gaps. By analysing SRM data and optional code context, LLMs could propose targeted tests which are subsequently validated automatically. This complements minimisation by enabling systematic test suite augmentation.
 

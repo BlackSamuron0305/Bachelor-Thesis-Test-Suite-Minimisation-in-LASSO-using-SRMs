@@ -17,7 +17,7 @@ Phase 2 (greedy selection) dominates with $O(nm)$ time complexity (analysed in C
 
 \section{Validation}
 
-Unit tests verify essential-test selection, coverage preservation ($C(S^*)=C(T)$), and parameter sensitivity. Empirical benchmarks demonstrate performance characteristics across multiple systems, with representative results including Base64 encoder/decoder (32 tests reduced to 17, achieving 46.9\% reduction while maintaining 100\% coverage and 95\% mutation score). Extended benchmark results and reproducibility details are provided in Appendix~\ref{app:benchmarks}.
+The current approach and implementation were validated similarly to unit tests in object-oriented programming, lacking comprehensive integration testing. Unit tests verify essential-test selection, coverage preservation ($C(S^*)=C(T)$), and parameter sensitivity, ensuring algorithmic correctness but not end-to-end pipeline performance. Empirical benchmarks demonstrate performance characteristics across multiple systems, with representative results including Base64 encoder/decoder (32 tests reduced to 17, achieving 46.9\% reduction while maintaining 100\% coverage and 95\% mutation score). Extended benchmark results and reproducibility details are provided in Appendix~\ref{app:benchmarks}.
 
 \section{LASSO Integration}
 
