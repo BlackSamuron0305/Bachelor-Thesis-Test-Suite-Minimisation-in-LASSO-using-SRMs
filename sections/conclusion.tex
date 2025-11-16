@@ -2,9 +2,10 @@
 
 \section{Summary}
 
-This thesis developed an SRM-based test-suite minimisation framework for LASSO and addressed research questions RQ1--RQ4. A systematic literature review identified greedy heuristics---particularly Enhanced HGS---as the most suitable class of techniques. Using evaluation criteria C1--C7, the Mutation-Aware Enhanced HGS (MA-EHGS) variant was selected as the most effective approach, combining reduction capability, structural and behavioural preservation, scalability, and compatibility with LASSO's language-independent behavioural abstraction.
+\section{Summary}
 
-The implementation integrated MA-EHGS into LASSO's analysis pipeline, combining line, branch, and method coverages as well as mutation information within a unified SRM requirements representation. Empirical evaluation on benchmark systems achieved reductions of 46.9--55.6\% while preserving 100\% structural coverage for all configurations with $\alpha>0$ (i.e., whenever coverage receives non-zero weighting) and 100\% mutation retention for all configurations with $\beta>0$. This follows directly from the HGS selection mechanism, which never discards tests that introduce previously uncovered coverage requirements or kill previously unkilled mutants. Validation at unit-test level confirmed correct algorithmic behaviour and SRM integration, although full pipeline evaluation across diverse projects remains future work.
+This thesis developed an SRM-based test-suite minimisation framework for LASSO by selecting and implementing the Mutation-Aware Enhanced HGS (MA-EHGS) approach. Based on a systematic literature review and evaluation criteria C1--C7, MA-EHGS was identified as the most suitable technique due to its scalability, preservation guarantees, and compatibility with LASSO's behavioural abstraction. Integrated into the analysis pipeline, MA-EHGS combines line, branch, and method coverages with mutation information and achieved reductions of 46.9--55.6\% while preserving 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations. This behaviour follows directly from the HGS selection mechanism. Unit-test validation confirmed correct algorithmic behaviour, with full pipeline evaluation remaining for future work.
+
 
 \section{Key Contributions}
 
@@ -19,9 +20,6 @@ This enables configurable balancing between structural adequacy and behavioural 
 
 \paragraph{Practical integration into LASSO.}
 The framework extracts metric data from SRM response objects, performs minimisation, and generates reduced SRMs while preserving schema and language independence.
-
-\paragraph{Modular architecture.}
-The separation of data extraction, scoring logic, and SRM generation improves maintainability and enables future extensions, including alternative coverage metrics, mutation tools, or entirely new minimisation strategies.
 
 \section{Future Work}
 

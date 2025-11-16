@@ -20,7 +20,7 @@ build:
 # Clean auxiliary files but keep PDF
 clean:
 	@echo "Cleaning auxiliary files..."
-	@rm -f *.aux *.bbl *.bcf *.blg *.fdb_latexmk *.fls *.lof *.log *.lot *.out *.run.xml *.synctex.gz *.toc *.nls *.ilg
+	@rm -f *.aux *.bbl *.bcf *.blg *.fdb_latexmk *.fls *.lof *.log *.lot *.out *.run.xml *.synctex.gz *.toc *.nls *.ilg *.nlo *.bbl-SAVE-ERROR
 	@rm -f sections/*.aux
 	@echo "Cleanup complete!"
 
