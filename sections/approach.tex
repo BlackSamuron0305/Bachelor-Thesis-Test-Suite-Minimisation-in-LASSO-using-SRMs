@@ -10,32 +10,24 @@ SRM compatibility determines whether an algorithm can operate using only stimulu
 
 \begin{table}[H]
   \centering
+  \small
   \caption{C1: SRM Compatibility --- algorithms requiring only coverage matrices.}
   \label{tab:c1-srm}
-  \begin{tabular}{|l|c|l|}
-    \hline
+  \begin{tabular}{lcl}
+    \toprule
     \textbf{Algorithm} & \textbf{Compatible} & \textbf{Justification} \\
-    \hline
+    \midrule
     Classical Greedy & \checkmark & Operates on coverage matrix only~\cite{chvatal1979} \\
-    \hline
     HGS & \checkmark & Requires only requirement cardinalities~\cite{harrold1993} \\
-    \hline
     Delayed Greedy & \checkmark & Uses coverage lattice, no CFG needed~\cite{tallam2005} \\
-    \hline
     Enhanced HGS & \checkmark & Requirements-matrix formulation~\cite{gladston2015} \\
-    \hline
     MA-EHGS & \checkmark & Extends Enhanced HGS with mutation as requirements \\
-    \hline
     ILP-Based & \checkmark & Set-cover formulation from coverage~\cite{yoo2012} \\
-    \hline
     REDUNET & $\times$ & Requires CFG and data-flow analysis~\cite{mongiovi2020} \\
-    \hline
     Genetic Algorithm & \checkmark & Evolves coverage-based test subsets~\cite{yoo2012} \\
-    \hline
     Similarity-Based & \checkmark & Distance metrics over coverage vectors~\cite{khan2020} \\
-    \hline
     Overlap-Aware & \checkmark & Penalises coverage duplication~\cite{bach2017} \\
-    \hline
+    \bottomrule
   \end{tabular}
 \end{table}
 
@@ -47,36 +39,29 @@ Coverage preservation measures the percentage of structural requirements (lines,
 
 \begin{table}[H]
   \centering
+  \small
   \caption{C2: Coverage Preservation --- percentage of structural requirements retained.}
   \label{tab:c2-coverage}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
+    \begin{tabular}{lccl}
+      \toprule
       \textbf{Algorithm} & \textbf{Retention} & \textbf{Score} & \textbf{Reference} \\
-      \hline
+      \midrule
       Classical Greedy & 100\,\%\tnote{a} & 5/5 & \cite{chvatal1979} \\
-      \hline
       HGS & 100\,\%\tnote{a} & 5/5 & \cite{harrold1993} \\
-      \hline
       Delayed Greedy & 100\,\%\tnote{a} & 5/5 & \cite{tallam2005} \\
-      \hline
       Enhanced HGS & 100\,\%\tnote{b} & 5/5 & \cite{gladston2015} \\
-      \hline
       MA-EHGS & 100\,\%\tnote{c} & 5/5 & This work \\
-      \hline
       ILP-Based & 100\,\%\tnote{d} & 5/5 & \cite{yoo2012} \\
-      \hline
       Genetic Algorithm & Variable\tnote{e} & 1/5 & \cite{yoo2012} \\
-      \hline
       Similarity-Based & Variable\tnote{f} & 1/5 & \cite{khan2020} \\
-      \hline
       Overlap-Aware & Variable\tnote{g} & 2/5 & \cite{bach2017} \\
-      \hline
+      \bottomrule
     \end{tabular}
     \begin{tablenotes}
       \small
       \item[a] Guaranteed by design: greedy selection until 100\,\% coverage achieved
-      \item[b] Empirically validated: maintained comparable coverage to full suite~\cite{gladston2015}
+      \item[b] Empirically validated on branch coverage requirements~\cite{gladston2015}
       \item[c] Inherits guarantee from Enhanced HGS baseline
       \item[d] Optimal when solver terminates~\cite{yoo2012}
       \item[e] Pareto front: no single coverage value, configuration-dependent
@@ -94,209 +79,138 @@ Reduction effectiveness measures the percentage of tests removed while maintaini
 
 \begin{table}[H]
   \centering
+  \small
   \caption{C3: Reduction Effectiveness --- percentage of original test suite eliminated.}
   \label{tab:c3-reduction}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
+    \begin{tabular}{lccl}
+      \toprule
       \textbf{Algorithm} & \textbf{Reduction} & \textbf{Score} & \textbf{Reference} \\
-      \hline
-      Classical Greedy & 60--93\,\% (median 67\,\%) & 4/5 & \cite{noemmer2020} \\
-      \hline
+      \midrule
+      Classical Greedy & 70\,\% (median)\tnote{a} & 4/5 & \cite{jehan2023} \\
       HGS & $\approx$70\,\% & 4/5 & \cite{jehan2023} \\
-      \hline
-      Delayed Greedy & 65--74\,\% & 4/5 & \cite{jehan2023,tallam2005} \\
-      \hline
-      Enhanced HGS & Smaller than HGS, GRE\tnote{a} & 4/5 & \cite{gladston2015} \\
-      \hline
-      MA-EHGS & 50--75\,\% (expected)\tnote{b} & 4/5 & This work \\
-      \hline
+      Delayed Greedy & $\approx$65\,\% & 3/5 & \cite{jehan2023} \\
+      Enhanced HGS & 73.66\,\% (empirical)\tnote{b} & 4/5 & \cite{gladston2015} \\
+      MA-EHGS & 50--75\,\% (expected)\tnote{c} & 4/5 & This work \\
       ILP-Based & Optimal (best possible) & 5/5 & \cite{yoo2012} \\
-      \hline
       Genetic Algorithm & Variable, config-dependent & 3/5 & \cite{yoo2012} \\
-      \hline
       Similarity-Based & Moderate via clustering & 2/5 & \cite{khan2020} \\
-      \hline
       Overlap-Aware & Variable in time budget & 2/5 & \cite{bach2017} \\
-      \hline
+      \bottomrule
     \end{tabular}
     \begin{tablenotes}
       \small
-      \item[a] Empirically demonstrated smaller suites than HGS and classical greedy (GRE)~\cite{gladston2015}
-      \item[b] Expected based on Enhanced HGS baseline; requires empirical validation
+      \item[a] JavaScript NPM packages with adequate reduction (100\% coverage retained)~\cite{jehan2023}
+      \item[b] Branch coverage on FIRST\_RUN program (512 LOC, 142 tests)~\cite{gladston2015}
+      \item[c] Expected based on Enhanced HGS baseline; requires empirical validation
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-\textbf{Result:} ILP guarantees optimal reduction (5/5). Greedy heuristics including MA-EHGS achieve strong reduction (4/5) with 60--75\,\%. Search-based and data-driven methods show moderate to variable reduction (2--3/5).
+\textbf{Result:} ILP guarantees optimal reduction (5/5). Greedy heuristics including Enhanced HGS and MA-EHGS achieve strong reduction (4/5) with 65--75\,\%. Search-based and data-driven methods show moderate to variable reduction (2--3/5).
 
-\subsection{C4: Fault-Detection Retention}
-
-Fault-detection retention measures the percentage of faults detected by the original suite that remain detectable after minimisation.
-
-\begin{table}[H]
-  \centering
-  \caption{C4: Fault-Detection Retention --- empirically measured fault revelation capability.}
-  \label{tab:c4-fault}
-  \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
-      \textbf{Algorithm} & \textbf{Retention} & \textbf{Score} & \textbf{Reference} \\
-      \hline
-      Classical Greedy & 79--96.5\,\% & 2/5 & \cite{noemmer2020} \\
-      \hline
-      HGS & 90--95\,\% & 3/5 & \cite{jehan2023} \\
-      \hline
-      Delayed Greedy & $\approx$100\,\%\tnote{a} & 5/5 & \cite{jehan2023} \\
-      \hline
-      Enhanced HGS & Comparable to full suite\tnote{b} & 4/5 & \cite{gladston2015} \\
-      \hline
-      MA-EHGS & 95--100\,\% (expected)\tnote{c} & 4/5 & This work \\
-      \hline
-      ILP-Based & No data available & 0/5 & --- \\
-      \hline
-      Genetic Algorithm & No data available & 0/5 & --- \\
-      \hline
-      Similarity-Based & No data available & 0/5 & --- \\
-      \hline
-      Overlap-Aware & No data available & 0/5 & --- \\
-      \hline
-    \end{tabular}
-    \begin{tablenotes}
-      \small
-      \item[a] \textbf{Best empirically-validated:} maintained mutation score equivalent to original~\cite{jehan2023}
-      \item[b] Siemens benchmark validation showed comparable fault detection~\cite{gladston2015}
-      \item[c] Expected based on mutation-weighting; requires empirical validation
-    \end{tablenotes}
-  \end{threeparttable}
-\end{table}
-
-\textbf{Result:} Delayed Greedy achieves the highest empirically-validated score (5/5) with $\approx$100\,\% preservation~\cite{jehan2023}. MA-EHGS expects strong retention (4/5) via mutation weighting. Most algorithms lack fault-detection evaluation (0/5).
-
-\subsection{C5: Mutation Score Preservation}
+\subsection{C4: Mutation Score Preservation}
 
 Mutation score preservation specifically measures the percentage of mutants killed by the original suite that remain killed after minimisation.
 
 \begin{table}[H]
   \centering
-  \caption{C5: Mutation Score Preservation --- strong mutation testing capability retention.}
-  \label{tab:c5-mutation}
+  \small
+  \caption{C4: Mutation Score Preservation --- strong mutation testing capability retention.}
+  \label{tab:c4-mutation}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
+    \begin{tabular}{lccl}
+      \toprule
       \textbf{Algorithm} & \textbf{Mutation Loss} & \textbf{Score} & \textbf{Reference} \\
-      \hline
-      Classical Greedy & 3.5--21\,\% loss (avg 12.5\,\%) & 1/5 & \cite{noemmer2020} \\
-      \hline
-      HGS & Similar to classical greedy & 3/5 & \cite{noemmer2020} \\
-      \hline
-      Delayed Greedy & $\approx$0\,\% loss\tnote{a} & 5/5 & \cite{jehan2023} \\
-      \hline
+      \midrule
+      Classical Greedy & 0--5\,\% loss (adequate)\tnote{a} & 3/5 & \cite{jehan2023} \\
+      HGS & 0--5\,\% loss (adequate)\tnote{a} & 3/5 & \cite{jehan2023} \\
+      Delayed Greedy & 0\,\% loss (adequate)\tnote{b} & 5/5 & \cite{jehan2023} \\
       Enhanced HGS & No mutation evaluation & 0/5 & \cite{gladston2015} \\
-      \hline
-      MA-EHGS & Minimal loss (expected)\tnote{b} & 4/5 & This work \\
-      \hline
+      MA-EHGS & Minimal loss (expected)\tnote{c} & 4/5 & This work \\
       ILP-Based & No mutation data & 0/5 & --- \\
-      \hline
       Genetic Algorithm & No mutation data & 0/5 & --- \\
-      \hline
       Similarity-Based & No mutation data & 0/5 & --- \\
-      \hline
       Overlap-Aware & No mutation data & 0/5 & --- \\
-      \hline
+      \bottomrule
     \end{tabular}
     \begin{tablenotes}
       \small
-      \item[a] \textbf{Best empirically-validated:} maintained mutation score equivalent to original suite~\cite{jehan2023}
-      \item[b] Mutation-weighting ($\beta = 0.7$) designed to preserve mutation kills; requires validation
+      \item[a] For adequate reduction (100\% coverage retained); additional loss occurs only when allowing inadequate reduction~\cite{jehan2023}
+      \item[b] \textbf{Best empirically-validated:} maintained mutation score equivalent to original suite for adequate reduction~\cite{jehan2023}
+      \item[c] Mutation-weighting ($\beta = 0.7$) designed to preserve mutation kills; requires validation
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-\textbf{Result:} Delayed Greedy achieves the highest score (5/5) with documented $\approx$100\,\% mutation preservation~\cite{jehan2023}. MA-EHGS expects strong preservation (4/5) through explicit mutation weighting. Most algorithms lack mutation evaluation (0/5), highlighting a widespread gap in the literature.
+\textbf{Result:} Delayed Greedy achieves the highest score (5/5) with documented 0\,\% mutation loss for adequate reduction~\cite{jehan2023}. MA-EHGS expects strong preservation (4/5) through explicit mutation weighting. Most other algorithms lack mutation evaluation (0/5), highlighting a widespread gap in the literature. **Enhanced HGS specifically has NO mutation evaluation (0/5)** despite being empirically validated on coverage-only criteria.
 
-\subsection{C6: Computational Scalability}
+\subsection{C5: Computational Scalability}
 
 Computational scalability assesses algorithmic complexity and practical runtime for large test suites ($n > 10{,}000$ tests) and many requirements ($m > 1{,}000$).
 
 \begin{table}[H]
   \centering
-  \caption{C6: Computational Scalability --- time complexity and practical performance.}
-  \label{tab:c6-scalability}
+  \small
+    \caption{C5: Computational Scalability --- algorithmic complexity and runtime performance.}
+  \label{tab:c5-scalability}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
+    \begin{tabular}{lccl}
+      \toprule
       \textbf{Algorithm} & \textbf{Complexity} & \textbf{Score} & \textbf{Reference} \\
-      \hline
+      \midrule
       Classical Greedy & $O(nm)$ & 5/5 & \cite{chvatal1979} \\
-      \hline
-      HGS & $O(|T| \cdot \max(|T_i|))$ & 5/5 & \cite{yoo2012} \\
-      \hline
-      Delayed Greedy & $O(n^2m)$\tnote{a} & 3/5 & \cite{tallam2005} \\
-      \hline
+      HGS & $O(|T| \cdot \max(|T_i|))$ & 4/5 & \cite{yoo2012} \\
+      Delayed Greedy & $O(n^2m)$\tnote{a} & 2/5 & \cite{tallam2005} \\
       Enhanced HGS & $O(nm)$ & 5/5 & \cite{gladston2015} \\
-      \hline
       MA-EHGS & $O(nm)$ & 5/5 & This work \\
-      \hline
       ILP-Based & Exponential: $(m\Delta)^{O(m)}$ & 1/5 & \cite{yoo2012} \\
-      \hline
       Genetic Algorithm & $O(gnm)$\tnote{b} & 2/5 & \cite{yoo2012} \\
-      \hline
       Similarity-Based & $O(n^2m)$ with optimisations\tnote{c} & 3/5 & \cite{khan2020} \\
-      \hline
       Overlap-Aware & $O(n^2m)$, <10s empirical\tnote{d} & 4/5 & \cite{bach2017} \\
-      \hline
+      \bottomrule
     \end{tabular}
     \begin{tablenotes}
       \small
-      \item[a] Quadratic in test count; prohibitive for $n > 10{,}000$
+      \item[a] Quadratic in test count; concept lattice construction overhead; prohibitive for $n > 10{,}000$ on performance grounds~\cite{tallam2005}
       \item[b] $g$ = generations; parameter-sensitive, longer than greedy
       \item[c] FAST-R achieves near-linear via random projection~\cite{khan2020}
-      \item[d] <10 seconds on industrial projects~\cite{bach2017}
-      \item For HGS: $|T|$ is test suite size, $\max(|T_i|)$ is largest group cardinality
+      \item[d] <10 seconds on industrial projects with large test suites~\cite{bach2017}
     \end{tablenotes}
   \end{threeparttable}
 \end{table}
 
-\textbf{Result:} Classical Greedy, HGS, Enhanced HGS, and MA-EHGS achieve optimal scalability (5/5) with polynomial complexity. Delayed Greedy's quadratic complexity (3/5) limits large-scale use. ILP is impractical (1/5) with exponential runtime.
+\textbf{Result:} Classical Greedy, Enhanced HGS, and MA-EHGS achieve optimal scalability (5/5) with polynomial complexity. HGS achieves strong scalability (4/5) with theoretical complexity depending on cardinality distribution. Delayed Greedy's quadratic complexity (2/5) limits large-scale use. ILP is impractical (1/5) with exponential runtime. Overlap-Aware methods scale well in practice (4/5).
 
-\subsection{C7: Implementation Feasibility}
+\subsection{C6: Implementation Feasibility}
 
 Implementation feasibility assesses algorithmic complexity, parameter sensitivity, required infrastructure, and maintainability.
 
 \begin{table}[H]
   \centering
-  \caption{C7: Implementation Feasibility --- development and maintenance complexity.}
-  \label{tab:c7-feasibility}
+  \small
+    \caption{C6: Implementation Feasibility --- practical integration and maintenance costs.}
+  \label{tab:c6-feasibility}
   \begin{threeparttable}
-    \begin{tabular}{|l|c|c|l|}
-      \hline
+    \begin{tabular}{lccl}
+      \toprule
       \textbf{Algorithm} & \textbf{Characteristics} & \textbf{Score} & \textbf{Notes} \\
-      \hline
+      \midrule
       Classical Greedy & Simple iteration, no parameters & 5/5 & Straightforward implementation \\
-      \hline
       HGS & Cardinality sorting required & 4/5 & Moderate additional complexity \\
-      \hline
-      Delayed Greedy & Concept lattice construction & 3/5 & Complex data structures~\cite{tallam2005} \\
-      \hline
+      Delayed Greedy & Concept lattice construction & 2/5 & Complex data structures~\cite{tallam2005} \\
       Enhanced HGS & Two-phase matrix operations & 4/5 & Moderate complexity~\cite{gladston2015} \\
-      \hline
       MA-EHGS & + One parameter ($\beta$) & 4/5 & Straightforward extension \\
-      \hline
-      ILP-Based & Requires solver integration & 2/5 & Complex solver dependencies \\
-      \hline
+      ILP-Based & Requires solver integration & 1/5 & Complex solver dependencies \\
       Genetic Algorithm & Multi-parameter tuning & 2/5 & Non-deterministic, tuning required \\
-      \hline
       Similarity-Based & Clustering infrastructure & 3/5 & Moderate complexity \\
-      \hline
       Overlap-Aware & Penalty computation & 4/5 & Straightforward, documented~\cite{bach2017} \\
-      \hline
+      \bottomrule
     \end{tabular}
-
   \end{threeparttable}
 \end{table}
 
-\textbf{Result:} Classical Greedy is simplest (5/5). MA-EHGS achieves strong feasibility (4/5) with minimal parameterisation ($\beta$ only). Complex approaches (Delayed Greedy, ILP, GA) score lower (2--3/5) due to infrastructure or tuning requirements.
+\textbf{Result:} Classical Greedy is simplest (5/5). MA-EHGS achieves strong feasibility (4/5) with minimal parameterisation ($\beta$ only). Complex approaches (Delayed Greedy, ILP, GA) score lower (1--2/5) due to infrastructure or tuning requirements.
 
 \section{Multi-Criteria Scoring and Selection}
 
@@ -304,30 +218,29 @@ Table~\ref{tab:scoring-final} aggregates criterion-specific scores to identify t
 
 \begin{table}[H]
   \centering
+  \small
   \caption{Multi-criteria evaluation: aggregated scores demonstrating MA-EHGS optimality.}
   \label{tab:scoring-final}
   \begin{threeparttable}
-    \begin{adjustbox}{max width=\textwidth}
-  \begin{tabular}{|l|c|c|c|c|c|c|c|c|}
-    \hline
-    \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{C7} & \textbf{Total} \\
-    & \textbf{SRM} & \textbf{Coverage} & \textbf{Reduction} & \textbf{Fault Det.} & \textbf{Mutation} & \textbf{Scalability} & \textbf{Feasibility} & \\
-    \hline
-    Classical Greedy & \checkmark & 5/5 & 4/5 & 2/5 & 1/5 & 5/5 & 5/5 & 22/30 \\
-    HGS & \checkmark & 5/5 & 4/5 & 3/5 & 3/5 & 5/5 & 4/5 & 24/30 \\
-    Delayed Greedy & \checkmark & 5/5 & 4/5 & 5/5 & 5/5 & 3/5 & 3/5 & \textbf{25/30} \\
-    Enhanced HGS & \checkmark & 5/5 & 4/5 & 4/5 & 0/5 & 5/5 & 4/5 & 22/30 \\
-    \textbf{MA-EHGS} & \checkmark & \textbf{5/5} & \textbf{4/5} & \textbf{4/5} & \textbf{4/5} & \textbf{5/5} & \textbf{4/5} & \textbf{26/30} \\
-    \hline
-    ILP-Based & \checkmark & 5/5 & 5/5 & 0/5 & 0/5 & 1/5 & 2/5 & 13/30 \\
-    Genetic Algorithm & \checkmark & 1/5 & 3/5 & 0/5 & 0/5 & 2/5 & 2/5 & 8/30 \\
-    Similarity-Based & \checkmark & 1/5 & 2/5 & 0/5 & 0/5 & 3/5 & 3/5 & 9/30 \\
-    Overlap-Aware & \checkmark & 2/5 & 2/5 & 0/5 & 0/5 & 4/5 & 4/5 & 12/30 \\
-    \hline
-    REDUNET & $\times$ & --- & --- & --- & --- & --- & --- & 0/30 \\
-    \hline
+  \begin{tabular}{lcccccccc}
+    \toprule
+    \textbf{Algorithm} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
+    & SRM & Coverage & Reduction & Mutation & Scalability & Feasibility & \\
+    \midrule
+    Classical Greedy & \checkmark & 5/5 & 4/5 & 3/5 & 5/5 & 5/5 & 22/25 \\
+    HGS & \checkmark & 5/5 & 4/5 & 3/5 & 4/5 & 4/5 & 20/25 \\
+    Delayed Greedy & \checkmark & 5/5 & 3/5 & 5/5 & 2/5 & 2/5 & 17/25 \\
+    Enhanced HGS & \checkmark & 5/5 & 4/5 & 0/5 & 5/5 & 4/5 & 18/25 \\
+    \textbf{MA-EHGS} & \checkmark & \textbf{5/5} & \textbf{4/5} & \textbf{4/5} & \textbf{5/5} & \textbf{4/5} & \textbf{22/25} \\
+    \midrule
+    ILP-Based & \checkmark & 5/5 & 5/5 & 0/5 & 1/5 & 1/5 & 12/25 \\
+    Genetic Algorithm & \checkmark & 1/5 & 3/5 & 0/5 & 2/5 & 2/5 & 8/25 \\
+    Similarity-Based & \checkmark & 1/5 & 2/5 & 0/5 & 3/5 & 3/5 & 9/25 \\
+    Overlap-Aware & \checkmark & 2/5 & 2/5 & 0/5 & 4/5 & 4/5 & 12/25 \\
+    \midrule
+    REDUNET & $\times$ & --- & --- & --- & --- & --- & 0/25 \\
+    \bottomrule
   \end{tabular}
-  \end{adjustbox}
     \begin{tablenotes}
       \small
       \item All scores are out of 5.
@@ -337,22 +250,22 @@ Table~\ref{tab:scoring-final} aggregates criterion-specific scores to identify t
 
 \section{Selection Decision}
 
-\textbf{Mutation-Aware Enhanced HGS achieves the highest total score (26/30)} and is selected for LASSO integration based on three strategic considerations:
+\textbf{Mutation-Aware Enhanced HGS achieves the highest total score (22/25, tied with Classical Greedy)} and is selected for LASSO integration based on three strategic considerations:
 
 \subsection{Optimal Multi-Criteria Balance}
 
-MA-EHGS excels across all performance dimensions: guaranteed 100\,\% coverage (C2: 5/5), strong reduction effectiveness (C3: 4/5), expected fault-detection retention (C4: 4/5), explicit mutation preservation (C5: 4/5), optimal $O(nm)$ scalability (C6: 5/5), and straightforward implementation (C7: 4/5). The one-point advantage over Delayed Greedy (25/30) reflects superior scalability and feasibility, offsetting Delayed Greedy's stronger empirical mutation evidence.
+MA-EHGS excels across all performance dimensions: guaranteed 100\,\% coverage (C2: 5/5), strong reduction effectiveness (C3: 4/5), explicit mutation preservation (C4: 4/5), optimal $O(nm)$ scalability (C5: 5/5), and straightforward implementation (C6: 4/5). While Classical Greedy also scores 22/25, MA-EHGS's explicit mutation-awareness addresses a documented gap in the literature where coverage-only approaches lose 0--5\,\% mutation capability~\cite{jehan2023}. Delayed Greedy achieves superior empirical mutation preservation (5/5) but suffers from poor scalability (2/5) due to $O(n^2m)$ complexity, making it unsuitable for LASSO's large-scale requirements.
 
 \subsection{Empirically Validated Foundation}
 
-The Enhanced HGS baseline was validated by Gladston and Ganesan~\cite{gladston2015} on Siemens benchmarks, demonstrating smaller suites than HGS and classical greedy while maintaining coverage. This provides confidence in core effectiveness. The mutation-weighting extension ($\beta$-parameter) addresses the documented 3.5--21\,\% mutation loss in coverage-only approaches~\cite{noemmer2020}.
+The Enhanced HGS baseline was validated by Gladston et al.~\cite{gladston2015} on branch coverage requirements, demonstrating smaller suites (73.66\,\% reduction) than HGS (69.01\,\%) and GRE (73.51\,\%). This provides confidence in core effectiveness. The mutation-weighting extension ($\beta$-parameter) directly addresses the documented mutation-detection trade-off, with Jehan 2023 showing that Delayed Greedy achieves zero mutation loss through adequate reduction principles~\cite{jehan2023}.
 
 \subsection{Practical LASSO Advantages}
 
-\textbf{Requirements-Matrix Compatibility:} Enhanced HGS's requirements-matrix formulation~\cite{gladston2015} aligns naturally with LASSO's SRM representation. Structural coverage (JaCoCo) and mutation kills serve as requirements, tests serve as stimuli. Mutants encode as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring full SRM compatibility.
+\textbf{Requirements-Matrix Compatibility:} Enhanced HGS's requirements-matrix formulation~\cite{gladston2015} aligns naturally with LASSO's SRM representation. Structural coverage (JaCoCo) and mutation kills serve as requirements, tests serve as stimuli.
 
-\textbf{Computational Efficiency:} $O(nm)$ complexity enables processing LASSO's large SRMs (1,000+ tests, 500+ requirements) in seconds. This improves upon HGS's $O(|T| \cdot \max(|T_i|))$ overhead~\cite{yoo2012} and dramatically outperforms Delayed Greedy's $O(n^2m)$ quadratic scaling.
+\textbf{Computational Efficiency:} $O(nm)$ complexity enables processing LASSO's large SRMs (1,000+ tests, 500+ requirements) in seconds, dramatically outperforming Delayed Greedy's $O(n^2m)$ quadratic scaling.
 
-\textbf{Parameterised Tuning:} The $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). When $\beta = 0$, the algorithm reproduces the validated baseline; $\beta = 0.7$ provides coverage-dominant configuration; higher values increase mutation emphasis. This design enables systematic comparison against Delayed Greedy using LASSO's SRM corpus.
+\textbf{Parameterised Tuning:} The $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). When $\beta = 0$, the algorithm reproduces the validated baseline; $\beta = 0.7$ provides coverage-dominant configuration; higher values increase mutation emphasis.
 
 MA-EHGS provides a scalable, mutation-aware approach extending an empirically validated baseline, suitable for LASSO's large-scale, language-agnostic analysis requirements.
