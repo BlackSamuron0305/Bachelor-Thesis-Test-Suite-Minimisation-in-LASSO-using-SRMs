@@ -4,7 +4,7 @@
 
 \section{Summary}
 
-This thesis developed an SRM-based test-suite minimisation framework for LASSO by selecting and implementing the Mutation-Aware Enhanced HGS (MA-EHGS) approach. Based on a systematic literature review and evaluation criteria C1--C7, MA-EHGS was identified as the most suitable technique due to its scalability, preservation guarantees, and compatibility with LASSO's behavioural abstraction. Integrated into the analysis pipeline, MA-EHGS combines line, branch, and method coverages with mutation information and achieved reductions of 46.9--55.6\% while preserving 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations. This behaviour follows directly from the HGS selection mechanism. Unit-test validation confirmed correct algorithmic behaviour, with full pipeline evaluation remaining for future work.
+This thesis developed an SRM-based test-suite minimisation framework for LASSO by selecting and implementing the Mutation-Aware Enhanced HGS (MA-EHGS) approach. Based on a systematic literature review and evaluation criteria C1--C6, MA-EHGS was identified as the most suitable technique due to its scalability, preservation guarantees, and compatibility with LASSO's behavioural abstraction. Integrated into the analysis pipeline, MA-EHGS combines line, branch, and method coverages with mutation information and achieved reductions of 46.9--55.6\% while preserving 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations. This behaviour follows directly from the HGS selection mechanism. Unit-test validation confirmed correct algorithmic behaviour, with full pipeline evaluation remaining for future work.
 
 
 \section{Key Contributions}
@@ -29,7 +29,7 @@ Future improvements (detailed in Section~\ref{sec:discussion:future}) include ex
 
 \begin{description}
   \item[RQ1:] Greedy heuristics---especially Enhanced HGS---were identified as the most effective and practical techniques in current literature.
-  \item[RQ2:] Evaluation criteria C1--C7 were defined to capture reduction, preservation, scalability, and SRM compatibility.
+  \item[RQ2:] Evaluation criteria C1--C6 were defined to capture reduction, preservation, scalability, and SRM compatibility.
   \item[RQ3:] MA-EHGS emerged as the best trade-off across these criteria while preserving LASSO's language independence.
   \item[RQ4:] Integration was achieved via a requirements-matrix extension that incorporates mutation information without altering LASSO's SRM abstraction.
 \end{description}

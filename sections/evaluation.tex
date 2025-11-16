@@ -1,8 +1,8 @@
 \chapter{Evaluation Criteria and Scoring Framework}\label{chap:evaluation}
 
-Building upon the fundamentals established in the previous chapter, this chapter defines seven evaluation criteria (C1--C7)---one mandatory precondition and six performance dimensions---together with a scoring model for systematic algorithm comparison. These criteria operationalise the research questions and provide the foundation for evaluating different minimisation algorithms in the next chapter.
+Building upon the fundamentals established in the previous chapter, this chapter defines six evaluation criteria (C1--C6)---one mandatory precondition and five performance dimensions---together with a scoring model for systematic algorithm comparison. These criteria operationalise the research questions and provide the foundation for evaluating different minimisation algorithms in the next chapter.
 
-\section{Evaluation Criteria (C1--C7)}
+\section{Evaluation Criteria (C1--C6)}
 
 \subsection{Mandatory Precondition}
 
@@ -24,19 +24,15 @@ Building upon the fundamentals established in the previous chapter, this chapter
   Quantifies the proportion of test cases eliminated while preserving required coverage~\cite{yoo2012}. 
   A high reduction rate reflects strong elimination of redundant tests and tangible computational savings.
 
-  \item[\textbf{C4: Fault Detection Retention}] 
-  Evaluates whether the minimised suite preserves the ability to reveal real software defects. 
-  Since redundancy with respect to coverage does not imply redundancy with respect to faults~\cite{just2014}, this criterion measures the proportion of defect-revealing tests retained.
-
-  \item[\textbf{C5: Mutation-Coverage Preservation}] 
+  \item[\textbf{C4: Mutation-Coverage Preservation}] 
   Assesses fault-detection capability via mutation testing~\cite{jehan2023,noemmer2020}. 
   The mutation score---ratio of killed mutants to total mutants---acts as a fault-based adequacy metric complementing structural coverage.
 
-  \item[\textbf{C6: Computational Scalability}] 
+  \item[\textbf{C5: Computational Scalability}] 
   Examines algorithm performance on large SRMs as the number of tests and requirements increases. 
   Methods with near-linear complexity and efficient runtime behaviour are favoured~\cite{Kessel2022,bach2017}.
 
-  \item[\textbf{C7: Implementation Feasibility}] 
+  \item[\textbf{C6: Implementation Feasibility}] 
   Considers practical integration factors such as implementation effort, parameter tuning, dependency overhead, and compatibility with LASSO’s architecture~\cite{yoo2012}. 
   Algorithms imposing heavy maintenance or configuration costs are penalised.
 \end{description}
@@ -44,35 +40,36 @@ Building upon the fundamentals established in the previous chapter, this chapter
 \subsection{Justification of Criteria}
 \label{sec:criteria-justification}
 
-The seven criteria align directly with the research questions from Section~\ref{sec:rq}, ensuring coherence between theoretical goals and empirical assessment.
+The six criteria align directly with the research questions from Section~\ref{sec:rq}, ensuring coherence between theoretical goals and empirical assessment.
 
 \textbf{C1 (SRM Compatibility)} is mandatory because LASSO operates entirely on SRM abstractions~\cite{Kessel2022}. 
 Language independence requires that algorithms process abstract requirement matrices rather than language-specific artefacts.
 
-\textbf{C2--C5 (Quality Preservation)} address adequacy and fault detection. 
-\textbf{C2} ensures structural completeness; \textbf{C3} quantifies the degree of reduction; \textbf{C4} safeguards against loss of fault-revealing tests as observed in Defects4J benchmarks~\cite{just2014}; and \textbf{C5} measures mutation-score retention, a strong empirical proxy for test effectiveness~\cite{jehan2023}. 
+\textbf{C2--C4 (Quality Preservation)} address adequacy and fault detection. 
+\textbf{C2} ensures structural completeness (coverage retention); \textbf{C3} quantifies the degree of reduction; and \textbf{C4} measures mutation-score retention, a strong empirical proxy for test effectiveness and fault detection capability~\cite{jehan2023}. 
+Together, C2 and C4 provide comprehensive assurance that the minimised test suite maintains both structural coverage and fault-revealing capability. 
 
-\textbf{C6 (Computational Scalability)} ensures the algorithm remains feasible for large-scale use cases where SRMs may contain thousands of rows and columns~\cite{Kessel2022,bach2017}. 
+\textbf{C5 (Computational Scalability)} ensures the algorithm remains feasible for large-scale use cases where SRMs may contain thousands of rows and columns~\cite{Kessel2022,bach2017}. 
 
-\textbf{C7 (Implementation Feasibility)} recognises the cost of practical adoption. 
+\textbf{C6 (Implementation Feasibility)} recognises the cost of practical adoption. 
 Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline~\cite{yoo2012}.
 
 \section{Scoring Model}
 
 Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalised score on criterion $C_i$. 
-Let $w_i \ge 0$ denote the relative weight for criterion $C_i$, with $\sum_{i=2}^{7} w_i = 1$. 
+Let $w_i \ge 0$ denote the relative weight for criterion $C_i$, with $\sum_{i=2}^{6} w_i = 1$. 
 The total score is defined as:
 \begin{equation}
   \text{Score}(A) =
   \begin{cases}
     0, & \text{if } s_1(A) = 0 \text{ (fails C1)}, \\[3pt]
-    \displaystyle\sum_{i=2}^{7} w_i \cdot s_i(A), & \text{otherwise.}
+    \displaystyle\sum_{i=2}^{6} w_i \cdot s_i(A), & \text{otherwise.}
   \end{cases}
 \end{equation}
 
 \subsection{Rank-Based Point Assignment}
 
 Scores $s_i(A)$ for each criterion $C_i$ are derived through rank-based evaluation, following standard regression-testing methodology~\cite{yoo2012}. 
-For each performance criterion ($i \in \{2,\ldots,7\}$), algorithms are ranked by performance; the top-ranked algorithm receives the highest score, and tied algorithms share the same rank. 
+For each performance criterion ($i \in \{2,\ldots,6\}$), algorithms are ranked by performance; the top-ranked algorithm receives the highest score, and tied algorithms share the same rank. 
 Subsequent ranks are offset accordingly (e.g., a tie for first shifts the next rank to third). 
 This ensures equitable treatment of equivalent performers while maintaining meaningful differentiation across criteria.

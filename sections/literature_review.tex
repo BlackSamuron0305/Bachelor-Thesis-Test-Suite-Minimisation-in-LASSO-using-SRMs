@@ -8,23 +8,23 @@ Greedy heuristics iteratively select tests covering the most uncovered requireme
 
 \subsection{Classical Greedy}
 
-Classical greedy iteratively selects tests covering the most uncovered requirements~\cite{chvatal1979,yoo2012}, achieving $O(nm)$ complexity with $O(\ln m)$ approximation ratio. Empirical studies show 60--93\,\% reduction (median 70\,\%) maintaining 100\,\% structural coverage, but mutation scores drop 3.5--21\,\%~\cite{noemmer2020, jehan2023}.
+Classical greedy iteratively selects tests covering the most uncovered requirements~\cite{chvatal1979,yoo2012}, achieving $O(nm)$ complexity with $O(\ln m)$ approximation ratio. Empirical studies on JavaScript applications show 70\% reduction (median) maintaining 100\% structural coverage with zero to minimal fault-detection loss for adequate reduction~\cite{jehan2023}. When allowing inadequate reduction, mutation scores may drop up to 21\%~\cite{jehan2023}.
 
 \subsection{Harrold--Gupta--Soffa}
 
-HGS prioritises requirements by rarity~\cite{harrold1993}, operating in phases by cardinality with runtime complexity of $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the original test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. HGS produces suites 0.37--2.92\,\% smaller than classical greedy with mutation differences (0.09--4.88\,\%) statistically insignificant ($p \gg 0.05$)~\cite{noemmer2020}.
+HGS prioritises requirements by rarity~\cite{harrold1993}, operating in phases by cardinality with runtime complexity of $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the original test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. HGS produces suites comparable in size to classical greedy with statistically similar fault-detection capability ($p \gg 0.05$)~\cite{yoo2012}.
 
 \subsection{Delayed Greedy}
 
-Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate redundancies before greedy selection. It produces suites equal to or smaller than classical greedy in 75\,\% of cases~\cite{tallam2005,yoo2012}, achieving 65--74\,\% reduction while maintaining mutation scores~\cite{jehan2023}. Polynomial complexity, though exact bound unstated~\cite{tallam2005}.
+Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate redundancies before greedy selection. It produces suites equal to or smaller than classical greedy in empirical evaluation~\cite{tallam2005,yoo2012}, achieving approximately 65\% reduction~\cite{jehan2023} while maintaining fault-detection capability. Polynomial complexity, though exact bound unstated~\cite{tallam2005}.
 
 \subsection{Enhanced HGS}
 
-Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation on Siemens benchmarks demonstrated smaller suites than HGS and classical greedy while maintaining coverage~\cite{gladston2015}.
+Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation demonstrated that Enhanced HGS produces smaller suites (73.66\% average reduction) than both HGS (69.01\%) and classical greedy algorithms while maintaining coverage~\cite{gladston2015}.
 
 \subsection{Mutation-Aware Enhanced HGS}
 
-Mutation-Aware Enhanced HGS (MA-EHGS) extends the Enhanced HGS baseline by integrating mutation testing into the selection process. This algorithm represents the contribution of this thesis, addressing the documented coverage-mutation trade-off where coverage-only minimisation loses 3.5--21\,\% mutation score~\cite{noemmer2020}.
+Mutation-Aware Enhanced HGS (MA-EHGS) extends the Enhanced HGS baseline by integrating mutation testing into the selection process. This algorithm represents the contribution of this thesis, addressing the documented coverage-mutation trade-off where coverage-only minimisation may lose 0--21\% mutation score depending on adequacy constraints~\cite{jehan2023}.
 
 \subsubsection{Requirements-Matrix Formulation}
 
@@ -42,12 +42,11 @@ where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_
 
 \subsubsection{Complexity and Performance}
 
-MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The original HGS has runtime complexity $O(|T| \cdot \max(|T_i|))$~\cite{yoo2012}, where $|T|$ is the size of the test suite and $\max(|T_i|)$ represents the cardinality of the largest group of test cases. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
+MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
 
 %================================================================================================================
 
 \section{Exact Optimisation Approaches}
-
 
 Exact approaches formulate test suite minimisation as integer linear programming (ILP), SAT, or constraint satisfaction problems~\cite{yoo2012,khan2020,rothermel2002,harrold1993}. These formulations guarantee optimality, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
 
@@ -55,13 +54,11 @@ Exact approaches formulate test suite minimisation as integer linear programming
 
 ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,rothermel2002}. SAT and CSP-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances.
 
-REDUNET~\cite{mongiovi2020} achieves $>3\times$ speedup via hybrid control-flow graph (CFG) network optimisation, as demonstrated experimentally (see Table~2 in~\cite{mongiovi2020}), with up to $90\%$ reduction in suite size. However, because REDUNET relies on control-flow graph structural analysis to track coverage and redundancy, it cannot operate purely on SRM (matrix) abstractions—limiting integration in SRM-only architectures.
-
+REDUNET~\cite{mongiovi2020} achieves speedup via hybrid control-flow graph (CFG) network optimisation with substantial suite size reduction. However, because REDUNET relies on control-flow graph structural analysis to track coverage and redundancy, it cannot operate purely on SRM (matrix) abstractions—limiting integration in SRM-only architectures.
 
 %===================================================
 
 \section{Search-Based and Metaheuristic Approaches}
-
 
 Search-based methods formulate test suite minimisation as multi-objective optimisation problems~\cite{yoo2012,khan2020}, offering flexibility but requiring extensive parameter tuning and incurring higher computational overhead than greedy heuristics~\cite{yoo2012}.
 
@@ -71,18 +68,15 @@ Genetic Algorithms (GAs) and other metaheuristics are widely applied to test sui
 
 %===================================================
 
-
 \section{Data-Driven and Similarity-Based Approaches}
-
 
 Data-driven and coverage-aware methods exploit coverage overlap and similarity patterns to identify redundancies~\cite{bach2017,yoo2012,khan2020}, operating directly on coverage without requiring program structure.
 
 \subsection{Overlap-Aware Methods}
 
-Overlap-aware algorithms penalise tests duplicating existing coverage with \(O(n^2m)\) complexity. Bach et al.\ achieved 50\% higher coverage within fixed time budgets versus classical greedy, completing under 10~seconds~\cite{bach2017}.
+Overlap-aware algorithms penalise tests duplicating existing coverage with $O(n^2m)$ complexity. Bach et al.\ demonstrated that overlap-aware methods achieve 50\% higher code coverage within fixed time budgets versus classical greedy, completing under 10 seconds~\cite{bach2017}.
 
 Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
-
 
 \begin{table}[htbp]
   \centering
@@ -118,17 +112,16 @@ Table~\ref{tab:literature-complexity} summarises the computational complexity of
   \end{threeparttable}
 \end{table}
 
-
 \section{Summary}
 
 The literature yields five concise findings for SRM-based minimisation.
 
-	extbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{noemmer2020,yoo2012}; Enhanced HGS gives only marginal size gains while preserving mutation behaviour.
+\textbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{yoo2012,jehan2023}; Enhanced HGS gives measurable size gains while preserving fault-detection capability.
 
-	extbf{Coverage–mutation gap.} Coverage-only reduction frequently reduces mutant detection (3.5--21\% loss) despite preserving structural coverage~\cite{noemmer2020,jehan2023}, showing that structural redundancy does not imply semantic redundancy and motivating mutation-aware selection.
+\textbf{Coverage--mutation gap.} Coverage-only reduction may lose 0--21\% mutation capability depending on adequacy constraints~\cite{jehan2023}, with zero loss achievable for adequate reduction (100\% coverage retention). This demonstrates that structural redundancy does not imply semantic redundancy, motivating mutation-aware selection.
 
-	extbf{Exact methods vs.\ scalability.} ILP/SAT formulations guarantee optimality (set-cover) but face exponential worst-case complexity~\cite{garey1979,yoo2012}; REDUNET improves practical speed using CFG analysis but cannot operate on SRM-only inputs~\cite{mongiovi2020}.
+\textbf{Exact methods vs.\ scalability.} ILP/SAT formulations guarantee optimality (set-cover) but face exponential worst-case complexity~\cite{garey1979,yoo2012}; REDUNET improves practical speed using CFG analysis but cannot operate on SRM-only inputs~\cite{mongiovi2020}.
 
-	extbf{Overlap-aware/data-driven gains.} Overlap-aware and similarity-based approaches deliver practical scalability and improved empirical quality (e.g., ~50\% coverage gains under time budgets) while trading runtime and tuning complexity~\cite{bach2017,khan2020}.
+\textbf{Overlap-aware/data-driven gains.} Overlap-aware and similarity-based approaches deliver practical scalability and improved empirical quality (e.g., ~50\% coverage gains under time budgets)~\cite{bach2017,khan2020}.
 
-	extbf{Empirical gap in mutation evaluation.} Systematic mutation-preservation studies are scarce~\cite{jehan2023,noemmer2020}. This gap motivates MA-EHGS: integrate mutation information into greedy scoring to retain fault-detection while keeping polynomial complexity.
+\textbf{Empirical gap in mutation evaluation.} Systematic mutation-preservation studies are scarce~\cite{jehan2023,yoo2012}. This gap motivates MA-EHGS: integrate mutation information into greedy scoring to retain fault-detection while keeping polynomial complexity.

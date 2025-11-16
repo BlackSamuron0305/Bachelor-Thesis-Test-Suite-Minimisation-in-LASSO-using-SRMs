@@ -1,48 +1,46 @@
 \chapter{Introduction}
 
-Software testing ensures that program modifications do not introduce defects. As systems evolve, test suites expand, increasing execution cost and maintenance effort. Suites often combine human-written, automatically generated, and, increasingly, AI-generated tests. Tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} can generate thousands of cases, and in large projects, execution may require days or weeks~\cite{rothermel1998}. While comprehensive suites achieve high coverage and mutation scores, they frequently contain redundant tests whose requirements are subsumed by others, causing prolonged execution, higher costs, and elevated maintenance overhead.
+Software testing ensures that program modifications do not introduce defects. As systems evolve, test suites grow and increase execution cost and maintenance effort. Modern suites often combine human-written, automatically generated, and AI-generated tests; tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} can produce thousands of tests, and large industrial suites may require days or weeks to execute~\cite{rothermel1998}. Although such suites achieve high coverage and mutation scores, they frequently contain redundant tests whose requirements are subsumed by others, resulting in prolonged execution, increased costs, and elevated maintenance overhead.
 
-\emph{Test-suite minimisation} systematically removes redundant tests while preserving fault-detection capability~\cite{yoo2012}. Techniques can be broadly divided into \emph{coverage-preserving} approaches, which guarantee that all coverage requirements remain satisfied, and \emph{coverage-relaxing} approaches, which permit limited coverage loss in exchange for stronger reduction. Minimisation can greatly decrease computational demand and feedback latency, but excessive reduction—especially in coverage-relaxing strategies—risks removing tests with unique defect-revealing potential. Effective minimisation therefore requires a careful balance between reduction efficiency and fault-detection retention.
+\emph{Test-suite minimisation} addresses this issue by systematically removing redundant tests while preserving fault-detection capability~\cite{yoo2012}. Techniques range from \emph{coverage-preserving} approaches, which maintain all coverage requirements, to \emph{coverage-relaxing} approaches, which accept limited coverage loss for stronger reduction. While minimisation can significantly reduce computational demand and feedback latency, overly aggressive reduction risks discarding tests with unique defect-revealing behaviour. Effective minimisation therefore requires balancing reduction efficiency with fault-detection retention.
 
 \section{Background and Motivation}
 
-Testing remains a major cost driver in software engineering. Studies estimate that verification and validation account for up to half of total development effort~\cite{boehm1984}. Although these figures originate from traditional development models, the cost pressure persists in modern continuous integration, where automated or AI-generated suites may contain tens of thousands of tests~\cite{rothermel1998,bach2017}. Executing all tests after each modification is often infeasible, motivating scalable approaches that reduce suite size without compromising quality. Test-suite minimisation addresses this challenge by identifying and removing redundant tests while retaining those essential for coverage and fault detection. As an optimisation problem, it is NP-hard~\cite{yoo2012} and therefore typically solved through heuristics or approximation algorithms, which are further analysed in Chapter~\ref{chap:fundamentals}.
+Testing remains a major cost driver in software engineering; classical studies estimate that verification and validation account for up to half of total development effort~\cite{boehm1984}. The cost pressure persists in modern continuous-integration environments, where automated or AI-generated suites may contain tens of thousands of tests~\cite{rothermel1998,bach2017}. Executing all tests after each change is often infeasible, motivating techniques that reduce suite size while retaining quality. Test suite minimisation has been exploring this issue for decades, with numerous algorithms proposed to identify and eliminate redundant tests~\cite{yoo2012}, by leveraging coverage and quite recently mutation information as a proxy for fault-detection capability~\cite{jehan2023}. Details on coverage and mutation testing are provided in Chapter~\ref{chap:fundamentals}. 
+
 
 \section{LASSO Context}
 
-The \emph{Large-Scale Software Observatorium} (LASSO)~\cite{Kessel2022} is a research platform developed by the Chair of Software Engineering at the University of Mannheim. It provides an environment for the scalable analysis and observation of large software corpora, commonly referred to as \emph{Big Code}. LASSO automates the collection and analysis of both static information (e.g., source code properties) and dynamic information (e.g., run-time execution behaviour) from extensive sets of executable open-source systems. Its domain-specific scripting language, the \emph{LASSO Scripting Language} (LSL), enables researchers to define reproducible pipelines for tasks such as code search, automated unit-test generation, and large-scale \emph{Test-Driven Software Experiments} (TDSEs). These capabilities make LASSO a central infrastructure for empirical software engineering and for evaluating emerging technologies, including Generative AI for code.
+The \emph{Large-Scale Software Observatorium} (LASSO)~\cite{Kessel2022} is a research platform for scalable analysis of large software corpora (\emph{Big Code}). LASSO automates the extraction of static properties and dynamic execution behaviour from open-source systems and enables reproducible pipelines through the \emph{LASSO Scripting Language} (LSL). This makes it a central infrastructure for empirical software engineering and for evaluating emerging techniques such as AI-assisted code generation.
 
-LASSO employs \emph{Stimulus–Response Matrices} (SRMs)~\cite{Kessel2022} as a unified representation for systematic comparison. An SRM is a two-dimensional matrix in which rows denote test stimuli, columns denote systems, and cells contain structured response objects that capture execution outcomes. From this representation, coverage metrics, mutation scores, and behavioural characteristics can be systematically extracted and analysed, enabling language-independent comparison of functionally equivalent implementations. Section~\ref{sec:srm} provides detailed SRM definitions and explains coverage and mutation data extraction.
+LASSO represents system behaviour through \emph{Stimulus--Response Matrices} (SRMs)~\cite{Kessel2022}, where rows denote test stimuli, columns denote systems, and cells contain structured response objects. SRMs allow language-independent extraction of coverage metrics, mutation scores, and behavioural characteristics, enabling systematic comparison of functionally equivalent implementations. Section~\ref{sec:srm} provides formal definitions.
 
-While LASSO enables comprehensive behavioural and coverage analysis, it currently lacks an integrated mechanism for test-suite minimisation. This absence can lead to redundant test executions that accumulate significant computational overhead when scaled across the platform’s extensive corpus. Incorporating minimisation within LASSO would help mitigate such redundancy while maintaining the behavioural coverage required for reliable system analysis.
-
+Despite supporting large-scale behavioural and coverage analysis, LASSO currently lacks integrated test-suite minimisation. Redundant test executions accumulate significant computational overhead across the platform. Integrating minimisation would reduce this overhead while preserving the behavioural coverage required for reliable system analysis.
 
 \section{Research Objectives and Questions}
 \label{sec:rq}
 
-This thesis investigates the integration of test-suite minimisation within the LASSO framework. Specifically, it aims to design, evaluate, and implement an SRM-based minimisation approach that maintains language independence and scalability. The following research questions guide the study:
+This thesis investigates how test-suite minimisation can be integrated into LASSO using its SRM abstraction. The study is guided by:
 \begin{enumerate}
-  \item \textbf{RQ1:} Which test-suite minimisation techniques demonstrate the highest effectiveness and practical applicability according to current literature?
-  \item \textbf{RQ2:} What evaluation criteria are most appropriate for assessing minimisation techniques within LASSO's SRM-based environment?
-  \item \textbf{RQ3:} Which algorithmic approach best balances reduction effectiveness, coverage preservation, and computational scalability for integration with LASSO?
-  \item \textbf{RQ4:} How can the selected approach be integrated into LASSO's analysis pipeline while maintaining language independence?
+  \item \textbf{RQ1:} Which minimisation techniques demonstrate the highest practical effectiveness in the literature?
+  \item \textbf{RQ2:} Which evaluation criteria best suit minimisation within LASSO's SRM-based environment?
+  \item \textbf{RQ3:} Which approach best balances reduction effectiveness, coverage preservation, mutation preservation and scalability?
+  \item \textbf{RQ4:} How can the selected approach be integrated into LASSO while maintaining language independence?
 \end{enumerate}
 
 \section{Implementation Strategy}
 
-This thesis implements minimisation directly on LASSO's SRM abstraction rather than integrating external tools. Existing frameworks (OpenClover, PIT) support limited languages and require source code access or language-specific instrumentation, conflicting with LASSO's language-independent design.
-
-SRMs already encapsulate all information necessary for behavioural minimisation: test identifiers, execution results, coverage metrics, and mutation data. Operating exclusively on this structure maintains language independence, ensures scalability by processing compact SRM representations instead of source artefacts, and promotes architectural cohesion through seamless integration with LASSO's analysis pipeline.
+This thesis performs minimisation directly on SRMs rather than relying on external tools, which typically require source-code access or language-specific instrumentation. SRMs already encapsulate all data required for behavioural minimisation---test identifiers, execution results, coverage information, and mutation data---allowing language-independent and scalable processing while ensuring seamless integration into LASSO's analysis pipeline.
 
 \section{Thesis Structure}
 
 The remainder of this thesis is organised as follows:
 \begin{description}
   \item[Chapter~2] introduces coverage, mutation testing, SRMs, and formally defines the minimisation problem.
-  \item[Chapter~3] reviews related work across greedy, exact, search-based, and data-driven techniques.
-  \item[Chapter~4] defines evaluation criteria (C1--C7) and presents the scoring framework for algorithm comparison under SRM constraints.
-  \item[Chapter~5] applies the framework to rank algorithms and justify the selection of the Mutation-Aware Enhanced HGS approach.
-  \item[Chapter~6] details the implementation and integration into LASSO.
+  \item[Chapter~3] surveys greedy, exact, search-based, and data-driven minimisation techniques.
+  \item[Chapter~4] defines evaluation criteria (C1--C6) and the scoring framework.
+  \item[Chapter~5] applies the framework to select the Mutation-Aware Enhanced HGS approach.
+  \item[Chapter~6] describes the implementation and integration into LASSO.
   \item[Chapter~7] discusses limitations, trade-offs, and deployment considerations.
   \item[Chapter~8] concludes and outlines future work.
 \end{description}
