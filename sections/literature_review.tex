@@ -1,4 +1,4 @@
-\chapter{Minimisation Algorithms}\label{chap:literature-review}
+\chapter{Literature Review}\label{chap:literature-review}
 
 This chapter surveys test-suite minimisation algorithms across four categories: greedy heuristics, exact optimisation, search-based approaches, and data-driven techniques.
 
@@ -40,23 +40,23 @@ MA-EHGS operates on a requirements matrix $M \in \{0,1\}^{n \times m}$ where row
 
 \textbf{Phase 2: Weighted Greedy Selection.} After removing essential tests, the algorithm iteratively selects tests maximising a weighted score combining structural coverage and mutation kills:
 \begin{equation}
-\text{score}(t_i) = |\text{newCoverage}_i| + \beta \times |\text{newMutants}_i|
+\text{score}(t_i) = \alpha \times |\text{newCoverage}_i| + \beta \times |\text{newMutants}_i|
 \end{equation}
-where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_i$ would satisfy, $|\text{newMutants}_i|$ counts unkilled mutants that $t_i$ would kill, and $\beta \in [0, \infty)$ controls mutation emphasis. The default $\beta = 0.7$ provides coverage-dominant weighting where structural coverage remains primary but mutation coverage provides discriminatory power. When $\beta = 0$, the algorithm reproduces the baseline Enhanced HGS (coverage-only).
+where $|\text{newCoverage}_i|$ counts uncovered structural requirements that $t_i$ would satisfy, $|\text{newMutants}_i|$ counts unkilled mutants that $t_i$ would kill, $\alpha \in [0, 1]$ controls coverage emphasis (default $0.3$), and $\beta \in [0, 1]$ controls mutation emphasis (default $0.7$). This weighting provides coverage-mutation balance where structural coverage provides the foundation but mutation coverage adds discriminatory power. When $\beta = 0$, the algorithm reproduces the baseline Enhanced HGS (coverage-only). When $\alpha = 0$, it becomes pure mutation-based.
 
 \subsubsection{Complexity and Performance}
 
-MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, while the $\beta$-parameter permits tuning the coverage-mutation balance via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). An unused parameter $\alpha = 0.3$ is reserved for future extensions (e.g., test execution cost weighting).
+MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching classical greedy. The mutation extension adds no asymptotic overhead: mutants are simply treated as additional requirements in the matrix. The empirically validated baseline~\cite{gladston2015} provides confidence in effectiveness, which by adding the mutation dimension does not alter. 
 
 %================================================================================================================
 
 \section{Exact Optimisation Approaches}
 
-Exact approaches formulate test suite minimisation as integer linear programming (ILP), SAT, or constraint satisfaction problems~\cite{yoo2012,khan2020,rothermel2002,harrold1993}. These formulations guarantee optimality for linear problem formulations, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
+Exact approaches formulate test suite minimisation as integer linear programming (ILP), Boolean satisfiability (SAT), or constraint satisfaction problems~\cite{yoo2012,khan2020,elbaum2002,harrold1993}. These formulations guarantee optimality for linear problem formulations, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
 
 \subsection{ILP, SAT, and Set Cover Problem Formulations}
 
-Traditional linear ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,rothermel2002}. SAT and CSP-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances. Nishino et al.~\cite{nishino2020} explore set cover problem (SCP) encoding approaches for interaction-based test suite minimization, demonstrating alternative formulations for specific domains such as combinatorial t-way testing.
+Traditional linear ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,elbaum2002}. SAT and constraint satisfaction problem (CSP)-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances. Nishino et al.~\cite{nishino2020} explore set cover problem (SCP) encoding approaches for interaction-based test suite minimization, demonstrating alternative formulations for specific domains such as combinatorial t-way testing.
 
 However, Lin et al.~\cite{lin2018} demonstrate that test-suite minimisation is inherently nonlinear due to interdependencies among test cases. Their NEMO framework formulates multi-criteria minimisation as integer nonlinear programming (NFLS), achieving superior solutions (up to 164\% improvement in fault detection over linear ILP) by properly accounting for test-case dependencies~\cite{lin2018}.
 
@@ -95,7 +95,7 @@ Similarity-based algorithms penalise tests duplicating existing coverage. These 
 
 The literature yields five concise findings for SRM-based minimisation.
 
-\textbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{yoo2012,jehan2023}; Enhanced HGS gives measurable size gains while preserving fault-detection capability.
+\textbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{yoo2012,jehan2023}. Enhanced HGS gives measurable size gains while preserving fault-detection capability.
 
 \textbf{Coverage--mutation gap.} Coverage-only reduction may lose 0--21\% mutation capability depending on adequacy constraints~\cite{jehan2023}, with zero loss achievable for adequate reduction (100\% coverage retention). Wei et al.~\cite{wei2017} demonstrate that integrating mutation score as an explicit optimisation objective in many-objective evolutionary algorithms significantly improves both test cost reduction and fault-detection capability. This demonstrates that structural redundancy does not imply semantic redundancy, motivating mutation-aware selection.
 

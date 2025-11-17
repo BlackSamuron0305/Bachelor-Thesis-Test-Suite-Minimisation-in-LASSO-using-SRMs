@@ -318,7 +318,7 @@ MA-EHGS excels across all dimensions:
   
   \item[Many-Objective EA+Mutation (17/25)] Provides excellent mutation preservation (5/5) but suffers from poor scalability (C5: 2/5) and extensive parameter tuning (C6: 2/5). Wei et al.~\cite{wei2017} demonstrate mutation-aware capability but at significantly higher computational cost than greedy approaches. Generation-based metaheuristics with $O(gnm)$ complexity are prohibitive for interactive minimisation~\cite{yoo2012}.
   
-  \item[Enhanced HGS (18/25)] Achieves strong coverage and scalability but lacks any mutation evaluation (C4: 0/5). Enhanced HGS is the empirically validated baseline; MA-EHGS extends it with explicit mutation weighting while preserving all coverage and scalability advantages~\cite{gladston2015}.
+  \item[Enhanced HGS (18/25)] Achieves strong coverage and scalability but lacks any mutation evaluation (C4: 0/5). Enhanced HGS is the empirically validated baseline. MA-EHGS extends it with explicit mutation weighting while preserving all coverage and scalability advantages~\cite{gladston2015}.
   
   \item[Classical Greedy (22/25)] Near-tie score but lacks mutation-awareness. Does not address the documented coverage-mutation gap identified by Jehan et al.~\cite{jehan2023}.
 \end{description}
@@ -330,7 +330,7 @@ MA-EHGS excels across all dimensions:
   
   \item \textbf{Computational Efficiency:} $O(nm)$ complexity enables processing large SRMs (1,000+ tests, 500+ requirements) in seconds, outperforming Delayed Greedy ($O(n^2m)$) and metaheuristics ($O(gnm)$) by orders of magnitude.
   
-  \item \textbf{Parameterised Tuning:} Single $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). $\beta=0$ reproduces validated Enhanced HGS baseline; $\beta=0.7$ balances coverage and mutation emphasis; higher $\beta$ prioritises mutation preservation.
+  \item \textbf{Parameterised Tuning:} Single $\beta$-parameter permits empirical optimisation via grid search ($\beta \in \{0.5, 0.6, 0.7, 0.8, 0.9\}$). When $\beta=0$, it reproduces validated Enhanced HGS baseline. When $\beta=0.7$, it balances coverage and mutation emphasis. Higher $\beta$ prioritises mutation preservation.
   
   \item \textbf{Empirical Grounding:} Unlike metaheuristic approaches requiring extensive tuning and lacking reproducibility, MA-EHGS extends a published, empirically validated algorithm~\cite{gladston2015} with a principled extension justified by recent literature~\cite{wei2017}.
   

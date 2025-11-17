@@ -23,7 +23,7 @@ Despite these compelling advantages, test suite minimisation remains an inherent
 
 Different application domains prioritise these objectives differently. Safety-critical systems demand absolute fault-detection preservation, favouring conservative approaches that sacrifice reduction potential. High-frequency continuous integration pipelines prioritise execution speed, accepting greater risk of fault-detection loss. Large-scale observatories require language-agnostic solutions operating on behavioural abstractions, excluding techniques dependent on source code analysis.
 
-This multi-objective optimisation creates a complex solution space where trade-offs vary by context. Conservative approaches produce larger minimised suites with stronger guarantees; aggressive approaches achieve greater reduction with weaker assurances. The optimal balance depends on deployment context, testing objectives, and acceptable risk levels.
+This multi-objective optimisation creates a complex solution space where trade-offs vary by context. Conservative approaches produce larger minimised suites with stronger guarantees. Aggressive approaches achieve greater reduction with weaker assurances. The optimal balance depends on deployment context, testing objectives, and acceptable risk levels.
 
 Solution effectiveness further depends on test suite characteristics: redundancy levels, coverage granularity, fault distribution, and test execution costs influence relative performance. Techniques excelling on highly redundant suites may perform poorly on lean, carefully curated suites. This context-dependence necessitates approach selection tailored to specific environments rather than universal prescription.
 

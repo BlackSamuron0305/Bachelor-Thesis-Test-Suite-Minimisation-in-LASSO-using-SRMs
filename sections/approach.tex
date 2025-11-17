@@ -15,7 +15,7 @@ mutation score preservation (C4), computational scalability (C5), and implementa
 \section{Criterion C1: SRM Compatibility}
 
 LASSO operates entirely on \emph{Stimulus–Response Matrices} and does not expose
-control-flow graphs, ASTs, bytecode structures, or language-specific models to 
+control-flow graphs, abstract syntax trees (ASTs), bytecode structures, or language-specific models to 
 the minimiser. Any suitable algorithm must therefore operate solely on 
 requirement–test relations.
 
@@ -26,7 +26,7 @@ requirement sets. Only REDUNET fails this criterion because it relies on detaile
 control-flow and data-flow analysis. In consequence, REDUNET is excluded from all 
 further consideration.
 
-\textbf{Conclusion:} 12 of 13 algorithms satisfy C1; SRM compatibility does not
+\textbf{Conclusion:} 12 of 13 algorithms satisfy C1. SRM compatibility does not
 distinguish among the remaining candidates.
 
 \section{Criterion C2: Coverage Preservation}

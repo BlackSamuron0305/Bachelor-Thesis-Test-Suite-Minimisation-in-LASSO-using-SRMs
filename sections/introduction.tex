@@ -1,12 +1,12 @@
 \chapter{Introduction}
 
-Software testing ensures that program modifications do not introduce defects. As systems evolve, test suites grow and increase execution cost and maintenance effort. Modern suites often combine human-written, automatically generated, and AI-generated tests; tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} can produce thousands of tests, and large industrial suites may require days or weeks to execute~\cite{rothermel1998}. Although such suites achieve high coverage and mutation scores, they frequently contain redundant tests whose requirements are subsumed by others, resulting in prolonged execution, increased costs, and elevated maintenance overhead.
+Software testing ensures that program modifications do not introduce defects. As systems evolve, test suites grow and increase execution cost and maintenance effort. Modern suites often combine human-written, automatically generated, and in recent years more frequently AI-generated tests. Tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} can produce thousands of tests, and large industrial suites may require days or weeks to execute~\cite{rothermel1998}. Although such suites achieve high coverage and mutation scores, they frequently contain redundant tests whose requirements are subsumed by others, resulting in prolonged execution, increased costs, and elevated maintenance overhead.
 
 \emph{Test-suite minimisation} addresses this issue by systematically removing redundant tests while preserving fault-detection capability~\cite{yoo2012}. Techniques range from \emph{coverage-preserving} approaches, which maintain all coverage requirements, to \emph{coverage-relaxing} approaches, which accept limited coverage loss for stronger reduction. While minimisation can significantly reduce computational demand and feedback latency, overly aggressive reduction risks discarding tests with unique defect-revealing behaviour. Effective minimisation therefore requires balancing reduction efficiency with fault-detection retention.
 
 \section{Background and Motivation}
 
-Testing remains a major cost driver in software engineering; classical studies estimate that verification and validation account for up to half of total development effort~\cite{boehm1984}. The cost pressure persists in modern continuous-integration environments, where automated or AI-generated suites may contain tens of thousands of tests~\cite{rothermel1998,bach2017}. Executing all tests after each change is often infeasible, motivating techniques that reduce suite size while retaining quality. Test suite minimisation has been exploring this issue for decades, with numerous algorithms proposed to identify and eliminate redundant tests~\cite{yoo2012}, by leveraging coverage and quite recently mutation information as a proxy for fault-detection capability~\cite{jehan2023}. Details on coverage and mutation testing are provided in Chapter~\ref{chap:fundamentals}. 
+Testing remains a major cost driver in software engineering. Classical studies estimate that verification and validation account for up to half of total development effort~\cite{boehm1984}. The cost pressure persists in modern continuous-integration environments, where automated or AI-generated suites may contain tens of thousands of tests~\cite{rothermel1998,bach2017}. Executing all tests after each change is often infeasible, motivating techniques that reduce suite size while retaining quality. Test suite minimisation has been exploring this issue for decades, with numerous algorithms proposed to identify and eliminate redundant tests~\cite{yoo2012}, by leveraging coverage and quite recently mutation information as a proxy for fault-detection capability~\cite{jehan2023}. Details on coverage and mutation testing are provided in Chapter~\ref{chap:fundamentals}. 
 
 
 \section{LASSO Context}
@@ -22,7 +22,7 @@ Despite supporting large-scale behavioural and coverage analysis, LASSO currentl
 
 This thesis investigates how test-suite minimisation can be integrated into LASSO using its SRM abstraction. The study is guided by:
 \begin{enumerate}
-  \item \textbf{RQ1:} Which minimisation techniques demonstrate the highest practical effectiveness in the literature?
+  \item \textbf{RQ1:} Which minimisation techniques demonstrate the highest practical effectiveness in the literature for the LASSO platform?
   \item \textbf{RQ2:} Which evaluation criteria best suit minimisation within LASSO's SRM-based environment?
   \item \textbf{RQ3:} Which approach best balances reduction effectiveness, coverage preservation, mutation preservation and scalability?
   \item \textbf{RQ4:} How can the selected approach be integrated into LASSO while maintaining language independence?
