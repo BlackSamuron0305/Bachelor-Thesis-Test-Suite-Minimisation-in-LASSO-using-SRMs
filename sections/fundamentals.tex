@@ -8,18 +8,15 @@ This chapter establishes the theoretical foundation for this work. It introduces
 
 \subsection{Coverage Metrics}
 
-Coverage criteria define program “parts” at different granularity levels~\cite{zhu1997}. Common coverage types include:
+Coverage criteria define program "parts" at different granularity levels~\cite{zhu1997}. While numerous coverage types exist (e.g., instruction coverage, path coverage, class coverage), this work focuses on the three metrics most commonly reported in test-suite minimisation literature~\cite{yoo2012,harrold1993,jehan2023,noemmer2020}:
 
 \begin{itemize}
-  \item \textbf{Instruction Coverage:} proportion of bytecode instructions executed.
   \item \textbf{Line Coverage:} proportion of source lines executed.
   \item \textbf{Branch Coverage:} proportion of conditional branches whose true/false outcomes are both executed.
   \item \textbf{Method Coverage:} proportion of methods invoked at least once.
-  \item \textbf{Complexity Coverage:} proportion of independent execution paths exercised (cyclomatic complexity).
-  \item \textbf{Class Coverage:} proportion of classes instantiated or whose static methods execute.
 \end{itemize}
 
-Multi-level coverage captures execution at different granularities. High line coverage with low branch coverage may miss conditional faults, while high method coverage without path coverage may miss defects in complex methods. Combining several metrics provides a more complete assessment of test quality.
+These three metrics capture execution at different granularities and are widely supported by standard coverage tools such as JaCoCo. Combining multiple metrics provides a more complete assessment of test quality, as high line coverage with low branch coverage may miss conditional faults.
 
 \subsection{Mutation Score}
 
