@@ -54,11 +54,20 @@ Together, C2 and C4 provide comprehensive assurance that the minimised test suit
 \textbf{C6 (Implementation Feasibility)} recognises the cost of practical adoption. 
 Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline~\cite{yoo2012}.
 
-\section{Scoring Model}
 
-Let $A$ denote a candidate algorithm and $s_i(A) \in [0,1]$ its normalised score on criterion $C_i$. 
-Let $w_i \ge 0$ denote the relative weight for criterion $C_i$, with $\sum_{i=2}^{6} w_i = 1$. 
-The total score is defined as:
+\section{Ranking and Scoring Model}
+To enable systematic comparison, each algorithm is scored on a scale from 0 to 5 for each performance criterion (C2--C6). The scoring rubric is as follows:
+\begin{itemize}
+  \item \textbf{Score 5:} Excellent performance; meets or exceeds best-known benchmarks in literature.
+  \item \textbf{Score 4:} Good performance; achieves strong results with minor limitations.
+  \item \textbf{Score 3:} Acceptable performance; meets basic requirements but with notable trade-offs.
+  \item \textbf{Score 2:} Poor performance; significant shortcomings limit practical utility.
+  \item \textbf{Score 1:} Very poor performance; fails to meet essential criteria.
+  \item \textbf{Score 0:} Not applicable; fails mandatory precondition (C1).
+\end{itemize}
+
+After scoring, each algorithm's total score is computed as a sum with equal weighting across criteria except C1 (which is mandatory):
+
 \begin{equation}
   \text{Score}(A) =
   \begin{cases}
@@ -67,9 +76,5 @@ The total score is defined as:
   \end{cases}
 \end{equation}
 
-\subsection{Rank-Based Point Assignment}
-
-Scores $s_i(A)$ for each criterion $C_i$ are derived through rank-based evaluation, following standard regression-testing methodology~\cite{yoo2012}. 
-For each performance criterion ($i \in \{2,\ldots,6\}$), algorithms are ranked by performance; the top-ranked algorithm receives the highest score, and tied algorithms share the same rank. 
-Subsequent ranks are offset accordingly (e.g., a tie for first shifts the next rank to third). 
-This ensures equitable treatment of equivalent performers while maintaining meaningful differentiation across criteria.
+This scoring framework facilitates quantitative comparison across diverse algorithms, enabling informed selection based on empirical performance aligned with LASSO's requirements. 
+The next chapter applies this framework to evaluate candidate minimisation techniques from the literature, ultimately selecting the most suitable approach for integration into LASSO.

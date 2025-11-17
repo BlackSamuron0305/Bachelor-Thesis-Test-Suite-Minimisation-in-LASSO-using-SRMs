@@ -36,3 +36,46 @@ large-scale software analysis workflows."
 - All other abstract revisions completed: empirical accuracy, citation updates, formal definitions
 - Bibliography updated with contemporary sources (Herzig 2015, Micco 2017, Zhang 2010, Gao 2021)
 - Quantitative results properly attributed as "literature-reported" from Harrold 1993 & Bach 2017
+
+
+
+
+
+Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Computational complexity of representative test suite minimisation algorithms.}
+  \label{tab:literature-complexity}
+  \begin{threeparttable}
+    \begin{tabular}{@{}llll@{}}
+      \toprule
+      \textbf{Algorithm} & \textbf{Time} & \textbf{Space} & \textbf{Reference} \\
+      \midrule
+      Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979,yoo2012} \\
+      HGS & $O(|T| \cdot \max|T_i|)$\tnote{a} & $O(nm)$ & \cite{yoo2012,harrold1993} \\
+      Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005,yoo2012} \\
+      Enhanced HGS & $O(nm)$ & $O(nm)$ & \cite{gladston2015} \\
+      MA-EHGS (Proposed) & $O(nm)$ & $O(nm)$ & This work \\
+      \midrule
+      ILP/SAT (Linear) & Exponential\tnote{b} & $O(nm)$ & \cite{yoo2012,elbaum2002} \\
+      NEMO (Nonlinear) & Exponential\tnote{b} & $O(nm)$ & \cite{lin2018} \\
+      REDUNET & Exponential\tnote{c} & $O(nm + |V| + |E|)$\tnote{d} & \cite{mongiovi2020} \\
+      \midrule
+      Genetic Algorithm & $O(gnm)$\tnote{e} & $O(pnm)$\tnote{f} & \cite{yoo2012,khan2020} \\
+      PSO / ABC & $O(gnm)$\tnote{e} & $O(pnm)$\tnote{f} & \cite{ahuja2024} \\
+      Many-Objective EA & $O(gnm)$\tnote{e} & $O(pnm)$\tnote{f} & \cite{wei2017} \\
+      Similarity-Based & $O(n^2m)$ & $O(nm + n^2)$ & \cite{bach2017} \\
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \footnotesize
+      \item[a] $|T|$ is test suite size; $\max|T_i|$ is largest group cardinality.
+      \item[b] Worst-case: $(m\Delta)^{O(m)}$ where $\Delta$ = max tests per requirement.
+      \item[c] Uses ILP with CFG optimization; fast in practice (fractions of seconds).
+      \item[d] $|V|$, $|E|$ denote control-flow graph vertices and edges.
+      \item[e] $g$ = number of generations; requires parameter tuning.
+      \item[f] $p$ = population size; assumes $O(nm)$ fitness evaluation.
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}

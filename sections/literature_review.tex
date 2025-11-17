@@ -22,6 +22,10 @@ Delayed greedy~\cite{tallam2005} uses concept lattices to eliminate redundancies
 
 Enhanced HGS~\cite{gladston2015} operates on a requirements matrix in two phases: (1)~select tests uniquely covering any requirement, (2)~iteratively select tests maximising uncovered requirements. Time complexity is $O(nm)$, matching classical greedy. Empirical validation demonstrated that Enhanced HGS produces smaller suites (73.66\% average reduction) than both HGS (69.01\%) and classical greedy algorithms while maintaining coverage~\cite{gladston2015}.
 
+\subsection{Greedy Heuristics with Overlap-Awareness}
+
+While classical greedy, HGS, and delayed greedy prioritise test coverage, overlap-aware variants enhance these methods by penalising tests that duplicate existing coverage~\cite{bach2017}. This approach is particularly effective in time-budget constrained environments (test case prioritisation scenarios) rather than pure minimisation. Bach et al.\ demonstrated that overlap-aware methods achieve 50\% higher code coverage within fixed time budgets versus classical greedy, completing under 10 seconds~\cite{bach2017}. Computationally, overlap-aware methods incur $O(n^2m)$ complexity due to pairwise coverage comparison~\cite{bach2017,khan2020}. Note: Overlap-aware is a strategy enhancement applicable to any greedy heuristic, primarily designed for test case prioritisation under resource constraints rather than absolute suite minimisation~\cite{bach2017}.
+
 \subsection{Mutation-Aware Enhanced HGS}
 
 Mutation-Aware Enhanced HGS (MA-EHGS) extends the Enhanced HGS baseline by integrating mutation testing into the selection process. This algorithm represents the contribution of this thesis, addressing the documented coverage-mutation trade-off where coverage-only minimisation may lose 0--21\% mutation score depending on adequacy constraints~\cite{jehan2023}.
@@ -48,11 +52,15 @@ MA-EHGS maintains $O(nm)$ time complexity and $O(nm)$ space complexity, matching
 
 \section{Exact Optimisation Approaches}
 
-Exact approaches formulate test suite minimisation as integer linear programming (ILP), SAT, or constraint satisfaction problems~\cite{yoo2012,khan2020,rothermel2002,harrold1993}. These formulations guarantee optimality, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
+Exact approaches formulate test suite minimisation as integer linear programming (ILP), SAT, or constraint satisfaction problems~\cite{yoo2012,khan2020,rothermel2002,harrold1993}. These formulations guarantee optimality for linear problem formulations, since the problem is equivalent to the classic minimal set cover/hitting set~\cite{garey1979}. However, they exhibit worst-case exponential runtime because the set cover problem is NP-complete~\cite{garey1979}, making naïve exact solutions only feasible for small to medium-sized suites.
 
-\subsection{ILP, SAT, and REDUNET}
+\subsection{ILP, SAT, and Set Cover Problem Formulations}
 
-ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,rothermel2002}. SAT and CSP-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances.
+Traditional linear ILP models are guaranteed to produce optimal solutions, with complexity bounded by $(m\Delta)^{O(m)}$ in the worst case, where $m$ is the number of requirements and $\Delta$ the maximum number of tests covering any requirement~\cite{yoo2012,rothermel2002}. SAT and CSP-based formulations~\cite{hemmati2011} are sometimes more practical for specific instances. Nishino et al.~\cite{nishino2020} explore set cover problem (SCP) encoding approaches for interaction-based test suite minimization, demonstrating alternative formulations for specific domains such as combinatorial t-way testing.
+
+However, Lin et al.~\cite{lin2018} demonstrate that test-suite minimisation is inherently nonlinear due to interdependencies among test cases. Their NEMO framework formulates multi-criteria minimisation as integer nonlinear programming (NFLS), achieving superior solutions (up to 164\% improvement in fault detection over linear ILP) by properly accounting for test-case dependencies~\cite{lin2018}.
+
+\subsection{REDUNET}
 
 REDUNET~\cite{mongiovi2020} achieves speedup via hybrid control-flow graph (CFG) network optimisation with substantial suite size reduction. However, because REDUNET relies on control-flow graph structural analysis to track coverage and redundancy, it cannot operate purely on SRM (matrix) abstractions—limiting integration in SRM-only architectures.
 
@@ -66,51 +74,22 @@ Search-based methods formulate test suite minimisation as multi-objective optimi
 
 Genetic Algorithms (GAs) and other metaheuristics are widely applied to test suite minimisation. GAs evolve candidate test subsets over multiple generations and generally require significant parameter tuning~\cite{yoo2012}, with longer runtimes than greedy methods. Pareto-optimal fronts can trade off suite size against coverage~\cite{yoo2012}. Systematic empirical evaluations of mutation-aware GA minimisation remain limited in the surveyed literature~\cite{khan2020}.
 
+\subsection{Other Metaheuristic Approaches}
+
+Beyond genetic algorithms, additional nature-inspired metaheuristics have been applied to test suite minimisation. Particle Swarm Optimization (PSO) with adaptive inertia weight strategies~\cite{ahuja2024} and Artificial Bee Colony (ABC) algorithms~\cite{ahuja2024} represent alternative search-based approaches. Comparative studies show PSO achieves strong cost reduction performance, though genetic algorithms often produce smaller minimised suites~\cite{ahuja2024}.
+
+Many-objective evolutionary algorithms including NSGA-II, MOEA/D variants, IBEA, and SPEA2-SDE have been adapted to incorporate mutation score as an explicit optimisation objective~\cite{wei2017}. Wei et al.~\cite{wei2017} demonstrate that integrating mutation testing into multi-objective optimisation significantly reduces test cost while maintaining high fault-detection capability, supporting the motivation for mutation-aware minimisation approaches like MA-EHGS.
+
 %===================================================
 
 \section{Data-Driven and Similarity-Based Approaches}
 
 Data-driven and coverage-aware methods exploit coverage overlap and similarity patterns to identify redundancies~\cite{bach2017,yoo2012,khan2020}, operating directly on coverage without requiring program structure.
 
-\subsection{Overlap-Aware Methods}
+\subsection{Similarity-Based and Time-Constrained Methods}
 
-Overlap-aware algorithms penalise tests duplicating existing coverage with $O(n^2m)$ complexity. Bach et al.\ demonstrated that overlap-aware methods achieve 50\% higher code coverage within fixed time budgets versus classical greedy, completing under 10 seconds~\cite{bach2017}.
+Similarity-based algorithms penalise tests duplicating existing coverage. These approaches operate with polynomial complexity and are particularly effective under time or budget constraints. Bach et al.~\cite{bach2017} demonstrated that such methods achieve practical scalability and improved empirical quality (~50\% coverage gains under time budgets), completing under 10 seconds~\cite{bach2017}.
 
-Table~\ref{tab:literature-complexity} summarises the computational complexity of representative test-suite minimisation algorithms.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Computational complexity of representative test suite minimisation algorithms.}
-  \label{tab:literature-complexity}
-  \begin{threeparttable}
-    \begin{tabular}{@{}llll@{}}
-      \toprule
-      \textbf{Algorithm} & \textbf{Time} & \textbf{Space} & \textbf{Reference} \\
-      \midrule
-      Classical Greedy & $O(nm)$ & $O(nm)$ & \cite{chvatal1979,yoo2012} \\
-      HGS & $O(|T| \cdot \max|T_i|)$\tnote{a} & $O(nm)$ & \cite{yoo2012,harrold1993} \\
-      Delayed Greedy & $O(n^2m)$ & $O(nm + n^2)$ & \cite{tallam2005,yoo2012} \\
-      Enhanced HGS & $O(nm)$ & $O(nm)$ & \cite{gladston2015} \\
-      MA-EHGS (Proposed) & $O(nm)$ & $O(nm)$ & This work \\
-      \midrule
-      ILP/SAT & Exponential\tnote{b} & $O(nm)$ & \cite{yoo2012,elbaum2002} \\
-      REDUNET & Exponential\tnote{c} & $O(nm + |V| + |E|)$\tnote{d} & \cite{mongiovi2020} \\
-      \midrule
-      Genetic Algorithm & $O(gnm)$\tnote{e} & $O(pnm)$\tnote{f} & \cite{yoo2012,khan2020} \\
-      Overlap-Aware & $O(n^2m)$ & $O(nm + n^2)$ & \cite{bach2017} \\
-      \bottomrule
-    \end{tabular}
-    \begin{tablenotes}
-      \footnotesize
-      \item[a] $|T|$ is test suite size; $\max|T_i|$ is largest group cardinality.
-      \item[b] Worst-case: $(m\Delta)^{O(m)}$ where $\Delta$ = max tests per requirement.
-      \item[c] Uses ILP with CFG optimization; fast in practice (fractions of seconds).
-      \item[d] $|V|$, $|E|$ denote control-flow graph vertices and edges.
-      \item[e] $g$ = number of generations; requires parameter tuning.
-      \item[f] $p$ = population size; assumes $O(nm)$ fitness evaluation.
-    \end{tablenotes}
-  \end{threeparttable}
-\end{table}
 
 \section{Summary}
 
@@ -118,10 +97,10 @@ The literature yields five concise findings for SRM-based minimisation.
 
 \textbf{Greedy variants converge.} Classical greedy, HGS and delayed greedy produce statistically similar suite sizes and coverage ($p\gg0.05$)~\cite{yoo2012,jehan2023}; Enhanced HGS gives measurable size gains while preserving fault-detection capability.
 
-\textbf{Coverage--mutation gap.} Coverage-only reduction may lose 0--21\% mutation capability depending on adequacy constraints~\cite{jehan2023}, with zero loss achievable for adequate reduction (100\% coverage retention). This demonstrates that structural redundancy does not imply semantic redundancy, motivating mutation-aware selection.
+\textbf{Coverage--mutation gap.} Coverage-only reduction may lose 0--21\% mutation capability depending on adequacy constraints~\cite{jehan2023}, with zero loss achievable for adequate reduction (100\% coverage retention). Wei et al.~\cite{wei2017} demonstrate that integrating mutation score as an explicit optimisation objective in many-objective evolutionary algorithms significantly improves both test cost reduction and fault-detection capability. This demonstrates that structural redundancy does not imply semantic redundancy, motivating mutation-aware selection.
 
-\textbf{Exact methods vs.\ scalability.} ILP/SAT formulations guarantee optimality (set-cover) but face exponential worst-case complexity~\cite{garey1979,yoo2012}; REDUNET improves practical speed using CFG analysis but cannot operate on SRM-only inputs~\cite{mongiovi2020}.
+\textbf{Exact methods vs.\ scalability.} Linear ILP/SAT formulations guarantee optimality but face exponential worst-case complexity~\cite{garey1979,yoo2012}. Nonlinear approaches like NEMO~\cite{lin2018} produce superior solutions by modelling test-case dependencies but remain computationally expensive. REDUNET improves practical speed using CFG analysis but cannot operate on SRM-only inputs~\cite{mongiovi2020}.
 
-\textbf{Overlap-aware/data-driven gains.} Overlap-aware and similarity-based approaches deliver practical scalability and improved empirical quality (e.g., ~50\% coverage gains under time budgets)~\cite{bach2017,khan2020}.
+\textbf{Similarity-based and time-constrained gains.} Similarity-based and overlap-aware approaches deliver practical scalability and improved empirical quality (e.g., ~50\% coverage gains under time budgets)~\cite{bach2017,khan2020}, though primarily designed for prioritisation rather than pure minimisation.
 
-\textbf{Empirical gap in mutation evaluation.} Systematic mutation-preservation studies are scarce~\cite{jehan2023,yoo2012}. This gap motivates MA-EHGS: integrate mutation information into greedy scoring to retain fault-detection while keeping polynomial complexity.
+\textbf{Empirical gap in mutation evaluation and emerging solutions.} Systematic mutation-preservation studies were historically scarce~\cite{jehan2023,yoo2012}. Recent work demonstrates that incorporating mutation score as an optimisation objective in evolutionary algorithms~\cite{wei2017} and greedy heuristics~\cite{jehan2023} effectively addresses this gap. This motivates MA-EHGS: integrate mutation information into greedy scoring to retain fault-detection capability while maintaining polynomial complexity.

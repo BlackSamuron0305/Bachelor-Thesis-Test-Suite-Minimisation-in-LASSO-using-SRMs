@@ -1,24 +1,72 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the Mutation-Aware Enhanced HGS implementation integrated into LASSO's SRM-based pipeline. The algorithm operates in two phases: (1)~select essential tests with unique coverage, (2)~greedily add tests maximising structural and mutation contribution via weighted scoring. Complete pseudocode is provided in Appendix~\ref{app:pseudocode}.
+This chapter presents the technical implementation of the Mutation-Aware Enhanced HGS minimiser within LASSO. The work was developed in a dedicated branch:\\[2pt]
+\centerline{\texttt{<https://github.com/.../lasso-minimization>}}
+and the full reference implementation is available at:\\[2pt]
+\centerline{\texttt{<https://github.com/.../MinimizationAlgorithm.java>}} 
 
-\section{Core Algorithm}
+The contribution of this work lies in four areas: reliable per-test coverage collection, mutation-aware requirement extraction, a unified requirements-matrix representation, and a scalable realisation of the Enhanced HGS algorithm extended with mutation weighting. All components integrate seamlessly into the existing Arena–Mutation–SRM workflow and remain fully language-independent.
 
-The weighted scoring function combines structural and mutation coverage:
-\begin{equation}
-\text{score}(t_i) = \alpha \cdot |\text{newCoverage}(t_i)| + \beta \cdot |\text{newMutants}(t_i)|,
-\end{equation}
-where $\alpha = 0.3$ (coverage weight) and $\beta = 0.7$ (mutation weight) provide the default balanced configuration. When $\beta = 0$, the algorithm reproduces pure coverage-based minimisation. The complete algorithmic specification, including notation, phase descriptions, and complexity analysis, is detailed in Appendix~\ref{app:pseudocode}.
+\section{Architecture Overview}
 
-\section{Complexity and Configuration}
+The implementation adds a cohesive data-processing layer that retrieves execution data from SRMs, converts them into requirement mappings, and applies the minimiser before writing back a reduced SRM. Central to this design is a unification layer that merges structural coverage and mutation information into a single requirements matrix. This preserves LASSO’s language-agnostic design and enables consistent minimisation across different programming languages.
 
-Phase 2 (greedy selection) dominates with $O(nm)$ time complexity (analysed in Chapter~\ref{chap:comparison}). BitSet encoding achieves $O(nm)$ space with compact representation. Configuration parameters $\alpha$ and $\beta$ are tunable via grid search; defaults $\alpha = 0.3$ and $\beta = 0.7$ balance coverage and mutation preservation as a conservative starting point~\cite{jehan2023}.
+Three new components form the backbone of the implementation.  
+The \texttt{SRMCoverageExtractor} collects per-test coverage from SRM sheets generated during Arena execution and standardises them using a language-neutral \texttt{COVERAGE\_testName} prefix, replacing earlier tool-specific formats.  
+The \texttt{MutationAnalyzer} reconstructs mutation kills from SRM outputs by comparing original and mutant variants cell-by-cell, resolving previous inaccuracies caused by single-cell comparisons or null handling.  
+Finally, the \texttt{BitSetMatrix} provides a compact, high-performance representation of all test–requirement relations, with structural elements and mutants encoded uniformly.
+
+\section{Data Extraction and Representation}
+
+Coverage is collected by executing JaCoCo instrumentation separately for each test, generating isolated coverage sheets per test. By adopting language-neutral identifiers, the design remains extensible to future Python or JavaScript coverage integrations.
+
+Mutation information is reconstructed from SRM entries of type \texttt{value}. A mutant is considered killed if any output cell diverges from the original implementation:
+\[
+\exists(x,y): M_{i,\mathrm{orig}}(x,y) \neq M_{i,m}(x,y).
+\]
+This refined method yields a precise kill signal and corrects inconsistencies of earlier pipelines that observed only the first output cell.
+
+Coverage and mutation elements are unified into the set
+\[
+R = R_{\text{coverage}} \cup R_{\text{mutation}},
+\]
+which forms the input to the minimisation algorithm.
+
+\section{Algorithmic Realisation}
+
+The minimiser implements the two-phase Enhanced HGS algorithm.  
+Phase~1 selects all tests that uniquely satisfy a requirement, ensuring that both structural and mutation-specific elements with cardinality one are always preserved.  
+Phase~2 applies a weighted greedy selection:
+\[
+\mathrm{score}(t_i)
+= \alpha \cdot |\mathrm{newCoverage}(t_i)| 
++ \beta \cdot |\mathrm{newMutants}(t_i)|,
+\]
+with default parameters $\alpha=0.3$ and $\beta=0.7$.  
+BitSet operations keep runtime at $O(nm)$ and allow efficient experimentation with different scoring configurations.
+
+\section{Integration Into LASSO}
+
+The minimiser is exposed as the LSL action \texttt{TestSuiteMinimization}. It executes after both Arena and Mutation, consumes SRM data from Ignite, performs minimisation, and optionally replaces the SRM with a reduced version.
+
+Listing~\ref{lst:lsl-min} shows a representative configuration. Configurable parameters are shown in \textcolor{blue}{blue color}.
+
+\begin{lstlisting}[language=Java,caption={LSL configuration for the minimisation action},label={lst:lsl-min},escapechar=@]
+action(name: 'minimize', type: 'TestSuiteMinimization') {
+    dependsOn 'mutate'
+    includeAbstractions 'Base64'
+
+    alpha = @\textcolor{blue}{0.3}@
+    beta  = @\textcolor{blue}{0.7}@
+    keepMutants  = @\textcolor{blue}{true}@
+    keepOracle = @\textcolor{blue}{false}@
+
+}
+\end{lstlisting}
+
+The implementation required updating SRM extraction logic, correcting test-name normalisation, introducing language-agnostic sheet identifiers, and refining mutation comparison behaviour. These changes collectively make SRM-based minimisation correct, robust, and compatible with diverse software systems.
 
 \section{Validation}
 
-The current approach and implementation were validated similarly to unit tests in object-oriented programming, lacking comprehensive integration testing. Unit tests verify essential-test selection, coverage preservation ($C(S^*)=C(T)$), and parameter sensitivity, ensuring algorithmic correctness but not end-to-end pipeline performance. Empirical benchmarks demonstrate performance characteristics across multiple systems, with representative results including Base64 encoder/decoder (32 tests reduced to 17, achieving 46.9\% reduction while maintaining 100\% coverage and 95\% mutation score). Extended benchmark results and reproducibility details are provided in Appendix~\ref{app:benchmarks}.
-
-\section{LASSO Integration}
-
-The minimiser integrates with LASSO's SRM pipeline via LSL actions. The workflow: (1)~extract per-test granular coverage and mutation data from SRM response objects (detailed extraction process in Appendix~\ref{app:srm}), (2)~encode as BitSets representing the requirements matrix, (3)~apply Mutation-Aware Enhanced HGS selection with configurable $\alpha$ and $\beta$ parameters, (4)~generate reduced SRM preserving schema. Mutants are encoded as additional requirements prefixed with \texttt{"MUTANT:"}, ensuring unified treatment with structural coverage elements. Key components include \texttt{EnhancedHGSMinimizer} (algorithm implementation following Appendix~\ref{app:pseudocode}), \texttt{ClusterSRMRepository} (data access using Apache Ignite cache queries), and \texttt{BitSetMatrix} (requirements-matrix representation). The SRM coverage extraction specification, including JaCoCo lifecycle integration and per-test isolation mechanisms, is fully documented in Appendix~\ref{app:srm}.
+Validation confirmed that all structural and mutation requirements are preserved for $\alpha>0$ and $\beta>0$, and that the algorithm behaves deterministically under fixed configurations. Unit tests verify requirement mapping, kill-detection correctness, and algorithmic behaviour. Benchmarks (Appendix~\ref{app:benchmarks}) show consistent reductions of 46.9--55.6\% with full retention of structural and mutation requirements.
