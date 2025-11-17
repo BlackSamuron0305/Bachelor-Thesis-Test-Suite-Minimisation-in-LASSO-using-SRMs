@@ -10,25 +10,25 @@ Greedy heuristics are among the most widely studied minimisation techniques~\cit
 
 The classical greedy heuristic repeatedly selects the test covering the most uncovered requirements. Chvátal proved a logarithmic approximation bound~\cite{chvatal1979}, and subsequent work treats this heuristic as a baseline for regression-test minimisation~\cite{rothermel1998,yoo2012}.
 
-Noemmer and Haas note that greedy variants are ``the test suite minimization algorithms most commonly found in research''~\cite{noemmer2020}. In their Java study, both classical greedy and HGS (Section~\ref{sec:hgs}) achieve substantial reduction while preserving statement coverage; mutation testing shows that, under adequate reduction, mutation scores remain close to those of the original suite, whereas more aggressive reduction can incur relative mutation-score losses of about 3.5--21\%, depending on project and threshold~\cite{noemmer2020}. Jehan and Wotawa report similar findings for JavaScript projects, with roughly 70\% reduction and only minor differences between greedy variants under adequate settings~\cite{jehan2023}.
+Noemmer and Haas note that greedy variants are ``the test suite minimization algorithms most commonly found in research''~\cite{noemmer2020}. In their Java study, both classical greedy and HGS (Section~\ref{sec:hgs}) achieve substantial reduction while preserving statement coverage. Mutation testing shows that, under adequate reduction, mutation scores remain close to those of the original suite, whereas more aggressive reduction can incur relative mutation-score losses of about 3.5--21\%, depending on project and threshold~\cite{noemmer2020}. Jehan and Wotawa report similar findings for JavaScript projects, with roughly 70\% reduction and only minor differences between greedy variants under adequate settings~\cite{jehan2023}.
 
 \subsection{Harrold--Gupta--Soffa}\label{sec:hgs}
 
-Harrold, Gupta and Soffa (HGS) propose an early coverage-driven heuristic~\cite{harrold1993}. Their method partitions tests by covered requirements and selects them in phases, prioritising requirements with few covering tests while avoiding redundancy.
+Harrold, Gupta and Soffa proposed the Harrold--Gupta--Soffa (HGS) algorithm, an early coverage-driven heuristic~\cite{harrold1993}. Their method partitions tests by covered requirements and selects them in phases, prioritising requirements with few covering tests while avoiding redundancy.
 
-Harrold et al.\ give a worst-case time bound of $O(n(n+m)\mathit{MAXCARD})$, where $n$ denotes the number of associated testing sets, $m$ the number of test cases, and $\mathit{MAXCARD}$ the maximum number of requirements covered by any single test~\cite{harrold1993}. HGS remains a standard greedy baseline~\cite{yoo2012,chen2005,noemmer2020}. Chen and Lau introduced GE and GRE, finding no universally superior greedy technique~\cite{chen2005}. Jehan and Wotawa report that HGS achieves around 70\% reduction when all mutation requirements must be met, with only small differences in fault detection across greedy variants~\cite{jehan2023}.
+Harrold et al.\ give a worst-case time bound of $O(n(n+m)\mathit{MAXCARD})$, where $n$ denotes the number of associated testing sets, $m$ the number of test cases, and $\mathit{MAXCARD}$ the maximum number of requirements covered by any single test~\cite{harrold1993}. HGS remains a standard greedy baseline~\cite{yoo2012,chen2005,noemmer2020}. Chen and Lau introduced Greedy Effective (GE) and Greedy Redundant Eliminating (GRE), finding no universally superior greedy technique~\cite{chen2005}. Jehan and Wotawa report that HGS achieves around 70\% reduction when all mutation requirements must be met, with only small differences in fault detection across greedy variants~\cite{jehan2023}.
 
 \subsection{Delayed Greedy}
 
-Tallam and Gupta introduced delayed greedy to mitigate a weakness of classical greedy and HGS: selecting large tests too early may render smaller tests redundant~\cite{tallam2005}. Their approach uses concept analysis to remove subsumed tests before greedy selection.
+Tallam and Gupta introduced the Delayed Greedy (DG) algorithm to mitigate a weakness of classical greedy and HGS: selecting large tests too early may render smaller tests redundant~\cite{tallam2005}. Their approach uses concept analysis to remove subsumed tests before greedy selection.
 
-They show that delayed greedy runs in polynomial time and often yields equal or smaller suites than classical greedy or HGS~\cite{tallam2005}. Jehan and Wotawa confirm similar fault-detection behaviour across greedy variants under adequate reduction, with delayed greedy typically producing the smallest suites at a higher runtime~\cite{jehan2023}.
+They show that DG runs in polynomial time and often yields equal or smaller suites than classical greedy or HGS~\cite{tallam2005}. Jehan and Wotawa confirm similar fault-detection behaviour across greedy variants under adequate reduction, with DG typically producing the smallest suites at a higher runtime~\cite{jehan2023}.
 
 \subsection{Enhanced HGS}
 
-Gladston and Ramesh refine HGS and evaluate several variants on Java programs~\cite{gladston2015}. \emph{Enhanced HGS} selects tests with unique coverage first, then chooses remaining tests by residual coverage.
+Gladston and Ramesh refined HGS and evaluated several variants on Java programs~\cite{gladston2015}. The \emph{Enhanced HGS (EHGS)} algorithm selects tests with unique coverage first, then chooses remaining tests by residual coverage.
 
-On the FIRST RUN benchmark, they report suite-size reductions (SSR) of 73.51\% (GRE), 69.01\% (HGS), 71.83\% (Non-Redundant HGS) and 73.66\% (Enhanced HGS)~\cite{gladston2015}. Enhanced HGS typically matches or slightly improves upon HGS and GRE, though the evaluation remains coverage-based.
+On the FIRST RUN benchmark, they report suite-size reductions (SSR) of 73.51\% (GRE), 69.01\% (HGS), 71.83\% (Non-Redundant HGS) and 73.66\% (EHGS)~\cite{gladston2015}. EHGS typically matches or slightly improves upon HGS and GRE, though the evaluation remains coverage-based.
 
 \subsection{Greedy Heuristics with Overlap Awareness}
 
@@ -38,7 +38,7 @@ These methods improve achieved coverage within fixed budgets but are aimed at pr
 
 \subsection{Mutation-Aware Enhanced HGS}
 
-Mutation-Aware Enhanced HGS (MA-EHGS), proposed in this thesis, extends Enhanced HGS by incorporating mutation information, motivated by evidence that coverage-only minimisation may reduce mutation scores~\cite{noemmer2020,jehan2023}.
+The Mutation-Aware Enhanced HGS (MA-EHGS) algorithm, proposed in this thesis, extends EHGS by incorporating mutation information, motivated by evidence that coverage-only minimisation may reduce mutation scores~\cite{noemmer2020,jehan2023}.
 
 \subsubsection{Requirements-Matrix Formulation}
 
@@ -46,7 +46,7 @@ MA-EHGS operates on a binary matrix $M \in \{0,1\}^{n \times m}$ where rows repr
 
 \subsubsection{Two-Phase Selection with Mutation Weighting}
 
-MA-EHGS follows Enhanced HGS’s structure:
+MA-EHGS follows EHGS's structure:
 \begin{description}
   \item[Phase~1:] Select tests that uniquely cover any requirement.
   \item[Phase~2:] Select tests using the weighted score
@@ -66,15 +66,15 @@ Exact approaches model minimisation as ILP-, SAT- or CSP-based optimisation prob
 
 \subsection{ILP, SAT, and Set-Cover Formulations}
 
-ILP formulations express requirements as constraints and tests as decision variables, minimising the number (or cost) of selected tests~\cite{yoo2012,elbaum2002}. SAT and CSP encodings follow the same principle~\cite{hemmati2011}. Though exponential in the worst case, ILP/SAT can solve small- to medium-sized instances and serve as optimality baselines~\cite{yoo2012,khan2020}.
+Integer Linear Programming (ILP) formulations express requirements as constraints and tests as decision variables, minimising the number (or cost) of selected tests~\cite{yoo2012,elbaum2002}. Boolean Satisfiability Problem (SAT) and Constraint Satisfaction Problem (CSP) encodings follow the same principle~\cite{hemmati2011}. Though exponential in the worst case, ILP and SAT can solve small- to medium-sized instances and serve as optimality baselines~\cite{yoo2012,khan2020}.
 
 \subsection{NEMO and Nonlinear Formulations}
 
-Lin et al.\ suggest that linear models miss test interdependencies~\cite{lin2018}. NEMO uses a multi-criteria nonlinear integer program, adding objectives such as cost and fault detection. It can substantially improve fault-detection capability (up to 164\%) compared with linear ILP, but at far higher computational cost.
+Lin et al.\ suggest that linear models miss test interdependencies~\cite{lin2018}. Their Nonlinear Multi-criteria Integer Programming (NEMO) approach uses a multi-criteria nonlinear integer program, adding objectives such as cost and fault detection. NEMO can substantially improve fault-detection capability (up to 164\%) compared with linear ILP, but at far higher computational cost.
 
 \subsection{REDUNET}
 
-REDUNET combines set-cover reasoning with optimisation on control-flow graphs (CFGs)~\cite{mongiovi2020}. It uses CFG structure with ILP reasoning to detect redundant tests. Because it relies on CFGs, it is not applicable in SRM-only settings.
+Mongiovi et al.\ propose REDUNET, which combines set-cover reasoning with optimisation on Control Flow Graphs (CFGs)~\cite{mongiovi2020}. REDUNET uses CFG structure with ILP reasoning to detect redundant tests. Because it relies on CFGs, it is not applicable in SRM-only settings.
 
 \section{Search-Based and Metaheuristic Approaches}
 
@@ -86,7 +86,7 @@ Genetic Algorithms (GAs) evolve populations of candidate subsets through selecti
 
 \subsection{Other Metaheuristic Approaches}
 
-Ahuja and Bhatia evaluate PSO and ABC algorithms, reporting strong cost reductions; GAs sometimes produce smaller suites depending on parameters and program characteristics~\cite{ahuja2024}. Wei et al.\ apply mutation-aware many-objective evolutionary algorithms (NSGA-II, MOEA/D, IBEA, SPEA2-SDE) and show that including mutation score preserves fault detection while reducing cost~\cite{wei2017}.
+Ahuja and Bhatia evaluate Particle Swarm Optimisation (PSO) and Artificial Bee Colony (ABC) algorithms, reporting strong cost reductions. GAs sometimes produce smaller suites depending on parameters and program characteristics~\cite{ahuja2024}. Wei et al.\ apply mutation-aware Many-Objective Evolutionary Algorithms (MOEAs), including Non-dominated Sorting Genetic Algorithm II (NSGA-II), MOEA/D, IBEA, and SPEA2-SDE, and show that including mutation score preserves fault detection while reducing cost~\cite{wei2017}.
 
 \section{Data-Driven and Similarity-Based Approaches}
 
@@ -101,7 +101,7 @@ Similarity-based clustering and ranking methods group tests by coverage similari
 The surveyed literature suggests:
 
 \begin{itemize}
-  \item \textbf{Greedy variants as practical baselines.} Classical greedy, HGS and delayed greedy achieve substantial reduction while preserving coverage, with small differences in mutation preservation under adequate settings~\cite{yoo2012,noemmer2020,jehan2023}. Enhanced HGS offers modest improvements~\cite{gladston2015}.
+  \item \textbf{Greedy variants as practical baselines.} Classical greedy, HGS and DG achieve substantial reduction while preserving coverage, with small differences in mutation preservation under adequate settings~\cite{yoo2012,noemmer2020,jehan2023}. EHGS offers modest improvements~\cite{gladston2015}.
   \item \textbf{Coverage--mutation gap.} Coverage-only minimisation can reduce mutation scores~\cite{noemmer2020}. Mutation-aware greedy and evolutionary methods preserve fault detection more effectively~\cite{jehan2023,wei2017}.
   \item \textbf{Exact methods vs.\ scalability.} ILP, SAT and nonlinear models yield strong optimality baselines but become expensive as problem size grows, reflecting hitting-set hardness~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
   \item \textbf{Search-based and data-driven trade-offs.} Metaheuristics and similarity-based methods support flexible objectives but require tuning and incur higher cost than greedy heuristics~\cite{khan2020}. Overlap-aware methods are primarily used for prioritisation~\cite{bach2017}.

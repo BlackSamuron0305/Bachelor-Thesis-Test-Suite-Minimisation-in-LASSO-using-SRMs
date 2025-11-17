@@ -10,7 +10,7 @@ Test suite minimisation represents a sophisticated optimisation challenge where 
 
 \subsection{Practical Performance Benefits}
 
-Empirical evidence from large-scale industrial environments underscores the significant performance gains achievable through test suite minimisation. Bach et al.~\cite{bach2017} observed that over 90\% of test cases in a major industrial project (SAP) were redundant in terms of line coverage, with full test execution requiring several tens of hours. Applying minimisation techniques in such contexts can reduce execution time from many hours to just a few hours---or even minutes---without compromising coverage quality.
+Empirical evidence from large-scale industrial environments underscores the significant performance gains achievable through test suite minimisation. Bach et al.~\cite{bach2017} observed that over 90\% of test cases in a major industrial project (SAP) were redundant in terms of line coverage, with full test execution requiring several tens of hours. Applying minimisation techniques in such contexts can reduce execution time from many hours to just a few hours, or even minutes, without compromising coverage quality.
 
 These reductions yield immediate and measurable benefits. A 50--75\% shrinkage in test suites translates directly into lower computational demands, reduced infrastructure expenditure, and substantial cost savings. Minimised test execution drastically decreases CPU hours, memory allocation, and cloud consumption, which in turn cuts operational costs and energy usage. In continuous integration pipelines running hundreds of builds per day, the cumulative effect can be dramatic: a 60\% reduction across 500 daily builds eliminates roughly 300 redundant test executions per cycle~\cite{yoo2012}, saving both time and significant financial resources.
 
@@ -29,7 +29,7 @@ Solution effectiveness further depends on test suite characteristics: redundancy
 
 \subsection{The Coverage Limitation}
 
-Compounding these challenges, structural coverage metrics inadequately capture fault-detection capability. Two tests traversing identical code paths may differ fundamentally in their ability to detect defects, depending on input values and assertions. Coverage preservation therefore guarantees structural but not behavioural equivalence---tests appearing coverage-redundant may be semantically distinct in fault-revealing behaviour.
+Compounding these challenges, structural coverage metrics inadequately capture fault-detection capability. Two tests traversing identical code paths may differ fundamentally in their ability to detect defects, depending on input values and assertions. Coverage preservation therefore guarantees structural but not behavioural equivalence. Tests appearing coverage-redundant may be semantically distinct in fault-revealing behaviour.
 
 Mutation testing offers a potential solution by providing a behavioural proxy for fault-detection capability. Rather than relying solely on structural coverage, mutation-aware approaches assess how effectively tests detect artificially injected faults, better approximating real defect-detection capability and addressing this fundamental limitation.
 
@@ -59,7 +59,7 @@ The current implementation operates on single systems rather than multiple syste
 
 The approach depends on specific tooling infrastructure for metric collection. Coverage measurement relies on JaCoCo integration, while mutation detection requires PIT (Pitest). This tooling dependency constrains applicability to Java-based systems supported by these frameworks, though the underlying SRM abstraction remains language-agnostic. Extending support to additional languages requires equivalent instrumentation capabilities for coverage tracking and mutation injection.
 
-Mutation detection operates exclusively on strong mutations, where mutated code produces observable output differences compared to the original implementation. Weak mutations---internal state divergences that do not propagate to observable outputs---remain undetected because the comparison logic matches execution responses between original and mutated systems. Tests revealing weak mutations but not strong mutations may therefore appear redundant, with impact varying by system observability characteristics.
+Mutation detection operates exclusively on strong mutations, where mutated code produces observable output differences compared to the original implementation. Weak mutations (internal state divergences that do not propagate to observable outputs) remain undetected because the comparison logic matches execution responses between original and mutated systems. Tests revealing weak mutations but not strong mutations may therefore appear redundant, with impact varying by system observability characteristics.
 
 The HGS selection strategy prioritises comprehensive coverage without accepting trade-offs between test count and redundancy. When test $t_1$ covers requirements $\{1, \ldots, 20\}$ and test $t_2$ covers requirements $\{1, \ldots, 21\}$, both tests are retained because $t_2$ provides unique coverage of requirement 21. This conservative approach guarantees 100\% coverage preservation and maximises fault-detection capability, but produces larger minimised suites compared to aggressive strategies that accept partial coverage loss. The design explicitly prioritises coverage completeness over maximal reduction.
 
@@ -69,7 +69,7 @@ The current approach and implementation were validated similarly to unit tests i
 
 MA-EHGS provides a pragmatic solution balancing LASSO's architectural constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains (50--75\% reduction) while preserving fault-detection capability. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
 
-The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment in LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the configurable design accommodates diverse user preferences---from pure coverage-based minimisation ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$)---acknowledging that optimal configurations reflect domain-specific trade-offs rather than universal prescriptions.
+The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment in LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the configurable design accommodates diverse user preferences, from pure coverage-based minimisation ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$), acknowledging that optimal configurations reflect domain-specific trade-offs rather than universal prescriptions.
 
 \section{Future Work}
 \label{sec:discussion:future}

@@ -1,15 +1,15 @@
 \chapter{Comparative Evaluation and Selection}
 \label{chap:comparison}
 
-This chapter evaluates candidate test-suite minimisation techniques against the criteria defined in Chapter~\ref{chap:evaluation} and justifies the selection of the Mutation-Aware Enhanced HGS (MA-EHGS) algorithm for integration into LASSO. The goal is not to re-explain algorithms—Chapter~\ref{chap:literature-review} provides that—but to determine which techniques offer the best trade-offs for LASSO's Stimulus--Response Matrix (SRM) setting. Numerical scores and tables appear in Appendix~\ref{app:evaluation-tables}; here we focus on qualitative conclusions.
+This chapter evaluates candidate test-suite minimisation techniques against the criteria defined in Chapter~\ref{chap:evaluation} and justifies the selection of the Mutation-Aware Enhanced Harrold--Gupta--Soffa (MA-EHGS) algorithm for integration into LASSO. The goal is not to re-explain algorithms (Chapter~\ref{chap:literature-review} provides that) but to determine which techniques offer the best trade-offs for LASSO's Stimulus--Response Matrix (SRM) setting. Numerical scores and tables appear in Appendix~\ref{app:evaluation-tables}, and here we focus on qualitative conclusions.
 
-The evaluation considers the following technique families:
+The evaluation considers the following families of techniques (as introduced in Chapter~\ref{chap:literature-review}):
 
 \begin{itemize}
-  \item \textbf{Greedy heuristics:} classical greedy, HGS, Enhanced HGS, Delayed Greedy, GE/GRE, and mutation-based greedy variants.
-  \item \textbf{Exact optimisation:} ILP, SAT/constraint encodings and nonlinear formulations such as NEMO.
-  \item \textbf{Search-based approaches:} genetic algorithms and many-objective evolutionary algorithms (MOEAs).
-  \item \textbf{Data-driven methods:} similarity- and overlap-based algorithms.
+  \item \textbf{Greedy heuristics:} classical greedy, HGS, Enhanced HGS (EHGS), Delayed Greedy (DG), GE/GRE, and mutation-based greedy variants.
+  \item \textbf{Exact optimisation:} Integer Linear Programming (ILP), Boolean Satisfiability Problem (SAT)/constraint encodings and nonlinear formulations such as NEMO.
+  \item \textbf{Search-based approaches:} Genetic Algorithms (GAs) and Many-Objective Evolutionary Algorithms (MOEAs), including mutation-aware variants.
+  \item \textbf{Data-driven and similarity-based methods:} algorithms that exploit coverage similarity and overlap, particularly under time constraints.
   \item \textbf{Hybrid structural techniques:} REDUNET, which combines set-cover reasoning with CFG analysis.
 \end{itemize}
 
@@ -20,7 +20,7 @@ All methods are evaluated along criteria C1--C6: SRM compatibility, coverage pre
 
 C1 requires algorithms to operate directly on SRMs without relying on program-structure analyses such as CFGs or ASTs. Most examined techniques satisfy this.
 
-Classical greedy heuristics, HGS, Enhanced HGS and Delayed Greedy all operate on test--requirement incidence matrices~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. ILP/SAT formulations similarly encode set cover over tests and requirements~\cite{rothermel1998,yoo2012,elbaum2002}. NEMO adds multi-criteria optimisation but retains the same matrix representation~\cite{lin2018}. Search-based techniques represent each candidate solution as a subset of tests defined over coverage and mutation vectors~\cite{yoo2012,khan2020,wei2017}. Similarity- and overlap-based approaches also rely on coverage vectors~\cite{yoo2012,bach2017}.
+Classical greedy heuristics, HGS, EHGS and DG all operate on test--requirement incidence matrices~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. ILP and SAT formulations similarly encode set cover over tests and requirements~\cite{rothermel1998,yoo2012,elbaum2002}. NEMO adds multi-criteria optimisation but retains the same matrix representation~\cite{lin2018}. Search-based techniques represent each candidate solution as a subset of tests defined over coverage and mutation vectors~\cite{yoo2012,khan2020,wei2017}. Similarity- and overlap-based approaches also rely on coverage vectors~\cite{bach2017,khan2020}.
 
 By contrast, REDUNET depends on control-flow graphs and associated program structures~\cite{mongiovi2020}, which LASSO’s SRM abstraction does not provide. It therefore violates C1.
 
@@ -29,7 +29,9 @@ By contrast, REDUNET depends on control-flow graphs and associated program struc
 %======================================================================
 \section{Criterion C2: Coverage Preservation}
 
-C2 requires that minimisation preserve structural coverage under adequate settings. Greedy heuristics (classical greedy, HGS, Enhanced HGS, Delayed Greedy, GE/GRE) all ensure coverage preservation by construction: they select tests until all required elements are covered~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. Noemmer and Haas and Jehan and Wotawa adopt this requirement explicitly in their evaluations~\cite{noemmer2020,jehan2023}.
+C2 requires that minimisation preserve structural coverage under adequate settings. Greedy SRM-based methods are straightforward to implement: they operate on coverage matrices, require no external solvers, and can be implemented as deterministic procedures with few parameters~\cite{yoo2012,noemmer2020,jehan2023}.
+EHGS and DG extend this pattern with additional heuristic steps but still follow the same basic matrix-based design~\cite{tallam2005,gladston2015}.
+Integrating such algorithms into LASSO amounts to operating over the SRM representation already present in the system~\cite{Kessel2022}.
 
 Exact ILP/SAT encodings guarantee coverage preservation whenever a feasible solution is found~\cite{elbaum2002,yoo2012}. NEMO also enforces coverage constraints while optimising additional criteria~\cite{lin2018}.
 
@@ -48,7 +50,10 @@ Among heuristic methods, several studies show strong performance for greedy vari
 
 Search-based methods such as mutation-aware MOEAs also achieve substantial reductions~\cite{wei2017}, though cross-study comparisons can vary due to differing subjects and evaluation setups.
 
-\textbf{Conclusion (C3).} ILP/SAT/NEMO provide optimal or near-optimal bounds but at higher cost. Among heuristics, Enhanced HGS, Delayed Greedy and related greedy variants consistently achieve strong reduction. MA-EHGS inherits this behaviour from Enhanced HGS.
+\textbf{Conclusion (C3).} ILP/SAT/NEMO provide optimal or near-optimal bounds but at higher cost. Among heuristics, Enhanced HGS, Delayed Greedy and related greedy variants consistently achieve strong reduction. \textbf{Conclusion (C3).}
+Exact ILP, SAT and NEMO methods provide the strongest guarantees on minimality but at higher computational and integration cost.
+Among polynomial-time heuristics, EHGS, DG and related greedy variants offer strong reduction in the reported experiments~\cite{tallam2005,gladston2015,noemmer2020,jehan2023}.
+MA-EHGS builds on EHGS and therefore inherits its basic reduction behaviour, while adding mutation-awareness (C4) without changing the underlying SRM-based selection mechanism.
 
 %======================================================================
 \section{Criterion C4: Mutation Score Preservation}
@@ -94,7 +99,7 @@ Across C1--C6, several algorithms perform well individually:
 
 \begin{itemize}
   \item \textbf{C2 (coverage):} classical greedy, HGS, Enhanced HGS, Delayed Greedy, ILP/SAT and NEMO~\cite{harrold1993,rothermel1998,elbaum2002,gladston2015,tallam2005,yoo2012,noemmer2020}.
-  \item \textbf{C3 (reduction):} ILP/SAT/NEMO provide optimal reductions; Enhanced HGS and Delayed Greedy achieve strong heuristic reductions~\cite{tallam2005,gladston2015,noemmer2020,jehan2023}.
+  \item \textbf{C3 (reduction):} ILP/SAT/NEMO provide optimal reductions. Enhanced HGS and Delayed Greedy achieve strong heuristic reductions~\cite{tallam2005,gladston2015,noemmer2020,jehan2023}.
   \item \textbf{C4 (mutation):} mutation-based greedy and mutation-guided MOEAs~\cite{jehan2023,wei2017}.
   \item \textbf{C5--C6 (scalability/feasibility):} greedy matrix-based heuristics~\cite{yoo2012,noemmer2020,jehan2023}.
 \end{itemize}
