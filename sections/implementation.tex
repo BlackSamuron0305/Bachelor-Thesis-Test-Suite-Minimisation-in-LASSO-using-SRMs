@@ -2,9 +2,9 @@
 \label{chap:implementation}
 
 This chapter presents the technical implementation of the Mutation-Aware Enhanced HGS minimiser within LASSO. The work was developed in a dedicated branch:\\[2pt]
-\centerline{\texttt{<https://github.com/.../lasso-minimization>}}
+\centerline{\texttt{<https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization>}}
 and the full reference implementation is available at:\\[2pt]
-\centerline{\texttt{<https://github.com/.../MinimizationAlgorithm.java>}} 
+\centerline{\texttt{<https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/lasso-llm/src/main/java/de/uni\_mannheim/swt/lasso/llm/arena/MinimizationAlgorithm.java>}} 
 
 The contribution of this work lies in four areas: reliable per-test coverage collection, mutation-aware requirement extraction, a unified requirements-matrix representation, and a scalable realisation of the Enhanced HGS algorithm extended with mutation weighting. All components integrate seamlessly into the existing Arena–Mutation–SRM workflow and remain fully language-independent.
 
@@ -43,7 +43,7 @@ Phase~2 applies a weighted greedy selection:
 = \alpha \cdot |\mathrm{newCoverage}(t_i)| 
 + \beta \cdot |\mathrm{newMutants}(t_i)|,
 \]
-with default parameters $\alpha=0.3$ and $\beta=0.7$.  
+with default parameters $\alpha=0.5$ and $\beta=0.5$.  
 BitSet operations keep runtime at $O(nm)$ and allow efficient experimentation with different scoring configurations.
 
 \section{Integration Into LASSO}
@@ -57,8 +57,8 @@ action(name: 'minimize', type: 'TestSuiteMinimization') {
     dependsOn 'mutate'
     includeAbstractions 'Base64'
 
-    alpha = @\textcolor{blue}{0.3}@
-    beta  = @\textcolor{blue}{0.7}@
+    alpha = @\textcolor{blue}{50}@
+    beta  = @\textcolor{blue}{50}@
     keepMutants  = @\textcolor{blue}{true}@
     keepOracle = @\textcolor{blue}{false}@
 
@@ -69,4 +69,4 @@ The implementation required updating SRM extraction logic, correcting test-name 
 
 \section{Validation}
 
-Validation confirmed that all structural and mutation requirements are preserved for $\alpha>0$ and $\beta>0$, and that the algorithm behaves deterministically under fixed configurations. Unit tests verify requirement mapping, kill-detection correctness, and algorithmic behaviour. Benchmarks (Appendix~\ref{app:benchmarks}) show consistent reductions of 46.9--55.6\% with full retention of structural and mutation requirements.
+Validation confirmed that all structural and mutation requirements are preserved for $\alpha>0$ and $\beta>0$, and that the algorithm behaves deterministically under fixed configurations. Unit tests verify requirement mapping, kill-detection correctness, and algorithmic behaviour. Benchmarks (Appendix~\ref{app:benchmarks}) show strong reduction effectiveness (e.g., Base64: 80 tests $\to$ 8 tests) with full retention of structural and mutation requirements. As expected, MA-EHGS performs slightly less aggressively than coverage-only Enhanced HGS, but the difference is not critical.

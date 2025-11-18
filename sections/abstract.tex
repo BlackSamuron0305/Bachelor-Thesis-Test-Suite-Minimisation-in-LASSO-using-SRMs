@@ -8,6 +8,6 @@ Our approach leverages \emph{Stimulus--Response Matrices} (SRMs)~\cite{Kessel202
 
 Through a targeted literature survey encompassing greedy heuristics, exact optimisation, search-based, and data-driven minimisation strategies, we comparatively assessed candidate algorithms along six established criteria: SRM compatibility, coverage retention, reduction effectiveness, mutation-coverage preservation, computational scalability, and implementation feasibility. The Mutation-Aware Enhanced Harrold--Gupta--Soffa (MA-EHGS) algorithm emerged as the most promising candidate. MA-EHGS extends the empirically validated Enhanced HGS baseline~\cite{gladston2015} by integrating mutation weighting to balance coverage preservation and fault-detection power~\cite{jehan2023}.
 
-We successfully integrated MA-EHGS into LASSO and validated the implementation using real-world SRMs.
+We successfully integrated MA-EHGS into LASSO and validated the implementation using SRM representations of JUnit-based test suites.
 The achieved reduction levels fall within the ranges reported for HGS-based and mutation-aware greedy techniques in prior empirical studies~\cite{gladston2015,jehan2023}.
 Since MA-EHGS follows the same matrix-driven selection structure as other greedy test-suite minimisation algorithms, it retains the practical scalability widely observed for greedy heuristics in regression testing~\cite{yoo2012,noemmer2020}.

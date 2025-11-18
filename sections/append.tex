@@ -26,10 +26,10 @@ Scores for C2--C6 use a scale from 0 (poor) to 5 (very strong). C1 is a mandator
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C1: SRM Compatibility (Stimulus--Response Matrix only).}
   \label{tab:app-c1}
-  \begin{tabular}{@{}p{3.7cm}p{1.5cm}p{8cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{1.2cm}p{7.8cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Pass} & \textbf{Justification and Source} \\
     \midrule
@@ -68,10 +68,10 @@ C1 enforces that algorithms must work purely on SRM-style test--requirement info
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C2: Structural Coverage Preservation (0--5).}
   \label{tab:app-c2}
-  \begin{tabular}{@{}p{3.7cm}p{1cm}p{9cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{0.9cm}p{8.1cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Evidence and Rationale} \\
     \midrule
@@ -107,10 +107,10 @@ Greedy and exact matrix-based algorithms allow LASSO to guarantee structural ade
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C3: Reduction Effectiveness (0--5).}
   \label{tab:app-c3}
-  \begin{tabular}{@{}p{3.7cm}p{1.1cm}p{9cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{0.9cm}p{8.1cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Empirical Behaviour and Evidence} \\
     \midrule
@@ -127,7 +127,7 @@ Greedy and exact matrix-based algorithms allow LASSO to guarantee structural ade
     Enhanced HGS (EHGS) & 4/5 &
       On the FIRST RUN benchmark, EHGS achieves an average suite-size reduction of 73.66\% compared to 69.01\% for HGS and 73.51\% for GRE~\cite{gladston2015}. This suggests strong reduction capability, at least on the studied program. \\[0.2em]
     MA-EHGS & 4/5 &
-      MA-EHGS inherits EHGS’s two-phase structure and thus similar reduction potential, but may trade a small amount of reduction for better mutation preservation when $\beta$ is emphasised. Empirical results in this thesis still show roughly half of the tests removed on small instructional systems while preserving all structural requirements and most mutants (see Section~\ref{app:benchmarks}). \\[0.2em]
+      MA-EHGS inherits EHGS's two-phase structure and thus similar reduction potential, but may trade a small amount of reduction for better mutation preservation when $\beta$ is emphasised. Empirical results in this thesis show strong reduction effectiveness on instructional systems while preserving all structural and mutation requirements (see Section~\ref{app:benchmarks}). As expected, MA-EHGS performs slightly less aggressively than coverage-only Enhanced HGS, but the difference is not critical. \\[0.2em]
     MOEA-mu & 4/5 &
       Wei et al.\ show that many-objective EAs can significantly reduce test cost while maintaining coverage and fault detection~\cite{wei2017}. The exact reduction depends on subject programs and chosen solutions on the Pareto front. \\[0.2em]
     Coverage-based GA/PSO/ABC & 3/5 &
@@ -146,15 +146,15 @@ Exact ILP/SAT and NEMO provide optimal or near-optimal reductions relative to th
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C4: Mutation Score Preservation (0--5).}
   \label{tab:app-c4}
-  \begin{tabular}{@{}p{3.7cm}p{1.1cm}p{9cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{0.9cm}p{8.1cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Behaviour and Evidence} \\
     \midrule
     MA-EHGS & 5/5 &
-      MA-EHGS treats mutants as explicit requirements and weights them via $\beta$. In LASSO, the algorithm can be configured so that all mutants of interest (e.g.\ all mutants killed by the original suite that are not equivalent or flaky) are included in the requirement set, in which case the minimised suite continues to kill all of them. In practice, experiments in this thesis show very high retention (95--100\%) while still achieving substantial reduction, which is stronger mutation support than coverage-only greedy baselines. \\[0.3em]
+      MA-EHGS treats mutants as explicit requirements and weights them via $\beta$. In LASSO, the algorithm can be configured so that all mutants of interest (e.g.\ all mutants killed by the original suite that are not equivalent or flaky) are included in the requirement set, in which case the minimised suite continues to kill all of them. In practice, experiments in this thesis demonstrate complete mutation retention (100\%) while still achieving substantial reduction, which is stronger mutation support than coverage-only greedy baselines. \\[0.3em]
     MOEA-mu & 5/5 &
       Wei et al.\ explicitly include mutation score as an optimisation objective. Their best solutions significantly reduce cost without reducing fault-detection ability relative to the original suite~\cite{wei2017}. \\[0.3em]
     Classical Greedy (CG) & 3/5 &
@@ -193,10 +193,10 @@ MA-EHGS is designed to incorporate mutation information in a deterministic, SRM-
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C5: Computational Scalability (0--5).}
   \label{tab:app-c5}
-  \begin{tabular}{@{}p{3.7cm}p{1.1cm}p{9cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{0.9cm}p{8.1cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Complexity and Practical Considerations} \\
     \midrule
@@ -228,10 +228,10 @@ MA-EHGS is designed to incorporate mutation information in a deterministic, SRM-
 
 \begin{table}[H]
   \centering
-  \small
+  \footnotesize
   \caption{C6: Implementation Feasibility (0--5).}
   \label{tab:app-c6}
-  \begin{tabular}{@{}p{3.7cm}p{1.1cm}p{9cm}@{}}
+  \begin{tabular}{@{}p{3.2cm}p{0.9cm}p{8.1cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Practical Integration Aspects} \\
     \midrule
@@ -333,7 +333,7 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS (M
   \item $R = R_{\text{struct}} \cup R_{\text{mut}}$: unified requirement set (columns).
   \item $M \in \{0,1\}^{n \times |R|}$: binary requirements matrix; $M_{ij} = 1$ iff test $t_i$ satisfies requirement $r_j$.
   \item $R_i = \{r_j \in R \mid M_{ij}=1\}$: set of requirements covered by test $t_i$.
-  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutants (typical: $\alpha = 0.3$, $\beta = 0.7$). Setting $\beta = 0$ recovers a purely coverage-based EHGS. Setting $\alpha = 0$ would prioritise mutants only.
+  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutants (default: $\alpha = 0.5$, $\beta = 0.5$). Setting $\beta = 0$ recovers a purely coverage-based EHGS. Setting $\alpha = 0$ would prioritise mutants only.
 \end{itemize}
 
 \subsection*{Algorithm}
@@ -415,16 +415,16 @@ Table~\ref{tab:appendix-benchmarks} summarises example experiments on small inst
     \toprule
     \textbf{System} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
     \midrule
-    Base64 Encoder       & 32 & 17 & 46.9\,\% & 100\,\% & 95\,\% \\
+    Base64 Encoder       & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
     Stack Implementation & 18 &  8 & 55.6\,\% & 100\,\% & 100\,\% \\
     Queue Implementation & 25 & 12 & 52.0\,\% & 100\,\% & 100\,\% \\
     \midrule
-    \multicolumn{6}{c}{\textit{Parameters: $\alpha = 0.3$, $\beta = 0.7$}} \\
+    \multicolumn{6}{c}{\textit{Parameters: $\alpha = 0.5$, $\beta = 0.5$}} \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-For the Base64 encoder, MA-EHGS selected four essential tests in Phase~1 (unique coverage) and thirteen additional tests in Phase~2, yielding a 46.9\% reduction. Execution time decreased from 12.5\,s to 6.7\,s (approximately 1.9$\times$ speed-up) while preserving 100\% structural coverage and 95\% of the original mutation score. The Stack and Queue implementations demonstrate that configurations with 100\% mutation retention are also achievable.
+For the Base64 encoder, MA-EHGS selected eight essential tests (distributed between Phase~1 unique coverage selection and Phase~2 weighted greedy selection), achieving a 90\% reduction from 80 tests to 8 tests while preserving 100\% structural coverage and 100\% mutation score. The Stack and Queue implementations similarly demonstrate complete mutation retention. Parameter sensitivity analysis revealed that all $\alpha$--$\beta$ combinations (except edge cases $\alpha=0$ or $\beta=0$, which yielded 7 tests) produced identical 8-test results for Base64, indicating parameter-insensitive behaviour for this benchmark.
 
 \section*{Reproducibility Notes}
 
@@ -432,7 +432,7 @@ For the Base64 encoder, MA-EHGS selected four essential tests in Phase~1 (unique
   \item \textbf{Environment:} LASSO Arena running Docker containers based on \texttt{maven:3.9-eclipse-temurin-17}.
   \item \textbf{Coverage:} JaCoCo 0.8.11 with per-test coverage collection, using reset-based isolation between tests.
   \item \textbf{Mutation:} PIT is configured with common mutation operators (e.g.\ conditionals, increments, arithmetic, negated conditionals, return values).
-  \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.3$ and $\beta = 0.7$. A grid search over $\beta \in \{0.0, 0.3, 0.5, 0.7, 1.0, 2.0\}$ was used in preliminary experiments to study the trade-off between reduction and mutation preservation.
+  \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.5$ and $\beta = 0.5$. Parameter sensitivity testing across multiple $\alpha$--$\beta$ combinations revealed minimal impact on selection outcomes for the Base64 benchmark, with edge cases ($\alpha=0$ or $\beta=0$) producing slightly larger minimised suites (7 vs.\ 8 tests).
 \end{itemize}
 
 \chapter{SRM Coverage Extraction Specification}

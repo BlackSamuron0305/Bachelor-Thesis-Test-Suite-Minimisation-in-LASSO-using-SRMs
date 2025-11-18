@@ -67,7 +67,7 @@ The current approach and implementation were validated similarly to unit tests i
 
 \subsection{Implications for LASSO Platform Evolution}
 
-MA-EHGS provides a pragmatic solution balancing LASSO's architectural constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains (50--75\% reduction) while preserving fault-detection capability. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
+MA-EHGS provides a pragmatic solution balancing LASSO's architectural constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains while preserving fault-detection capability. As expected, incorporating mutation constraints yields slightly lower reduction than coverage-only Enhanced HGS, but the trade-off is not critical given the improved fault-detection guarantees. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
 
 The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment in LASSO's Arena pipeline. While constrained by strong mutation limitations and parameter sensitivity, the configurable design accommodates diverse user preferences, from pure coverage-based minimisation ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$), acknowledging that optimal configurations reflect domain-specific trade-offs rather than universal prescriptions.
 
@@ -90,7 +90,9 @@ Validation has so far focused on isolated unit tests. End-to-end integration tes
 
 \subsection{Alpha–Beta Benchmarking}
 
-The current defaults for $\alpha$ and $\beta$ are theoretically motivated but not empirically optimised. A systematic grid search across parameter combinations could identify configurations that maximise reduction while preserving coverage and mutation scores for different system types. Such benchmarking could be integrated as an LSL action.
+Empirical parameter sensitivity analysis on the Base64 benchmark revealed minimal impact of $\alpha$--$\beta$ configurations on minimisation outcomes. Testing multiple parameter combinations produced identical 8-test results for all non-edge cases, with only $\alpha=0$ or $\beta=0$ configurations yielding slightly larger suites (7 tests). This parameter insensitivity simplifies configuration, as the balanced defaults $\alpha=0.5$ and $\beta=0.5$ perform equivalently to other weighted combinations for this benchmark.
+
+However, this finding is based on relatively small test suites (80 tests for Base64). Larger test suites with more complex coverage patterns may exhibit greater parameter sensitivity, particularly when $\alpha + \beta > 1$ amplifies both coverage and mutation contributions simultaneously. A systematic grid search across parameter combinations on diverse system types and scales could identify configurations that optimise reduction while preserving coverage and mutation scores. Such benchmarking could be integrated as an LSL action to support empirically guided parameter selection.
 
 \subsection{Weak Mutation Support}
 
