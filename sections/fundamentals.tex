@@ -88,11 +88,11 @@ where each row $t_i$ represents a stimulus (test), each column $v_j$ a system va
   \begin{tabular}{c|cccc}
     & \textbf{System 1} & \textbf{System 2} & \textbf{System 3} & \textbf{System 4} \\
     \hline
-    \textbf{Test 1} & pass & fail & pass & fail \\
-    \textbf{Test 2} & pass & pass & pass & pass \\
-    \textbf{Test 3} & pass & fail & fail & pass \\
+    \textbf{Test 1} & \cellcolor{green!20}42 & \cellcolor{red!20}41 & \cellcolor{green!20}42 & \cellcolor{red!20}43 \\
+    \textbf{Test 2} & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 \\
+    \textbf{Test 3} & \cellcolor{green!20}true & \cellcolor{green!20}true & \cellcolor{red!20}false & \cellcolor{green!20}true \\
   \end{tabular}
-  \caption{Example SRM fragment showing per-test outcomes across different system variants. Behavioural discrepancies can be used to compute mutation scores and coverage information.}
+  \caption{Example SRM fragment showing actual outputs across different system variants (columns). Green cells indicate passing tests; red cells indicate failures. Systems 1 and 3 produce identical output (42) for Test 1, while Systems 2 and 4 produce different mutant outputs (41, 43). All systems pass Test 2 with identical output (100).}
   \label{fig:srm-mutation-example}
 \end{figure}
 

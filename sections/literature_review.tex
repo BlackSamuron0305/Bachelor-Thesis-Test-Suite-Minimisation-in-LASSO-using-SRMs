@@ -1,6 +1,6 @@
 \chapter{Literature Review}\label{chap:literature-review}
 
-This chapter surveys test-suite minimisation algorithms across four categories: greedy heuristics, exact optimisation, search-based approaches and data-driven techniques, focusing on methods that operate on or can be expressed via a requirements matrix (SRM).
+This chapter surveys test-suite minimisation algorithms across four categories: greedy heuristics, exact optimisation, search-based approaches and data-driven techniques.
 
 \section{Greedy Heuristics}
 
@@ -10,7 +10,7 @@ Greedy heuristics are among the most widely studied minimisation techniques~\cit
 
 The classical greedy heuristic repeatedly selects the test covering the most uncovered requirements. Chvátal proved a logarithmic approximation bound~\cite{chvatal1979}, and subsequent work treats this heuristic as a baseline for regression-test minimisation~\cite{rothermel1998,yoo2012}.
 
-Noemmer and Haas note that greedy variants are ``the test suite minimization algorithms most commonly found in research''~\cite{noemmer2020}. In their Java study, both classical greedy and HGS (Section~\ref{sec:hgs}) achieve substantial reduction while preserving statement coverage. Mutation testing shows that, under adequate reduction, mutation scores remain close to those of the original suite, whereas more aggressive reduction can incur relative mutation-score losses of about 3.5--21\%, depending on project and threshold~\cite{noemmer2020}. Jehan and Wotawa report similar findings for JavaScript projects, with roughly 70\% reduction and only minor differences between greedy variants under adequate settings~\cite{jehan2023}.
+Noemmer and Haas note that greedy variants are ``the test suite minimization algorithms most commonly found in research''~\cite{noemmer2020}. In their Java study, both classical greedy and Harrold-Gupta-Soffa (Section~\ref{sec:hgs}) achieve substantial reduction while preserving statement coverage. Mutation testing shows that, under adequate reduction, mutation scores remain close to those of the original suite, whereas more aggressive reduction can incur relative mutation-score losses of about 3.5--21\%, depending on project and threshold~\cite{noemmer2020}. Jehan and Wotawa report similar findings for JavaScript projects, with roughly 70\% reduction and only minor differences between greedy variants under adequate settings~\cite{jehan2023}.
 
 \subsection{Harrold--Gupta--Soffa}\label{sec:hgs}
 
@@ -30,11 +30,6 @@ Gladston and Ramesh refined HGS and evaluated several variants on Java programs~
 
 On the FIRST RUN benchmark, they report suite-size reductions (SSR) of 73.51\% (GRE), 69.01\% (HGS), 71.83\% (Non-Redundant HGS) and 73.66\% (EHGS)~\cite{gladston2015}. EHGS typically matches or slightly improves upon HGS and GRE, though the evaluation remains coverage-based.
 
-\subsection{Greedy Heuristics with Overlap Awareness}
-
-Overlap-aware greedy heuristics penalise tests with highly redundant coverage. Bach et al.\ apply such approaches in a SAP environment to maximise coverage under tight time budgets rather than obtain minimal suites~\cite{bach2017}. Similarity-based and clustering methods identify redundant tests and prioritise those providing new coverage.
-
-These methods improve achieved coverage within fixed budgets but are aimed at prioritisation rather than exact minimisation~\cite{bach2017}.
 
 \subsection{Mutation-Aware Enhanced HGS}
 
@@ -74,7 +69,7 @@ Lin et al.\ suggest that linear models miss test interdependencies~\cite{lin2018
 
 \subsection{REDUNET}
 
-Mongiovi et al.\ propose REDUNET, which combines set-cover reasoning with optimisation on Control Flow Graphs (CFGs)~\cite{mongiovi2020}. REDUNET uses CFG structure with ILP reasoning to detect redundant tests. Because it relies on CFGs, it is not applicable in SRM-only settings.
+Mongiovi et al.\ propose REDUNET, which combines set-cover reasoning with optimisation on Control Flow Graphs (CFGs)~\cite{mongiovi2020}. REDUNET uses CFG structure with ILP reasoning to detect redundant tests.
 
 \section{Search-Based and Metaheuristic Approaches}
 
@@ -98,12 +93,16 @@ Similarity-based clustering and ranking methods group tests by coverage similari
 
 \section{Summary}
 
-The surveyed literature suggests:
+The surveyed literature highlights several recurring themes in test-suite minimisation research:
 
 \begin{itemize}
-  \item \textbf{Greedy variants as practical baselines.} Classical greedy, HGS and DG achieve substantial reduction while preserving coverage, with small differences in mutation preservation under adequate settings~\cite{yoo2012,noemmer2020,jehan2023}. EHGS offers modest improvements~\cite{gladston2015}.
-  \item \textbf{Coverage--mutation gap.} Coverage-only minimisation can reduce mutation scores~\cite{noemmer2020}. Mutation-aware greedy and evolutionary methods preserve fault detection more effectively~\cite{jehan2023,wei2017}.
-  \item \textbf{Exact methods vs.\ scalability.} ILP, SAT and nonlinear models yield strong optimality baselines but become expensive as problem size grows, reflecting hitting-set hardness~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
-  \item \textbf{Search-based and data-driven trade-offs.} Metaheuristics and similarity-based methods support flexible objectives but require tuning and incur higher cost than greedy heuristics~\cite{khan2020}. Overlap-aware methods are primarily used for prioritisation~\cite{bach2017}.
-  \item \textbf{Motivation for mutation-aware greedy minimisation.} Mutation-guided greedy and evolutionary work shows that incorporating mutation information helps preserve fault detection~\cite{jehan2023,wei2017}. MA-EHGS extends a validated greedy heuristic with mutation awareness while maintaining SRM-based scalability.
+  \item \textbf{Greedy heuristics as widely used baselines.} Classical Greedy, HGS and DG are consistently employed across empirical studies and achieve substantial reduction while preserving structural coverage, with small differences in mutation preservation under adequate settings~\cite{yoo2012,noemmer2020,jehan2023}. EHGS provides incremental refinements~\cite{gladston2015}.
+  
+  \item \textbf{Coverage–mutation gap.} Coverage-only minimisation can reduce mutation scores~\cite{noemmer2020}. Mutation-aware greedy and evolutionary techniques demonstrate that incorporating mutation information can better preserve fault-detection capability~\cite{jehan2023,wei2017}.
+  
+  \item \textbf{Exact methods vs.\ scalability.} ILP, SAT and nonlinear models provide strong optimality baselines but become computationally expensive as problem size grows, reflecting the underlying hitting-set hardness~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
+  
+  \item \textbf{Search-based and data-driven trade-offs.} Metaheuristics and similarity-based methods support flexible optimisation goals but often require parameter tuning and incur higher computational cost than greedy heuristics~\cite{khan2020}. Overlap-aware methods are primarily used for prioritisation rather than strict minimisation~\cite{bach2017}.
+  
+  \item \textbf{Rationale for algorithm selection.} The goal of this review is to show that no algorithm is universally superior, depending on context and priorities some algorithms may be more suitable than others. The algorithms included in this review were chosen because they have reproducible and well-documented empirical results across multiple benchmark suites and programming languages~\cite{gladston2015,noemmer2020,jehan2023,wei2017}. This makes them suitable for systematic comparison within an SRM-based framework.
 \end{itemize}

@@ -27,6 +27,19 @@ Mutation information is reconstructed from SRM entries of type \texttt{value}. A
 \]
 This refined method yields a precise kill signal and corrects inconsistencies of earlier pipelines that observed only the first output cell.
 
+\begin{figure}[H]
+  \centering
+  \begin{tabular}{c|cccc}
+    & \textbf{Original} & \textbf{Mutant 1} & \textbf{Mutant 2} & \textbf{Mutant 3} \\
+    \hline
+    \textbf{Test 1} & \cellcolor{green!20}42 & \cellcolor{red!20}41 & \cellcolor{green!20}42 & \cellcolor{red!20}43 \\
+    \textbf{Test 2} & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 \\
+    \textbf{Test 3} & \cellcolor{green!20}true & \cellcolor{red!20}false & \cellcolor{green!20}true & \cellcolor{red!20}false \\
+  \end{tabular}
+  \caption{Example SRM for mutation score extraction. The first column shows outputs from the original implementation; subsequent columns show mutant variants. Green cells indicate outputs matching the original; red cells indicate divergent outputs (killed mutants). Test 1 kills Mutants 1 and 3. Test 2 kills no mutants. Test 3 kills Mutants 1 and 3. Tests are compared cell-by-cell across all output positions.}
+  \label{fig:mutation-extraction}
+\end{figure}
+
 Coverage and mutation elements are unified into the set
 \[
 R = R_{\text{coverage}} \cup R_{\text{mutation}},
