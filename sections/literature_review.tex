@@ -1,108 +1,365 @@
 \chapter{Literature Review}\label{chap:literature-review}
 
-This chapter surveys test-suite minimisation algorithms across four categories: greedy heuristics, exact optimisation, search-based approaches and data-driven techniques.
+This chapter surveys test-suite minimisation algorithms across four main families:
+greedy heuristics, exact optimisation approaches, search-based (metaheuristic) techniques,
+and data-driven similarity-based methods. The focus is on how these approaches
+formulate the minimisation problem, which information they use (e.g.\ coverage matrices,
+mutants, control-flow graphs), and how they construct reduced test suites.
+Comparative scoring and ranking are deferred to Chapter~\ref{chap:comparison}.
+
 
 \section{Greedy Heuristics}
 
-Greedy heuristics are among the most widely studied minimisation techniques~\cite{yoo2012,noemmer2020}. They are typically formulated as instances of the minimal hitting-set (set-cover) problem: given tests and requirements (e.g.\ statements, branches, mutants), a greedy algorithm iteratively selects tests that cover the most yet-uncovered elements~\cite{chvatal1979,yoo2012}. Because minimal hitting-set is NP-complete~\cite{garey1979} and test-suite minimisation is commonly formulated as a hitting-set or set-cover problem~\cite{jeffrey2005,noemmer2020}, greedy heuristics serve as practical approximations rather than exact solvers.
+Greedy heuristics are among the most widely studied techniques for test-suite
+minimisation~\cite{yoo2012,noemmer2020}. They operate directly on a
+test--requirement incidence matrix (often a coverage matrix) and construct a reduced
+suite incrementally: in each step, the algorithm selects a test that contributes
+beneficial coverage for currently uncovered requirements, until all requirements are
+covered. Because of their simplicity, low implementation overhead, and good practical
+performance, greedy algorithms are frequently used as baselines in empirical studies.
 
 \subsection{Classical Greedy}
 
-The classical greedy heuristic repeatedly selects the test covering the most uncovered requirements. Chvátal proved a logarithmic approximation bound~\cite{chvatal1979}, and subsequent work treats this heuristic as a baseline for regression-test minimisation~\cite{rothermel1998,yoo2012}.
+The classical greedy heuristic repeatedly selects the test that covers the largest
+number of yet-uncovered requirements. Chvátal showed that this algorithm achieves
+a logarithmic approximation bound for the set-cover problem~\cite{chvatal1979}.
+Rothermel et al.\ and later surveys treat classical greedy as a standard baseline
+for regression test-suite minimisation~\cite{rothermel1998,yoo2012}.
 
-Noemmer and Haas note that greedy variants are ``the test suite minimization algorithms most commonly found in research''~\cite{noemmer2020}. In their Java study, both classical greedy and Harrold-Gupta-Soffa (Section~\ref{sec:hgs}) achieve substantial reduction while preserving statement coverage. Mutation testing shows that, under adequate reduction, mutation scores remain close to those of the original suite, whereas more aggressive reduction can incur relative mutation-score losses of about 3.5--21\%, depending on project and threshold~\cite{noemmer2020}. Jehan and Wotawa report similar findings for JavaScript projects, with roughly 70\% reduction and only minor differences between greedy variants under adequate settings~\cite{jehan2023}.
+In a typical formulation, the algorithm maintains a set of uncovered requirements
+and, in each iteration, scores every remaining test by the number of uncovered
+requirements it satisfies. The test with the highest score is added to the reduced
+suite, and its covered requirements are marked as covered. This continues until no
+uncovered requirements remain. The algorithm operates purely on the coverage matrix,
+without additional program structure.
 
-\subsection{Harrold--Gupta--Soffa}\label{sec:hgs}
+Noemmer and Haas observe that such greedy variants are ``the test suite minimization
+algorithms most commonly found in research''~\cite{noemmer2020}. In their Java
+study, they investigate both classical greedy and more advanced greedy heuristics
+with respect to structural coverage and mutation testing. Jehan and Wotawa report
+similar results for JavaScript projects and use classical greedy and related
+variants as central baselines in their empirical analysis~\cite{jehan2023}.
 
-Harrold, Gupta and Soffa proposed the Harrold--Gupta--Soffa (HGS) algorithm, an early coverage-driven heuristic~\cite{harrold1993}. Their method partitions tests by covered requirements and selects them in phases, prioritising requirements with few covering tests while avoiding redundancy.
+\subsection{Harrold--Gupta--Soffa (HGS)}\label{sec:hgs}
 
-Harrold et al.\ give a worst-case time bound of $O(n(n+m)\mathit{MAXCARD})$, where $n$ denotes the number of associated testing sets, $m$ the number of test cases, and $\mathit{MAXCARD}$ the maximum number of requirements covered by any single test~\cite{harrold1993}. HGS remains a standard greedy baseline~\cite{yoo2012,chen2005,noemmer2020}. Chen and Lau introduced two additional greedy variants, Greedy Effective (GE) and Greedy Redundant Eliminating (GRE), finding no universally superior greedy technique~\cite{chen2005}. Jehan and Wotawa report that HGS achieves around 70\% reduction when all mutation requirements must be met, with only small differences in fault detection across greedy variants~\cite{jehan2023}.
+Harrold, Gupta and Soffa proposed the Harrold--Gupta--Soffa (HGS) algorithm as one
+of the early coverage-driven minimisation heuristics~\cite{harrold1993}. HGS
+extends the basic greedy idea by taking into account the ``difficulty'' of covering
+certain requirements. Roughly, the algorithm proceeds in phases:
 
-\subsection{Delayed Greedy}
+\begin{itemize}
+  \item Tests are grouped according to the requirements they cover.
+  \item Requirements that are covered by only a few tests are given priority.
+  \item At each step, HGS selects tests that help cover such ``hard-to-cover''
+        requirements while avoiding redundant tests whose coverage is already
+        subsumed by others.
+\end{itemize}
 
-Tallam and Gupta introduced the Delayed Greedy (DG) algorithm to mitigate a weakness of classical greedy and HGS: selecting large tests too early may render smaller tests redundant~\cite{tallam2005}. Their approach uses concept analysis to remove subsumed tests before greedy selection.
+Harrold et al.\ derive a worst-case time bound of
+$O(n(n+m)\mathit{MAXCARD})$, where $n$ denotes the number of testing sets,
+$m$ the number of test cases, and $\mathit{MAXCARD}$ the maximum number of
+requirements covered by any single test~\cite{harrold1993}. HGS has since
+become a standard greedy baseline and appears in many comparative studies
+of test-suite minimisation~\cite{yoo2012,chen2005,noemmer2020}.
 
-They show that DG runs in polynomial time and often yields equal or smaller suites than classical greedy or HGS~\cite{tallam2005}. Jehan and Wotawa confirm similar fault-detection behaviour across greedy variants under adequate reduction, with DG typically producing the smallest suites at a higher runtime~\cite{jehan2023}.
+Chen and Lau introduce two related greedy variants, Greedy Effective (GE) and
+Greedy Redundant Eliminating (GRE), which modify how tests are selected and how
+redundant tests are removed, but still operate on the same coverage-matrix
+abstraction~\cite{chen2005}.
 
-\subsection{Enhanced HGS}
+\subsection{Delayed Greedy (DG)}
 
-Gladston and Ramesh refined HGS and evaluated several variants on Java programs~\cite{gladston2015}. The \emph{Enhanced HGS (EHGS)} algorithm selects tests with unique coverage first, then chooses remaining tests by residual coverage.
+Tallam and Gupta propose the Delayed Greedy (DG) algorithm to address a limitation
+of classical greedy and HGS: if very large tests are selected early, they may
+dominate the solution and render other tests redundant, even when those smaller
+tests might later have formed part of a more compact suite~\cite{tallam2005}.
 
-On the FIRST RUN benchmark, they report suite-size reductions (SSR) of 73.51\% (GRE), 69.01\% (HGS), 71.83\% (Non-Redundant HGS) and 73.66\% (EHGS)~\cite{gladston2015}. EHGS typically matches or slightly improves upon HGS and GRE, though the evaluation remains coverage-based.
+DG uses formal concept analysis to identify and remove subsumed tests before the
+greedy selection phase. Conceptually, the algorithm:
 
+\begin{itemize}
+  \item Builds a concept lattice over tests and requirements, where each concept
+        represents a set of tests with a common set of covered requirements;
+  \item Eliminates tests whose coverage is entirely contained in the coverage
+        of other tests or combinations of tests;
+  \item Applies a greedy selection strategy on the reduced set of tests.
+\end{itemize}
 
-\subsection{Mutation-Aware Enhanced HGS}
+This two-step design aims to reduce redundancy before greedy selection, potentially
+leading to smaller resulting suites. DG still operates on the test--requirement
+matrix, but the concept lattice construction incurs additional computational and
+implementation overhead compared with simpler greedy methods~\cite{tallam2005}.
 
-The Mutation-Aware Enhanced HGS (MA-EHGS) algorithm, proposed in this thesis, extends EHGS by incorporating mutation information, motivated by evidence that coverage-only minimisation may reduce mutation scores~\cite{noemmer2020,jehan2023}.
+\subsection{Enhanced HGS (EHGS)}
+
+Gladston and Ramesh refine HGS and evaluate several variants on Java programs,
+introducing the \emph{Enhanced HGS} (EHGS) algorithm~\cite{gladston2015}. EHGS
+retains the basic HGS structure but emphasises two ideas:
+
+\begin{enumerate}
+  \item \textbf{Unique coverage first:} EHGS first selects tests that are the only
+        ones to cover certain requirements (so-called essential tests).
+  \item \textbf{Residual coverage next:} In subsequent steps, EHGS ranks remaining
+        tests by how many still-uncovered requirements they satisfy and selects tests
+        in decreasing order of this residual coverage.
+\end{enumerate}
+
+The first phase ensures that no requirement uniquely associated with a single test
+is accidentally lost. The second phase then applies a coverage-based greedy strategy
+restricted to the remaining requirements. Gladston and Ramesh evaluate EHGS and
+related variants empirically and show that EHGS yields competitive suite sizes in
+their benchmarks~\cite{gladston2015}.
+
+EHGS operates entirely on a test--requirement matrix and does not depend on
+language-specific control-flow information. This makes it a natural candidate for
+SRM-based settings where coverage data are available in matrix form.
+
+\subsection{Mutation-Aware Enhanced HGS (MA-EHGS)}
+
+The Mutation-Aware Enhanced HGS (MA-EHGS) algorithm, proposed in this thesis,
+extends EHGS to explicitly incorporate mutation information. Recent empirical
+studies have shown that purely coverage-based minimisation can reduce mutation
+score, especially when reduction is aggressive~\cite{noemmer2020,jehan2023}.
+At the same time, many-objective evolutionary algorithms demonstrate that treating
+mutation score as an explicit optimisation objective can help preserve fault
+detection while still reducing cost~\cite{wei2017}. This evolution in the
+literature reflects a broader shift from purely coverage-driven adequacy towards
+fault-based adequacy metrics.
+
+MA-EHGS builds on this development by embedding mutation awareness into a
+deterministic, greedy, SRM-based heuristic. Conceptually, it operates as follows:
 
 \subsubsection{Requirements-Matrix Formulation}
 
-MA-EHGS operates on a binary matrix $M \in \{0,1\}^{n \times m}$ where rows represent tests and columns represent requirements (structural coverage and mutants). Mutants are encoded as additional columns, treating both requirement types uniformly.
+MA-EHGS uses a binary matrix $M \in \{0,1\}^{n \times m}$ where each row
+corresponds to a test and each column to a requirement. Structural coverage
+requirements (e.g.\ lines, branches, methods) and mutation requirements
+(mutants killed by a test) are represented uniformly as columns in $M$.
+For each test $t_i$, the set of requirements it satisfies is given by the
+non-zero entries in row~$i$.
 
 \subsubsection{Two-Phase Selection with Mutation Weighting}
 
-MA-EHGS follows EHGS's structure:
+MA-EHGS follows the two-phase structure of EHGS:
+
 \begin{description}
-  \item[Phase~1:] Select tests that uniquely cover any requirement.
-  \item[Phase~2:] Select tests using the weighted score
-  \[
-    \mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}_i| + \beta \cdot |\mathrm{newMutants}_i|,
-  \]
-  where $\alpha,\beta \in [0,1]$ balance structural and mutation requirements.
+  \item[Phase~1:] Identify and select tests that uniquely cover at least one
+        requirement (structural or mutant). These tests are essential, because
+        their removal would leave some requirement uncovered.
+  \item[Phase~2:] For the remaining uncovered requirements, repeatedly select
+        the next test using a weighted score
+        \[
+          \mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}_i|
+                              + \beta \cdot |\mathrm{newMutants}_i|,
+        \]
+        where $\mathrm{newCoverage}_i$ and $\mathrm{newMutants}_i$ denote,
+        respectively, the sets of yet-uncovered structural and mutation
+        requirements covered by $t_i$, and $\alpha,\beta \in [0,1]$ control
+        the relative importance of structural versus mutation requirements.
 \end{description}
 
-\subsubsection{Complexity and Performance}
+When $\beta = 0$, MA-EHGS reduces to a coverage-only variant similar to EHGS.
+For $\beta > 0$, the selection process explicitly prioritises tests that kill
+additional mutants. The algorithm thus bridges two strands of the literature:
+greedy coverage-based minimisation~\cite{yoo2012,noemmer2020} and
+mutation-aware optimisation~\cite{jehan2023,wei2017}.
 
-MA-EHGS identifies essential tests and scores candidates via uncovered requirements, retaining the scalability of other greedy heuristics~\cite{yoo2012,noemmer2020,jehan2023} while adding mutation awareness.
+\subsubsection{Complexity Considerations}
+
+MA-EHGS retains the data structures and overall complexity of EHGS. Phase~1
+scans the matrix to find essential tests; Phase~2 iteratively computes scores
+based on the remaining uncovered requirements. Both phases operate on the SRM
+representation and do not require additional program-structure analyses.
+Therefore MA-EHGS is designed to
+preserve the scalability characteristics of EHGS while extending it with
+mutation awareness.
 
 \section{Exact Optimisation Approaches}
 
-Exact approaches model minimisation as ILP-, SAT- or CSP-based optimisation problems~\cite{yoo2012,khan2020}. These formulations ensure optimality for the encoded objective but inherit NP-hardness because hitting-set is NP-complete~\cite{garey1979} and commonly used to represent test-suite minimisation~\cite{rothermel1998,noemmer2020}.
+Exact optimisation approaches treat test-suite minimisation as a formal
+optimisation problem, typically formulated as Integer Linear Programming
+(ILP), Boolean Satisfiability (SAT), or related constraint models.
+These methods aim to compute an optimal solution according to a given objective,
+but inherit the NP-hardness of the underlying hitting-set formulation~\cite{garey1979}.
 
 \subsection{ILP, SAT, and Set-Cover Formulations}
 
-Integer Linear Programming (ILP) formulations express requirements as constraints and tests as decision variables, minimising the number (or cost) of selected tests~\cite{yoo2012,elbaum2002}. Boolean Satisfiability Problem (SAT) and Constraint Satisfaction Problem (CSP) encodings follow the same principle~\cite{hemmati2011}. Though exponential in the worst case, ILP and SAT can solve small- to medium-sized instances and serve as optimality baselines~\cite{yoo2012,khan2020}.
+In ILP formulations, each test is associated with a binary decision variable
+indicating whether it is selected, and each requirement induces a constraint
+ensuring that at least one selected test covers it~\cite{yoo2012,elbaum2002}.
+The objective function typically minimises the number of selected tests or
+a weighted cost reflecting test execution time.
 
-\subsection{NEMO and Nonlinear Formulations}
+SAT and Constraint Satisfaction Problem (CSP) encodings follow a similar idea,
+but express constraints in propositional logic or more general constraint
+languages~\cite{hemmati2011}. The resulting formulas are then solved using
+off-the-shelf SAT or CSP solvers. These formulations provide a precise link
+between test-suite minimisation and classical optimisation technology.
 
-Lin et al.\ suggest that linear models miss test interdependencies~\cite{lin2018}. Their Nonlinear Multi-criteria Integer Programming (NEMO) approach uses a multi-criteria nonlinear integer program, adding objectives such as cost and fault detection. NEMO can substantially improve fault-detection capability (up to 164\%) compared with linear ILP, but at far higher computational cost.
+While worst-case complexity remains exponential, ILP and SAT can solve
+small- to medium-sized instances and are often used to provide optimality
+baselines for evaluating heuristics~\cite{yoo2012,khan2020}.
 
-\subsection{REDUNET}
+\subsection{Nonlinear Multi-Criteria Optimisation (NEMO)}
 
-Mongiovi et al.\ propose REDUNET, which combines set-cover reasoning with optimisation on Control Flow Graphs (CFGs)~\cite{mongiovi2020}. REDUNET uses CFG structure with ILP reasoning to detect redundant tests.
+Lin et al.\ argue that linear models may not capture interactions between
+test cases, especially when multiple criteria such as cost and fault detection
+need to be considered simultaneously~\cite{lin2018}. Their Nonlinear
+Multi-criteria Integer Programming (NEMO) framework extends the linear ILP
+formulation with nonlinear terms to model such interdependencies.
+
+NEMO allows multiple objectives, such as maximising fault detection while
+minimising execution cost, and encodes them as a single nonlinear integer
+program. This approach demonstrates how richer optimisation models can be
+used to express complex adequacy notions. However, the increased model
+expressiveness comes at the price of higher computational effort
+compared with linear ILP~\cite{lin2018}.
+
+\subsection{Structure-Aware Optimisation (REDUNET)}
+
+Mongiovi et al.\ propose REDUNET, which combines set-cover reasoning with
+optimisation over Control Flow Graphs (CFGs)~\cite{mongiovi2020}. Instead of
+working solely with a coverage matrix, REDUNET analyses control-flow and
+data-flow dependencies in the program to identify redundant tests. It then
+uses ILP-based reasoning over this CFG-enriched representation to select a
+reduced suite.
+
+REDUNET illustrates a different dimension in the design space: leveraging
+program structure (CFGs) to guide test reduction. This approach can exploit
+structural information beyond what is available in a pure SRM setting, but
+it also requires access to language-specific program representations and
+associated analysis tools.
 
 \section{Search-Based and Metaheuristic Approaches}
 
-Search-based methods treat minimisation as an optimisation problem using metaheuristics such as genetic algorithms or swarm intelligence~\cite{yoo2012,khan2020}. These allow multi-objective optimisation but typically incur higher computational cost and require parameter tuning.
+Search-based approaches treat test-suite minimisation as an optimisation problem
+and use metaheuristics such as Genetic Algorithms (GAs) or swarm-intelligence
+methods to explore the space of candidate subsets~\cite{yoo2012,khan2020}.
+Instead of constructing a single solution greedily, these techniques maintain
+a population of candidate solutions and iteratively improve them via stochastic
+operators.
 
 \subsection{Genetic Algorithms}
 
-Genetic Algorithms (GAs) evolve populations of candidate subsets through selection, crossover and mutation~\cite{yoo2012}. They can produce highly reduced suites but require substantial tuning and are more expensive than greedy heuristics~\cite{yoo2012,khan2020}. Many GA-based approaches still optimise primarily for coverage rather than mutation~\cite{noemmer2020}.
+Genetic Algorithms represent each candidate test suite as a chromosome, often a
+binary vector indicating which tests are selected~\cite{yoo2012}. A typical GA
+for test-suite minimisation proceeds as follows:
+
+\begin{itemize}
+  \item Initialise a population of random or heuristically constructed test subsets;
+  \item Evaluate each candidate using a fitness function, such as coverage achieved
+        minus cost, or a multi-objective fitness vector;
+  \item Select fitter candidates for reproduction;
+  \item Apply crossover (combining parts of two parents) and mutation
+        (randomly flipping selection bits) to generate new candidates;
+  \item Repeat evaluation and selection over multiple generations.
+\end{itemize}
+
+GAs can accommodate complex objectives and constraints, but require choices for
+population size, number of generations, crossover and mutation rates, and other
+parameters~\cite{yoo2012,khan2020}. Many GA-based minimisation approaches still
+optimise primarily for coverage and cost, with mutation information incorporated
+less frequently~\cite{noemmer2020}.
 
 \subsection{Other Metaheuristic Approaches}
 
-Ahuja and Bhatia evaluate Particle Swarm Optimisation (PSO) and Artificial Bee Colony (ABC) algorithms, reporting strong cost reductions. GAs sometimes produce smaller suites depending on parameters and program characteristics~\cite{ahuja2024}. Wei et al.\ apply mutation-aware Many-Objective Evolutionary Algorithms (MOEAs), including Non-dominated Sorting Genetic Algorithm II (NSGA-II), MOEA/D, IBEA, and SPEA2-SDE, and show that including mutation score preserves fault detection while reducing cost~\cite{wei2017}.
+Beyond GAs, several other metaheuristics have been applied to test-suite
+minimisation. Ahuja and Bhatia evaluate Particle Swarm Optimisation (PSO)
+and Artificial Bee Colony (ABC) algorithms, where each particle or bee
+represents a candidate suite and moves through the search space guided by
+heuristic rules~\cite{ahuja2024}. These methods follow a similar pattern:
+they maintain a population of candidate solutions and iteratively update
+them using algorithm-specific operators.
+
+Wei et al.\ explore Many-Objective Evolutionary Algorithms (MOEAs) such as
+Non-dominated Sorting Genetic Algorithm II (NSGA-II), MOEA/D, IBEA, and
+SPEA2-SDE, with multiple objectives including mutation score~\cite{wei2017}.
+By treating mutation score as one objective among several, MOEAs can generate
+trade-off fronts between cost, coverage, and mutation preservation. This line
+of work demonstrates that mutation-aware optimisation is feasible within
+population-based search and provides additional evidence that mutation score
+is an important adequacy dimension alongside structural coverage.
 
 \section{Data-Driven and Similarity-Based Approaches}
 
-Data-driven approaches analyse coverage vectors to detect redundancy~\cite{yoo2012,khan2020}.
+Data-driven and similarity-based approaches use information about coverage
+patterns to identify redundant or highly overlapping tests~\cite{yoo2012,khan2020}.
+Instead of solving a hitting-set formulation directly, they analyse the structure
+of coverage vectors and cluster or prioritise tests based on similarity.
 
 \subsection{Similarity-Based and Time-Constrained Methods}
 
-Similarity-based clustering and ranking methods group tests by coverage similarity~\cite{yoo2012,khan2020}. Bach et al.\ apply such techniques in a SAP environment under strict time budgets~\cite{bach2017}. Penalising overlap improves coverage within time limits but targets prioritisation rather than strict minimisation~\cite{bach2017,khan2020}.
+Similarity-based methods typically represent each test as a high-dimensional
+coverage vector and apply distance or similarity measures (e.g.\ Jaccard
+similarity) to identify groups of tests that cover similar requirements.
+Tests within the same cluster are candidates for reduction or reordering.
 
-\section{Summary}
+Bach et al.\ apply such techniques in a large industrial environment at SAP,
+where test execution is subject to strict time budgets~\cite{bach2017}. Their
+methods penalise tests whose coverage overlaps strongly with other tests and
+prioritise those that provide new or diverse coverage. The goal is to maximise
+coverage within a given time budget rather than to compute a minimal hitting set.
 
-The surveyed literature highlights several recurring themes in test-suite minimisation research:
+Khan et al.\ survey similarity- and clustering-based methods and emphasise their
+flexibility for prioritisation and selection tasks~\cite{khan2020}. However,
+because these methods focus on coverage overlap and time constraints, they are
+typically used for test-case prioritisation and selection under resource limits
+rather than for exact minimisation in the classical sense.
+
+
+
+\section{Summary and Motivation for Mutation-Aware Greedy Minimisation}
+
+The reviewed literature reveals several recurring themes and an evolution in how
+test-suite minimisation is approached:
 
 \begin{itemize}
-  \item \textbf{Greedy heuristics as widely used baselines.} Classical Greedy, HGS and DG are consistently employed across empirical studies and achieve substantial reduction while preserving structural coverage, with small differences in mutation preservation under adequate settings~\cite{yoo2012,noemmer2020,jehan2023}. EHGS provides incremental refinements~\cite{gladston2015}.
-  
-  \item \textbf{Coverage–mutation gap.} Coverage-only minimisation can reduce mutation scores~\cite{noemmer2020}. Mutation-aware greedy and evolutionary techniques demonstrate that incorporating mutation information can better preserve fault-detection capability~\cite{jehan2023,wei2017}.
-  
-  \item \textbf{Exact methods vs.\ scalability.} ILP, SAT and nonlinear models provide strong optimality baselines but become computationally expensive as problem size grows, reflecting the underlying hitting-set hardness~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
-  
-  \item \textbf{Search-based and data-driven trade-offs.} Metaheuristics and similarity-based methods support flexible optimisation goals but often require parameter tuning and incur higher computational cost than greedy heuristics~\cite{khan2020}. Overlap-aware methods are primarily used for prioritisation rather than strict minimisation~\cite{bach2017}.
-  
-  \item \textbf{Rationale for algorithm selection.} The goal of this review is to show that no algorithm is universally superior, depending on context and priorities some algorithms may be more suitable than others. The algorithms included in this review were chosen because they have reproducible and well-documented empirical results across multiple benchmark suites and programming languages~\cite{gladston2015,noemmer2020,jehan2023,wei2017}. This makes them suitable for systematic comparison within an SRM-based framework.
+  \item \textbf{Greedy heuristics as widely used baselines.}
+        Classical Greedy, HGS and DG are consistently employed across empirical
+        studies and are often used as reference algorithms for regression-test
+        minimisation~\cite{yoo2012,noemmer2020,jehan2023}. EHGS builds on this
+        line of work by refining the selection strategy in a two-phase
+        framework~\cite{gladston2015}.
+
+  \item \textbf{Exact methods and their limitations.}
+        ILP, SAT and nonlinear models (e.g.\ NEMO) provide strong optimality
+        baselines and can express sophisticated objectives, but become
+        computationally expensive as the number of tests and requirements
+        grows, reflecting the NP-complete nature of the underlying hitting-set
+        problem~\cite{garey1979,yoo2012,lin2018,noemmer2020}. Structure-aware
+        approaches such as REDUNET show how additional program information can
+        be incorporated at the cost of language- and tool-specific
+        dependencies~\cite{mongiovi2020}.
+
+  \item \textbf{Search-based and data-driven trade-offs.}
+        Metaheuristics such as GAs, PSO, ABC and MOEAs have been used to model
+        multiple objectives and constraints in a flexible way, but they usually
+        require parameter tuning and entail higher computational
+        cost~\cite{yoo2012,khan2020,ahuja2024,wei2017}. Similarity-based and
+        overlap-aware methods exploit coverage patterns to prioritise tests
+        under time budgets and are therefore more commonly applied to
+        test-case prioritisation than to strict minimisation~\cite{bach2017,khan2020}.
+
+  \item \textbf{Coverage--mutation gap and the rise of mutation-aware techniques.}
+        Empirical studies show that coverage-only minimisation can reduce
+        mutation scores, especially under aggressive reduction
+        settings~\cite{noemmer2020,jehan2023}. At the same time, mutation-aware
+        MOEAs demonstrate that explicitly taking mutation score into account,
+        alongside cost and coverage, helps preserve fault-detection
+        capability~\cite{wei2017}. This suggests that structural coverage and
+        mutation score capture complementary aspects of test-suite adequacy.
+
+  \item \textbf{Motivation for mutation-aware greedy minimisation.}
+        Against this background, it is natural to evolve existing
+        coverage-based greedy algorithms into mutation-aware variants. MA-EHGS
+        follows this trend by extending the empirically studied EHGS with
+        explicit mutation information while retaining the overall greedy,
+        matrix-based structure. It combines the simplicity and established
+        role of greedy minimisation with the fault-based perspective emerging
+        from recent mutation studies.
 \end{itemize}
+
+
+The algorithms and families surveyed in this chapter form the basis for the
+comparative analysis in Chapter~\ref{chap:comparison}, where they are evaluated
+systematically against the criteria defined in Chapter~\ref{chap:evaluation}.
