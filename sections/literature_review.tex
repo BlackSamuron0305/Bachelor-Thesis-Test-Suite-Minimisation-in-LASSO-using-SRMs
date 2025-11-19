@@ -64,7 +64,7 @@ of test-suite minimisation~\cite{yoo2012,chen2005,noemmer2020}.
 
 Chen and Lau introduce two related greedy variants, Greedy Effective (GE) and
 Greedy Redundant Eliminating (GRE), which modify how tests are selected and how
-redundant tests are removed, but still operate on the same coverage-matrix
+redundant tests are removed while maintaining the same coverage-matrix
 abstraction~\cite{chen2005}.
 
 \subsection{Delayed Greedy (DG)}
@@ -164,16 +164,6 @@ additional mutants. The algorithm thus bridges two strands of the literature:
 greedy coverage-based minimisation~\cite{yoo2012,noemmer2020} and
 mutation-aware optimisation~\cite{jehan2023,wei2017}.
 
-\subsubsection{Complexity Considerations}
-
-MA-EHGS retains the data structures and overall complexity of EHGS. Phase~1
-scans the matrix to find essential tests; Phase~2 iteratively computes scores
-based on the remaining uncovered requirements. Both phases operate on the SRM
-representation and do not require additional program-structure analyses.
-Therefore MA-EHGS is designed to
-preserve the scalability characteristics of EHGS while extending it with
-mutation awareness.
-
 \section{Exact Optimisation Approaches}
 
 Exact optimisation approaches treat test-suite minimisation as a formal
@@ -193,8 +183,8 @@ a weighted cost reflecting test execution time.
 SAT and Constraint Satisfaction Problem (CSP) encodings follow a similar idea,
 but express constraints in propositional logic or more general constraint
 languages~\cite{hemmati2011}. The resulting formulas are then solved using
-off-the-shelf SAT or CSP solvers. These formulations provide a precise link
-between test-suite minimisation and classical optimisation technology.
+off-the-shelf SAT or CSP solvers, providing a precise link between test-suite
+minimisation and classical optimisation technology.
 
 While worst-case complexity remains exponential, ILP and SAT can solve
 small- to medium-sized instances and are often used to provide optimality
@@ -316,29 +306,29 @@ test-suite minimisation is approached:
 \begin{itemize}
   \item \textbf{Greedy heuristics as widely used baselines.}
         Classical Greedy, HGS and DG are consistently employed across empirical
-        studies and are often used as reference algorithms for regression-test
-        minimisation~\cite{yoo2012,noemmer2020,jehan2023}. EHGS builds on this
-        line of work by refining the selection strategy in a two-phase
+        studies as reference algorithms for regression-test
+        minimisation~\cite{yoo2012,noemmer2020,jehan2023}.
+        EHGS refines this line of work through a two-phase selection
         framework~\cite{gladston2015}.
 
   \item \textbf{Exact methods and their limitations.}
         ILP, SAT and nonlinear models (e.g.\ NEMO) provide strong optimality
         baselines and can express sophisticated objectives, but become
-        computationally expensive as the number of tests and requirements
-        grows, reflecting the NP-complete nature of the underlying hitting-set
-        problem~\cite{garey1979,yoo2012,lin2018,noemmer2020}. Structure-aware
-        approaches such as REDUNET show how additional program information can
-        be incorporated at the cost of language- and tool-specific
-        dependencies~\cite{mongiovi2020}.
+        computationally expensive as problem size grows, reflecting the
+        NP-complete nature of the underlying hitting-set
+        problem~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
+        Structure-aware approaches such as REDUNET show how additional program
+        information can be incorporated at the cost of language- and
+        tool-specific dependencies~\cite{mongiovi2020}.
 
   \item \textbf{Search-based and data-driven trade-offs.}
-        Metaheuristics such as GAs, PSO, ABC and MOEAs have been used to model
-        multiple objectives and constraints in a flexible way, but they usually
-        require parameter tuning and entail higher computational
-        cost~\cite{yoo2012,khan2020,ahuja2024,wei2017}. Similarity-based and
-        overlap-aware methods exploit coverage patterns to prioritise tests
-        under time budgets and are therefore more commonly applied to
-        test-case prioritisation than to strict minimisation~\cite{bach2017,khan2020}.
+        Metaheuristics such as GAs, PSO, ABC and MOEAs offer multi-objective
+        flexibility but require parameter tuning and entail higher computational
+        cost~\cite{yoo2012,khan2020,ahuja2024,wei2017}.
+        Similarity-based and overlap-aware methods exploit coverage patterns to
+        prioritise tests under time budgets and are more commonly applied to
+        test-case prioritisation than to strict
+        minimisation~\cite{bach2017,khan2020}.
 
   \item \textbf{Coverage--mutation gap and the rise of mutation-aware techniques.}
         Empirical studies show that coverage-only minimisation can reduce

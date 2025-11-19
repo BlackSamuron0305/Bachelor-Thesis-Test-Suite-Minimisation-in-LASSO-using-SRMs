@@ -4,7 +4,40 @@
 
 This appendix provides the detailed evaluation tables and justifications for the algorithm scores discussed in Chapter~\ref{chap:comparison}. The tables are aligned with the technique families and criteria introduced in Chapters~\ref{chap:literature-review} and~\ref{chap:comparison} and focus on approaches that can be expressed on a Stimulus--Response Matrix (SRM).
 
-The following algorithms and families are considered:
+\section{Scoring Methodology}
+
+To enable systematic comparison, each algorithm is scored on criteria C2--C6 using a 0--5 scale based on literature evidence, empirical results, and theoretical analysis. Criterion C1 (SRM Compatibility) is treated as a mandatory pass/fail precondition rather than a scored dimension.
+
+\subsection*{Scoring Rubric}
+
+The scoring scale is defined as follows:
+
+\begin{itemize}
+  \item \textbf{5/5 (Excellent):} Algorithm fully satisfies the criterion with strong empirical or theoretical evidence. Meets or exceeds best-known benchmarks in the literature.
+  \item \textbf{4/5 (Good):} Algorithm satisfies the criterion with minor limitations or caveats. Achieves strong results with documented trade-offs.
+  \item \textbf{3/5 (Adequate):} Algorithm partially satisfies the criterion. Meets basic requirements but with notable trade-offs or limited evidence.
+  \item \textbf{2/5 (Limited):} Algorithm weakly addresses the criterion. Significant limitations reduce practical utility.
+  \item \textbf{1/5 (Poor):} Criterion not addressed in the algorithm design, or no evidence available in the literature.
+  \item \textbf{0/5 (Fail):} Algorithm violates the criterion or is fundamentally incompatible.
+\end{itemize}
+
+\subsection*{Total Score Calculation}
+
+After individual criterion scoring, each algorithm's total score is computed as the sum of scores across C2--C6 (maximum 25 points):
+
+\begin{equation}
+  \text{TotalScore}(A) =
+  \begin{cases}
+    0, & \text{if algorithm } A \text{ fails C1 (SRM compatibility)}, \\[3pt]
+    \displaystyle\sum_{i=2}^{6} s_i(A), & \text{otherwise,}
+  \end{cases}
+\end{equation}
+
+where $s_i(A)$ denotes the score of algorithm $A$ on criterion $i$.
+
+All criteria are weighted equally in the total score. However, the selection decision is ultimately driven by LASSO's specific priorities: SRM compatibility (C1) is mandatory, and mutation awareness (C4) is essential for preserving fault-detection capability. Therefore, while total scores provide a useful comparative overview, they do not mechanically determine the selection—qualitative assessment of individual criteria remains critical.
+
+\subsection*{Algorithms Evaluated}
 
 \begin{itemize}
   \item Classical Greedy (CG)

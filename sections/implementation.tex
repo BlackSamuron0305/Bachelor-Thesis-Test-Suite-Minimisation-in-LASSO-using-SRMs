@@ -1,31 +1,42 @@
 \chapter{Implementation}
 \label{chap:implementation}
 
-This chapter presents the technical implementation of the Mutation-Aware Enhanced HGS minimiser within LASSO. The work was developed in a dedicated branch:\\[2pt]
+This chapter describes the implementation of the Mutation-Aware Enhanced HGS minimiser within LASSO. The focus is on the key contributions and design decisions that enable SRM-based test-suite minimisation with mutation awareness. The work was developed in a dedicated branch and is available at:\\[2pt]
 \centerline{\texttt{<https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization>}}
-and the full reference implementation is available at:\\[2pt]
-\centerline{\texttt{<https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/lasso-llm/src/main/java/de/uni\_mannheim/swt/lasso/llm/arena/MinimizationAlgorithm.java>}} 
 
-The contribution of this work lies in four areas: reliable per-test coverage collection, mutation-aware requirement extraction, a unified requirements-matrix representation, and a scalable realisation of the Enhanced HGS algorithm extended with mutation weighting. All components integrate seamlessly into the existing Arena–Mutation–SRM workflow and remain fully language-independent.
+The implementation addresses four main challenges: adapting LASSO's infrastructure for granular coverage collection, extracting coverage and mutation data from SRMs, integrating the algorithm as an LSL action with configurable parameters, and ensuring efficient processing suitable for large test suites.
 
-\section{Architecture Overview}
+\section{Adapting LASSO for Per-Test Coverage Collection}
 
-The implementation adds a cohesive data-processing layer that retrieves execution data from SRMs, converts them into requirement mappings, and applies the minimiser before writing back a reduced SRM. Central to this design is a unification layer that merges structural coverage and mutation information into a single requirements matrix. This preserves LASSO’s language-agnostic design and enables consistent minimisation across different programming languages.
+To enable meaningful test-suite minimisation, LASSO needed the ability to determine which requirements each individual test covers. The existing Arena infrastructure collected aggregate coverage across all tests, which is insufficient for minimisation algorithms that need to distinguish between tests based on their unique coverage contributions.
 
-Three new components form the backbone of the implementation.  
-The \texttt{SRMCoverageExtractor} collects per-test coverage from SRM sheets generated during Arena execution and standardises them using a language-neutral \texttt{COVERAGE\_testName} prefix, replacing earlier tool-specific formats.  
-The \texttt{MutationAnalyzer} reconstructs mutation kills from SRM outputs by comparing original and mutant variants cell-by-cell, resolving previous inaccuracies caused by single-cell comparisons or null handling.  
-Finally, the \texttt{BitSetMatrix} provides a compact, high-performance representation of all test–requirement relations, with structural elements and mutants encoded uniformly.
+\subsection{Granular Coverage with JaCoCo}
 
-\section{Data Extraction and Representation}
+We integrated JaCoCo as the coverage instrumentation tool and modified the test execution workflow to collect coverage separately for each test. For every test execution:
 
-Coverage is collected by executing JaCoCo instrumentation separately for each test, generating isolated coverage sheets per test. By adopting language-neutral identifiers, the design remains extensible to future Python or JavaScript coverage integrations.
+\begin{enumerate}
+  \item Coverage counters are reset before the test runs
+  \item The test executes with JaCoCo instrumentation active
+  \item Coverage data (lines, branches, methods) are extracted and stored
+\end{enumerate}
 
-Mutation information is reconstructed from SRM entries of type \texttt{value}. A mutant is considered killed if any output cell diverges from the original implementation:
-\[
-\exists(x,y): M_{i,\mathrm{orig}}(x,y) \neq M_{i,m}(x,y).
-\]
-This refined method yields a precise kill signal and corrects inconsistencies of earlier pipelines that observed only the first output cell.
+This approach provides granular per-test coverage for three metrics: \textbf{line coverage}, \textbf{branch coverage}, and \textbf{method coverage}. Each covered element is recorded as a separate requirement that the test satisfies.
+
+The coverage collection is compatible with JUnit-based test suites for single Java implementations. Coverage data are stored in LASSO's SRM format using a standardised naming scheme that remains language-independent, allowing future extensions to other programming languages and testing frameworks.
+
+\section{Coverage and Mutation Data Collection}
+
+With per-test coverage in place, the next step was to extract both structural coverage and mutation information from the SRMs and convert them into a unified requirements matrix.
+
+\subsection{Coverage Extraction}
+
+Coverage data are retrieved from SRM sheets generated during Arena execution. Each test has associated coverage entries identifying which lines, branches, and methods it executed. These are collected into requirement sets $R_{\text{struct}}$ that form the columns of the requirements matrix.
+
+\subsection{Mutation Kill Detection}
+
+For mutation testing, we implemented a mutation kill detector that compares the output of each test against the original system and each mutant variant. A mutant is considered \emph{killed} by a test if the test produces different output when run against the mutant compared to the original implementation.
+
+The detector performs cell-by-cell comparison across all output positions in the SRM. If any output cell differs between the original and mutant execution, the mutant is marked as killed by that test. This approach is more robust than comparing only the first output cell, as it detects behavioural differences anywhere in the test's execution trace.
 
 \begin{figure}[H]
   \centering
@@ -36,34 +47,35 @@ This refined method yields a precise kill signal and corrects inconsistencies of
     \textbf{Test 2} & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 & \cellcolor{green!20}100 \\
     \textbf{Test 3} & \cellcolor{green!20}true & \cellcolor{red!20}false & \cellcolor{green!20}true & \cellcolor{red!20}false \\
   \end{tabular}
-  \caption{Example SRM for mutation score extraction. The first column shows outputs from the original implementation; subsequent columns show mutant variants. Green cells indicate outputs matching the original; red cells indicate divergent outputs (killed mutants). Test 1 kills Mutants 1 and 3. Test 2 kills no mutants. Test 3 kills Mutants 1 and 3. Tests are compared cell-by-cell across all output positions.}
+  \caption{Example SRM showing mutation kill detection. Green cells indicate matching output (mutant survives for that test); red cells indicate different output (mutant killed). Test 1 kills Mutants 1 and 3, Test 2 kills no mutants, Test 3 kills Mutants 1 and 3.}
   \label{fig:mutation-extraction}
 \end{figure}
 
-Coverage and mutation elements are unified into the set
+For each test, we record not only whether it killed mutants, but also \emph{which specific mutants} it killed. This information becomes part of the requirements set $R_{\text{mut}}$, allowing the minimisation algorithm to explicitly preserve mutation-killing capability.
+
+The unified requirement set $R = R_{\text{struct}} \cup R_{\text{mut}}$ combines structural coverage and mutation requirements into a single matrix representation suitable for the minimisation algorithm.
+
+\section{LSL Action and Parameter Configuration}
+
+The minimiser is integrated into LASSO as an LSL action called \texttt{TestSuiteMinimization}. This action executes after both Arena (which provides coverage data) and Mutation (which provides mutant execution results), retrieves the necessary data from LASSO's SRM cache, performs minimisation, and writes back a reduced SRM.
+
+\subsection{Configurable Parameters}
+
+The action exposes two key parameters that control the balance between structural coverage and mutation preservation:
+
+\begin{itemize}
+  \item \textbf{alpha ($\alpha$):} Weight for structural coverage requirements (lines, branches, methods)
+  \item \textbf{beta ($\beta$):} Weight for mutation requirements (killed mutants)
+\end{itemize}
+
+These parameters appear in the weighted scoring formula used during greedy test selection:
 \[
-R = R_{\text{coverage}} \cup R_{\text{mutation}},
+\mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}(t_i)| + \beta \cdot |\mathrm{newMutants}(t_i)|
 \]
-which forms the input to the minimisation algorithm.
 
-\section{Algorithmic Realisation}
+Users can configure these weights to prioritise either structural coverage, mutation coverage, or a balance between both. The default configuration is $\alpha = 0.5$ and $\beta = 0.5$, treating both dimensions equally.
 
-The minimiser implements the two-phase Enhanced HGS algorithm.  
-Phase~1 selects all tests that uniquely satisfy a requirement, ensuring that both structural and mutation-specific elements with cardinality one are always preserved.  
-Phase~2 applies a weighted greedy selection:
-\[
-\mathrm{score}(t_i)
-= \alpha \cdot |\mathrm{newCoverage}(t_i)| 
-+ \beta \cdot |\mathrm{newMutants}(t_i)|,
-\]
-with default parameters $\alpha=0.5$ and $\beta=0.5$.  
-BitSet operations keep runtime at $O(nm)$ and allow efficient experimentation with different scoring configurations.
-
-\section{Integration Into LASSO}
-
-The minimiser is exposed as the LSL action \texttt{TestSuiteMinimization}. It executes after both Arena and Mutation, consumes SRM data from Ignite, performs minimisation, and optionally replaces the SRM with a reduced version.
-
-Listing~\ref{lst:lsl-min} shows a representative configuration. Configurable parameters are shown in \textcolor{blue}{blue color}.
+Listing~\ref{lst:lsl-min} shows the LSL configuration:
 
 \begin{lstlisting}[language=Java,caption={LSL configuration for the minimisation action},label={lst:lsl-min},escapechar=@]
 action(name: 'minimize', type: 'TestSuiteMinimization') {
@@ -74,12 +86,63 @@ action(name: 'minimize', type: 'TestSuiteMinimization') {
     beta  = @\textcolor{blue}{50}@
     keepMutants  = @\textcolor{blue}{true}@
     keepOracle = @\textcolor{blue}{false}@
-
 }
 \end{lstlisting}
 
-The implementation required updating SRM extraction logic, correcting test-name normalisation, introducing language-agnostic sheet identifiers, and refining mutation comparison behaviour. These changes collectively make SRM-based minimisation correct, robust, and compatible with diverse software systems.
+\section{Algorithm Processing}
 
-\section{Validation}
+The minimisation algorithm implements the two-phase Enhanced HGS strategy extended with mutation awareness:
 
-Validation confirmed that all structural and mutation requirements are preserved for $\alpha>0$ and $\beta>0$, and that the algorithm behaves deterministically under fixed configurations. Unit tests verify requirement mapping, kill-detection correctness, and algorithmic behaviour. Benchmarks (Appendix~\ref{app:benchmarks}) show strong reduction effectiveness (e.g., Base64: 80 tests $\to$ 8 tests) with full retention of structural and mutation requirements. As expected, MA-EHGS performs slightly less aggressively than coverage-only Enhanced HGS, but the difference is not critical.
+\subsection{Phase 1: Essential Test Selection}
+
+The algorithm first identifies tests that uniquely cover at least one requirement (structural or mutation). These tests are \emph{essential} because removing them would leave some requirement uncovered. All essential tests are automatically selected for the minimised suite.
+
+\subsection{Phase 2: Weighted Greedy Selection}
+
+For the remaining uncovered requirements, the algorithm iteratively selects tests using the weighted scoring formula. In each iteration:
+
+\begin{enumerate}
+  \item Calculate the score for each remaining test based on how many uncovered structural requirements and uncovered mutants it satisfies
+  \item Select the test with the highest score
+  \item Mark all requirements covered by that test as covered
+  \item Repeat until all requirements are covered
+\end{enumerate}
+
+This approach ensures that both structural coverage and mutation-killing capability are preserved, with the relative importance controlled by the $\alpha$ and $\beta$ parameters.
+
+\section{Complexity and Scalability}
+
+The algorithm's efficiency makes it suitable for large test suites. Both phases operate on the requirements matrix without requiring control-flow analysis or other program-structure computations.
+
+Phase 1 scans through all requirements to identify those covered by only one test, which is a linear scan of the matrix. Phase 2 performs iterative greedy selection, where each iteration examines remaining tests and their uncovered requirements. Using efficient set operations, each iteration runs quickly even for large matrices.
+
+The overall complexity is $O(nm)$ where $n$ is the number of tests and $m$ is the number of requirements (structural + mutation). This linear scaling in the matrix dimensions makes the algorithm feasible for LASSO's use cases, where SRMs can contain hundreds of tests and thousands of requirements.
+
+The implementation uses standard Java collections (LinkedHashMap and LinkedHashSet) that provide efficient lookup and iteration while maintaining deterministic ordering for reproducible results.
+
+\section{Parameter Sensitivity Testing}
+
+To validate the implementation, we tested the algorithm's behaviour across different $\alpha$ and $\beta$ configurations. For the Base64 encoder benchmark (80 tests, substantial redundancy), we found that:
+
+\begin{itemize}
+  \item All combinations of $\alpha$ and $\beta$ where both are greater than zero produced \emph{identical} minimised suites (8 tests selected)
+  \item Only edge cases where $\alpha = 0$ (ignoring structural coverage) or $\beta = 0$ (ignoring mutation) produced different results (7 tests selected)
+\end{itemize}
+
+This parameter insensitivity indicates that for test suites with clear coverage and mutation redundancy, the essential tests identified in Phase 1 dominate the selection, making the exact weighting less critical. The algorithm robustly identifies the minimal set needed to preserve both coverage and mutation score.
+
+For other benchmarks (Stack, Queue implementations), similar robustness was observed: the algorithm consistently preserved 100\% of structural coverage and 100\% of mutation score while achieving reductions between 52\% and 90\%, depending on the redundancy present in the original test suite.
+
+\section{Integration and Validation}
+
+The implementation integrates seamlessly with LASSO's existing Arena and Mutation workflows. The data flow is:
+
+\begin{enumerate}
+  \item Arena executes tests with per-test coverage collection enabled
+  \item Mutation executes the same tests against mutant variants
+  \item TestSuiteMinimization reads coverage and mutation data from the SRM
+  \item The algorithm selects a minimal test subset
+  \item A reduced SRM containing only selected tests is written back
+\end{enumerate}
+
+Validation confirmed that the algorithm behaves deterministically (same inputs always produce the same outputs) and correctly preserves all required coverage and mutation requirements. Detailed benchmark results showing reduction rates and requirement preservation are provided in Appendix~\ref{app:benchmarks}.
