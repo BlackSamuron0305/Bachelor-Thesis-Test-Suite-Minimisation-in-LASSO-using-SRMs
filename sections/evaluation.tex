@@ -17,7 +17,7 @@ Building upon the fundamentals established in the previous chapter, this chapter
 
 \begin{description}
   \item[\textbf{C2: Coverage Retention}] 
-  Measures how much of the original structural coverage (instruction, line, branch) is retained after minimisation~\cite{zhu1997}. 
+  Measures how much of the original structural coverage (method, line, branch) is retained after minimisation~\cite{zhu1997}. 
   High retention indicates that the reduced suite maintains structural adequacy.
   Together with C4, this addresses the research question of whether minimisation can preserve the effectiveness of the original test suite.
 
@@ -42,10 +42,9 @@ Building upon the fundamentals established in the previous chapter, this chapter
 \end{description}
 
 Taken together, C2--C4 focus on preserving quality and fault detection, while C5--C6 address the practical feasibility of deploying a minimisation algorithm in LASSO’s SRM-based environment.
- become impractical if they require complex configuration or structural changes to the LASSO pipeline~\cite{yoo2012}.
 
 \section{Application to Algorithm Comparison}
 
-The criteria defined above provide the foundation for systematic algorithm evaluation in Chapter~\ref{chap:comparison}. To enable quantitative comparison, each algorithm is scored on criteria C2--C6 using a 0--5 scale based on literature evidence and empirical results. The detailed scoring methodology, justification, and complete evaluation tables are provided in Appendix~\ref{app:evaluation-tables}. Chapter~\ref{chap:comparison} applies these criteria qualitatively to identify the most suitable minimisation approach for LASSO's SRM-based environment.
+The criteria defined above provide the foundation for systematic algorithm evaluation in Chapter~\ref{chap:comparison}. To enable objective comparison, each algorithm is evaluated on criteria C2--C6 using a binary pass/fail system (0 or 1) based on whether it meets LASSO's operational requirements for that criterion. The detailed scoring methodology, justification, and complete evaluation tables are provided in Appendix~\ref{app:evaluation-tables}. Chapter~\ref{chap:comparison} applies these criteria qualitatively to identify the most suitable minimisation approach for LASSO's SRM-based environment.
 
 

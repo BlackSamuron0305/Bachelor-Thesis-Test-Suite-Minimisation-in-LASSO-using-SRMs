@@ -42,7 +42,7 @@ Having examined general minimisation principles, this section discusses the adva
 
 The proposed approach provides several critical advantages aligned with LASSO's architectural requirements and operational objectives. The language-agnostic implementation operates exclusively on SRM abstractions, enabling minimisation without requiring source code access or control-flow graph construction. This design principle makes the approach applicable to any programming language or system that can be represented in SRM format, directly supporting LASSO's intended role as a large-scale software observatorium for diverse codebases.
 
-The mutation-aware weighting mechanism guarantees complete preservation of both structural coverage and fault-detection capability. As long as neither $\alpha$ nor $\beta$ equals zero, the algorithm ensures 100\% coverage and mutation score retention~\cite{gladston2015}, addressing the coverage limitation where structural metrics alone inadequately capture defect-revealing behaviour.
+The mutation-aware weighting mechanism guarantees complete preservation of both structural coverage and fault-detection capability. By encoding killed mutants as explicit mandatory requirements in the SRM, the algorithm ensures 100\% mutation score retention by design---every mutant that must be killed is treated as a requirement that must be covered. As long as neither $\alpha$ nor $\beta$ equals zero, the greedy selection ensures all requirements (including mutant-kills) are retained in the minimised suite.
 
 The $O(nm)$ linear time complexity enables rapid execution at scale. This computational efficiency aligns with LASSO's requirements for analysing hundreds of systems concurrently, avoiding bottlenecks in the Arena pipeline.
 
