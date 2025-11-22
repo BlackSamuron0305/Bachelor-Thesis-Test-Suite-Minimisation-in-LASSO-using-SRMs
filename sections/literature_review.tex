@@ -127,42 +127,22 @@ literature reflects a broader shift from purely coverage-driven adequacy towards
 fault-based adequacy metrics.
 
 MA-EHGS builds on this development by embedding mutation awareness into a
-deterministic, greedy, SRM-based heuristic. Conceptually, it operates as follows:
+deterministic, greedy, SRM-based heuristic. It retains the two-phase structure
+of EHGS (essential test selection followed by greedy residual coverage) but
+extends the requirements matrix to include both structural coverage (lines,
+branches, methods) and mutation requirements (killed mutants). A weighted scoring
+function balances structural and mutation contributions during test selection:
+\[
+\mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}_i|
+                    + \beta \cdot |\mathrm{newMutants}_i|,
+\]
+where $\alpha$ and $\beta$ control the relative importance of each dimension.
 
-\subsubsection{Requirements-Matrix Formulation}
-
-MA-EHGS uses a binary matrix $M \in \{0,1\}^{n \times m}$ where each row
-corresponds to a test and each column to a requirement. Structural coverage
-requirements (e.g.\ lines, branches, methods) and mutation requirements
-(mutants killed by a test) are represented uniformly as columns in $M$.
-For each test $t_i$, the set of requirements it satisfies is given by the
-non-zero entries in row~$i$.
-
-\subsubsection{Two-Phase Selection with Mutation Weighting}
-
-MA-EHGS follows the two-phase structure of EHGS:
-
-\begin{description}
-  \item[Phase~1:] Identify and select tests that uniquely cover at least one
-        requirement (structural or mutant). These tests are essential, because
-        their removal would leave some requirement uncovered.
-  \item[Phase~2:] For the remaining uncovered requirements, repeatedly select
-        the next test using a weighted score
-        \[
-          \mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}_i|
-                              + \beta \cdot |\mathrm{newMutants}_i|,
-        \]
-        where $\mathrm{newCoverage}_i$ and $\mathrm{newMutants}_i$ denote,
-        respectively, the sets of yet-uncovered structural and mutation
-        requirements covered by $t_i$, and $\alpha,\beta \in [0,1]$ control
-        the relative importance of structural versus mutation requirements.
-\end{description}
-
-When $\beta = 0$, MA-EHGS reduces to a coverage-only variant similar to EHGS.
-For $\beta > 0$, the selection process explicitly prioritises tests that kill
-additional mutants. The algorithm thus bridges two strands of the literature:
-greedy coverage-based minimisation~\cite{yoo2012,noemmer2020} and
-mutation-aware optimisation~\cite{jehan2023,wei2017}.
+This design bridges greedy coverage-based minimisation~\cite{yoo2012,noemmer2020}
+and mutation-aware optimisation~\cite{jehan2023,wei2017}, operating entirely on
+the SRM representation without requiring program-structure analysis. A detailed
+description of the algorithm's implementation, data collection pipeline, and
+integration within LASSO is provided in Chapter~\ref{chap:implementation}.
 
 \section{Exact Optimisation Approaches}
 
@@ -298,58 +278,10 @@ rather than for exact minimisation in the classical sense.
 
 
 
-\section{Summary and Motivation for Mutation-Aware Greedy Minimisation}
+\section{Summary}
 
-The reviewed literature reveals several recurring themes and an evolution in how
-test-suite minimisation is approached:
+The reviewed literature reveals four main families of test-suite minimisation approaches: greedy heuristics (Classical Greedy, HGS, EHGS, DG) offer simplicity and scalability but traditionally focus only on structural coverage~\cite{yoo2012,noemmer2020,gladston2015}. Exact methods (ILP, SAT, NEMO) provide optimality guarantees at high computational cost~\cite{elbaum2002,lin2018}. Search-based techniques (GAs, MOEAs) enable multi-objective optimisation but require parameter tuning~\cite{wei2017,khan2020}. Similarity-based approaches exploit coverage patterns, primarily for prioritisation under resource constraints~\cite{bach2017}.
 
-\begin{itemize}
-  \item \textbf{Greedy heuristics as widely used baselines.}
-        Classical Greedy, HGS and DG are consistently employed across empirical
-        studies as reference algorithms for regression-test
-        minimisation~\cite{yoo2012,noemmer2020,jehan2023}.
-        EHGS refines this line of work through a two-phase selection
-        framework~\cite{gladston2015}.
+A key finding is the \emph{coverage--mutation gap}: empirical studies show that coverage-only minimisation can lose mutation score, particularly under aggressive reduction~\cite{noemmer2020,jehan2023}. Mutation-aware MOEAs demonstrate that explicit mutation-score optimisation helps preserve fault-detection capability~\cite{wei2017}, suggesting that structural coverage and mutation testing capture complementary adequacy dimensions.
 
-  \item \textbf{Exact methods and their limitations.}
-        ILP, SAT and nonlinear models (e.g.\ NEMO) provide strong optimality
-        baselines and can express sophisticated objectives, but become
-        computationally expensive as problem size grows, reflecting the
-        NP-complete nature of the underlying hitting-set
-        problem~\cite{garey1979,yoo2012,lin2018,noemmer2020}.
-        Structure-aware approaches such as REDUNET show how additional program
-        information can be incorporated at the cost of language- and
-        tool-specific dependencies~\cite{mongiovi2020}.
-
-  \item \textbf{Search-based and data-driven trade-offs.}
-        Metaheuristics such as GAs, PSO, ABC and MOEAs offer multi-objective
-        flexibility but require parameter tuning and entail higher computational
-        cost~\cite{yoo2012,khan2020,ahuja2024,wei2017}.
-        Similarity-based and overlap-aware methods exploit coverage patterns to
-        prioritise tests under time budgets and are more commonly applied to
-        test-case prioritisation than to strict
-        minimisation~\cite{bach2017,khan2020}.
-
-  \item \textbf{Coverage--mutation gap and the rise of mutation-aware techniques.}
-        Empirical studies show that coverage-only minimisation can reduce
-        mutation scores, especially under aggressive reduction
-        settings~\cite{noemmer2020,jehan2023}. At the same time, mutation-aware
-        MOEAs demonstrate that explicitly taking mutation score into account,
-        alongside cost and coverage, helps preserve fault-detection
-        capability~\cite{wei2017}. This suggests that structural coverage and
-        mutation score capture complementary aspects of test-suite adequacy.
-
-  \item \textbf{Motivation for mutation-aware greedy minimisation.}
-        Against this background, it is natural to evolve existing
-        coverage-based greedy algorithms into mutation-aware variants. MA-EHGS
-        follows this trend by extending the empirically studied EHGS with
-        explicit mutation information while retaining the overall greedy,
-        matrix-based structure. It combines the simplicity and established
-        role of greedy minimisation with the fault-based perspective emerging
-        from recent mutation studies.
-\end{itemize}
-
-
-The algorithms and families surveyed in this chapter form the basis for the
-comparative analysis in Chapter~\ref{chap:comparison}, where they are evaluated
-systematically against the criteria defined in Chapter~\ref{chap:evaluation}.
+The algorithms surveyed in this chapter form the basis for the comparative evaluation in Chapter~\ref{chap:comparison}, where they are assessed against the criteria defined in Chapter~\ref{chap:evaluation}.

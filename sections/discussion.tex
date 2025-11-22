@@ -1,7 +1,7 @@
 \chapter{Discussion}
 \label{chap:discussion}
 
-This chapter critically analyses test suite minimisation from two perspectives: general advantages and disadvantages inherent to the technique, followed by specific considerations for the Mutation-Aware Enhanced HGS implementation within LASSO's architectural constraints.
+This chapter critically analyses test suite minimisation from two perspectives: general advantages and disadvantages inherent to the technique, followed by specific considerations for the Mutation-Aware Enhanced HGS implementation within LASSO.
 
 \section{General Advantages and Disadvantages of Test Suite Minimisation}
 \label{sec:discussion:general}
@@ -50,7 +50,7 @@ The proposed approach provides several critical advantages aligned with LASSO's 
 
 The mutation-aware weighting mechanism guarantees complete preservation of both structural coverage and fault-detection capability. As long as neither $\alpha$ (coverage weight) nor $\beta$ (mutation weight) equals zero, the algorithm ensures 100\% coverage retention and 100\% mutation score retention~\cite{gladston2015}. This property directly implies maximal fault-detection preservation, addressing the fundamental coverage limitation discussed in Section~\ref{sec:discussion:general} where structural metrics alone inadequately capture defect-revealing behaviour.
 
-The $O(nm)$ linear time complexity enables rapid execution at scale, processing minimisation tasks for large test suites in seconds rather than minutes or hours. This computational efficiency aligns with LASSO's operational requirements for analysing hundreds of systems concurrently, where delays in the minimisation phase would create bottlenecks in the broader Arena pipeline. Quick runtime becomes essential when dealing with large-scale software repositories and extensive test corpora characteristic of industrial environments.
+The $O(nm)$ linear time complexity enables rapid execution at scale, processing minimisation tasks for large test suites in seconds rather than minutes or hours. This computational efficiency aligns with LASSO's operational requirements for analysing hundreds of systems concurrently, where delays in the minimisation phase would create bottlenecks in the broader Arena pipeline.
 
 
 \subsection{Limitations of the Implementation}
@@ -74,31 +74,17 @@ The deterministic behaviour, linear complexity, and guaranteed mutation preserva
 \section{Future Work}
 \label{sec:discussion:future}
 
-The limitations identified in Section~\ref{sec:discussion:specific} highlight several directions for extending the MA-EHGS approach and improving its applicability within LASSO.
+The limitations identified in Section~\ref{sec:discussion:specific} suggest several extensions for MA-EHGS within LASSO.
 
-\subsection{Multi-Language Support}
+\textbf{Multi-Language Support.} The current prototype relies on Java tooling (JaCoCo and PIT). Extending to Python, JavaScript, and other ecosystems requires integrating equivalent coverage and mutation frameworks and normalising their outputs into a unified SRM representation.
 
-The current prototype relies on Java tooling (JaCoCo and PIT). Extending MA-EHGS to Python, JavaScript, and other ecosystems requires integrating equivalent coverage and mutation frameworks and normalising their outputs into a unified SRM representation. Key challenges include ensuring metric granularity consistency and mapping language-specific mutation operators.
+\textbf{Multisystem Minimisation.} LASSO's multi-system SRMs motivate minimisation across several implementations simultaneously. Future work should investigate aggregation strategies for coverage and mutation information, balancing global preservation with computational feasibility.
 
-\subsection{Multisystem Minimisation}
+\textbf{Integration Testing Validation.} Validation has focused on isolated unit tests. End-to-end integration tests within LASSO's Arena pipeline are needed to evaluate data extraction reliability, SRM generation correctness, and performance under realistic workloads.
 
-LASSO’s multi-system SRMs motivate minimisation across several implementations simultaneously. Future work should investigate strategies for aggregating coverage and mutation information across systems, balancing global preservation with computational feasibility. This includes studying conservative union-based vs.\ intersection-based preservation strategies and quantifying the increased overhead of cross-system mutation execution.
+\textbf{Alpha--Beta Benchmarking.} Parameter sensitivity analysis on the Base64 benchmark revealed minimal impact of $\alpha$--$\beta$ configurations: most combinations produced identical 8-test results. However, larger test suites may exhibit greater parameter sensitivity. A systematic grid search across parameter combinations on diverse system types could identify configurations that optimise reduction while preserving coverage and mutation scores, potentially integrated as an LSL action for empirically guided parameter selection.
 
-\subsection{Integration Testing Validation}
+\textbf{Weak Mutation Support.} MA-EHGS currently considers only strong mutants. Capturing weak mutants would require deeper instrumentation to detect internal state divergences, providing finer behavioural insight at higher cost.
 
-Validation has so far focused on isolated unit tests. End-to-end integration tests within LASSO’s Arena pipeline are needed to evaluate data extraction reliability, SRM generation correctness, and performance under realistic workloads (large-scale SRMs and many parallel systems). This ensures robustness for production deployment.
-
-\subsection{Alpha–Beta Benchmarking}
-
-Empirical parameter sensitivity analysis on the Base64 benchmark revealed minimal impact of $\alpha$--$\beta$ configurations on minimisation outcomes. Testing multiple parameter combinations produced identical 8-test results for all non-edge cases, with only $\alpha=0$ or $\beta=0$ configurations yielding slightly larger suites (7 tests). This parameter insensitivity simplifies configuration, as the balanced defaults $\alpha=0.5$ and $\beta=0.5$ perform equivalently to other weighted combinations for this benchmark.
-
-However, this finding is based on relatively small test suites (80 tests for Base64). Larger test suites with more complex coverage patterns may exhibit greater parameter sensitivity, particularly when $\alpha + \beta > 1$ amplifies both coverage and mutation contributions simultaneously. A systematic grid search across parameter combinations on diverse system types and scales could identify configurations that optimise reduction while preserving coverage and mutation scores. Such benchmarking could be integrated as an LSL action to support empirically guided parameter selection.
-
-\subsection{Weak Mutation Support}
-
-MA-EHGS currently considers only strong mutants. Capturing weak mutants would require deeper instrumentation to detect internal state divergences. Although more costly, this would provide finer behavioural insight and improve minimisation quality for systems with complex internal logic.
-
-\subsection{LLM-Assisted Gap Analysis}
-
-Large language models could assist in identifying and generating tests for uncovered coverage or mutation gaps. By analysing SRM data and optional code context, LLMs could propose targeted tests which are subsequently validated automatically. This complements minimisation by enabling systematic test suite augmentation.
+\textbf{LLM-Assisted Gap Analysis.} Large language models could assist in identifying and generating tests for uncovered coverage or mutation gaps. By analysing SRM data and optional code context, LLMs could propose targeted tests which are subsequently validated automatically, complementing minimisation through systematic test suite augmentation.
 
