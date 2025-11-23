@@ -10,7 +10,7 @@ Building upon the fundamentals established in the previous chapter, this chapter
   \item[\textbf{C1: SRM Compatibility (Mandatory)}] 
   The algorithm must operate directly on \emph{Stimulus--Response Matrix} (SRM) representations without requiring control-flow graphs, syntax trees, or language-specific structural analysis~\cite{Kessel2022}. 
   Algorithms failing C1 receive a score of zero and are excluded. 
-  This precondition is essential because LASSO operates entirely on SRM abstractions; language independence requires that algorithms process abstract requirement matrices rather than language-specific artefacts.
+  This precondition is essential because LASSO operates entirely on SRM abstractions. Language independence requires that algorithms process abstract requirement matrices rather than language-specific artefacts.
 \end{description}
 
 \subsection{Performance Criteria}
@@ -29,7 +29,7 @@ Building upon the fundamentals established in the previous chapter, this chapter
   \item[\textbf{C4: Mutation-Coverage Preservation}] 
   Assesses fault-detection capability via mutation testing~\cite{jehan2023,noemmer2020}. 
   The mutation score (ratio of killed mutants to total mutants) acts as a fault-based adequacy metric complementing structural coverage.
-  Empirical work shows that structural coverage alone does not fully capture fault-revealing power~\cite{jehan2023}; C4 therefore complements C2 to assess how well a minimised suite preserves test effectiveness.
+  Empirical work shows that structural coverage alone does not fully capture fault-revealing power~\cite{jehan2023}. C4 therefore complements C2 to assess how well a minimised suite preserves test effectiveness.
 
   \item[\textbf{C5: Computational Scalability}] 
   Examines algorithm performance on large SRMs as the number of tests and requirements increases. 
@@ -38,7 +38,7 @@ Building upon the fundamentals established in the previous chapter, this chapter
 
   \item[\textbf{C6: Implementation Feasibility}] 
   Considers practical integration factors such as implementation effort, parameter tuning, dependency overhead, and compatibility with LASSO’s architecture~\cite{yoo2012}. 
-  Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline; C6 makes this trade-off explicit.
+  Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline. C6 makes this trade-off explicit.
 \end{description}
 
 Taken together, C2--C4 focus on preserving quality and fault detection, while C5--C6 address the practical feasibility of deploying a minimisation algorithm in LASSO’s SRM-based environment.

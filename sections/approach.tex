@@ -14,7 +14,7 @@ Greedy heuristics (Classical Greedy, HGS, EHGS, DG) work on test--requirement in
 
 REDUNET, in contrast, requires control-flow graphs and program-structure analysis~\cite{mongiovi2020}, which are not available in SRM-only settings. It therefore fails C1 and is excluded from further consideration.
 
-\textbf{Conclusion (C1).} All matrix-based techniques satisfy C1; REDUNET does not and is excluded.
+\textbf{Conclusion (C1).} All matrix-based techniques satisfy C1. REDUNET does not and is excluded.
 
 %======================================================================
 \section{Criterion C2: Coverage Preservation}
@@ -32,11 +32,11 @@ Exact ILP/SAT formulations and NEMO enforce coverage constraints as hard constra
 
 C3 evaluates how strongly an algorithm reduces the test suite while satisfying C2.
 
-ILP, SAT, and NEMO provide optimal or near-optimal reductions for the encoded objective~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS, DG and related variants consistently achieve strong reductions: EHGS and GRE typically reach around 72--74\% suite-size reduction versus about 69\% for HGS~\cite{gladston2015}; Jehan and Wotawa report roughly 70\% reduction for multiple greedy variants on JavaScript projects with adequate mutation requirements~\cite{jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs also achieve substantial reductions, but their performance varies more strongly with configuration and subject programs~\cite{wei2017}.
+ILP, SAT, and NEMO provide optimal or near-optimal reductions for the encoded objective~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS, DG and related variants consistently achieve strong reductions: EHGS and GRE typically reach around 72--74\% suite-size reduction versus about 69\% for HGS~\cite{gladston2015}. Jehan and Wotawa report roughly 70\% reduction for multiple greedy variants on JavaScript projects with adequate mutation requirements~\cite{jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs also achieve substantial reductions, but their performance varies more strongly with configuration and subject programs~\cite{wei2017}.
 
-MA-EHGS builds directly on EHGS’s selection strategy, so its reduction behaviour follows the same pattern; adding mutation-awareness changes which tests are preferred in Phase~2 but does not alter the underlying SRM-based mechanism.
+By construction, MA-EHGS extends EHGS with a second adequacy dimension (mutation requirements). Prior work suggests that such multi-criteria extensions typically trade a small amount of additional tests for improved fault-based metrics: for example, Lin et al.'s tie-breaking variants change average suite-size reduction from 85.2\% to 84.94\% for HGS and from 91.83\% to 91.84\% for GRE, i.e.\ by at most about 0.3 percentage points~\cite{lin2018}. In addition, Shi et al.\ report that mutant-based minimisation yields better fault-detection loss while statement-based minimisation delivers slightly better minimisation results~\cite{shi2018}. We therefore expect MA-EHGS to achieve very similar reduction ratios to coverage-only EHGS, with only marginally larger suites but improved mutation preservation.
 
-\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS, DG and related greedy heuristics provide strong practical reduction (70--74\%); MA-EHGS inherits this behaviour from EHGS.
+\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS, DG and related greedy heuristics provide strong practical reduction (70--74\%). Based on multi-criteria extensions in prior work~\cite{lin2018,shi2018}, MA-EHGS is expected to achieve similar reduction effectiveness to EHGS with marginal trade-offs (approximately 0.3 percentage points) for complete mutation preservation.
 
 %======================================================================
 \section{Criterion C4: Mutation Score Preservation}

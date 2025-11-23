@@ -2,7 +2,7 @@
 
 \section{Summary}
 
-This thesis developed an SRM-based test-suite minimisation framework for LASSO by selecting and implementing the Mutation-Aware Enhanced Harrold--Gupta--Soffa (MA-EHGS) approach. Based on a systematic literature review and evaluation criteria C1--C6, MA-EHGS was identified as the most suitable technique due to its scalability, preservation guarantees, and compatibility with LASSO's behavioural abstraction. Integrated into the analysis pipeline, MA-EHGS combines line, branch, and method coverages with mutation information. In our benchmarking (mainly multiple Base64 implementations), MA-EHGS achieved strong reductions while preserving 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations. As expected, reduction effectiveness is slightly lower than coverage-only Enhanced HGS due to additional mutation constraints, but the difference is not critical. This behaviour follows directly from the HGS selection mechanism. Unit-test validation confirmed correct algorithmic behaviour, with full pipeline evaluation remaining for future work.
+This thesis developed an SRM-based test-suite minimisation framework for LASSO by implementing the Mutation-Aware Enhanced Harrold--Gupta--Soffa (MA-EHGS) approach. Based on systematic literature review and evaluation criteria C1--C6, MA-EHGS was selected for its scalability, preservation guarantees, and SRM compatibility. MA-EHGS extends EHGS with mutation requirements as an additional adequacy dimension. Based on multi-criteria minimisation literature~\cite{lin2018,shi2018}, we expect reduction effectiveness very similar to coverage-only EHGS (approximately 70--74\%) with marginal trade-offs (around 0.3 percentage points) for guaranteed 100\% mutation preservation. Unit-test validation on Base64 implementations confirmed correct algorithmic behaviour: MA-EHGS preserved 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations, validating the dual-parameter weighting mechanism.
 
 
 \section{Key Contributions}
@@ -17,11 +17,11 @@ MA-EHGS extends the validated Enhanced Harrold--Gupta--Soffa (EHGS) algorithm~\c
 This enables configurable balancing between structural adequacy and behavioural (mutation-based) fault-detection preservation.
 
 \paragraph{Practical integration into LASSO.}
-The framework extracts metric data from SRM response objects, performs minimisation, and generates reduced SRMs while preserving schema and language independence.
+The framework extracts metric data from SRM response objects, performs minimisation, and generates reduced SRMs while preserving the language-independent SRM schema. The algorithmic design operates on SRM abstractions without language-specific dependencies, though the current implementation uses Java tooling (JaCoCo and PIT).
 
 \section{Future Work}
 
-Future improvements (detailed in Section~\ref{sec:discussion:future}) include extending the approach beyond Java, enabling multisystem minimisation for cross-project SRMs, conducting full integration testing in LASSO's Arena pipeline, benchmarking $\alpha$--$\beta$ configurations, supporting weak mutation detection, and exploring LLM-assisted test generation to close coverage or mutation gaps.
+Future improvements include extending the approach beyond Java, enabling multisystem minimisation for cross-project SRMs, conducting full integration testing in LASSO's Arena pipeline, benchmarking $\alpha$--$\beta$ configurations, supporting weak mutation detection, and exploring LLM-assisted test generation to close coverage or mutation gaps.
 
 \section*{Research Questions Answered}
 
@@ -32,4 +32,4 @@ Future improvements (detailed in Section~\ref{sec:discussion:future}) include ex
   \item[RQ4:] Integration was achieved via a requirements-matrix extension that incorporates mutation information without altering LASSO's SRM abstraction.
 \end{description}
 
-Overall, this thesis demonstrates that SRM-based minimisation can substantially reduce test suites while preserving fault-detection capability. The mutation-aware MA-EHGS algorithm therefore provides a scalable and configurable mechanism for improving testing efficiency in large software repositories and strengthens the case for LASSO's behavioural abstraction as a foundation for future large-scale software analysis.
+Overall, this thesis demonstrates that SRM-based minimisation can substantially reduce test suites while preserving fault-detection capability. MA-EHGS provides a scalable and configurable mechanism for improving testing efficiency in large software repositories.

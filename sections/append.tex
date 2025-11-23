@@ -98,7 +98,7 @@ The following algorithms from Chapter~\ref{chap:literature-review} are evaluated
 
 \subsubsection*{C1 Summary}
 
-C1 enforces SRM-only operation without CFG access, essential for LASSO's language-agnostic architecture. All matrix-based algorithms pass. REDUNET fails and is excluded from further comparison.
+C1 enforces SRM-only operation without CFG or AST access and is therefore essential for LASSO's language-agnostic architecture. All matrix-based techniques considered in the literature—greedy heuristics, ILP/SAT/NEMO, metaheuristics and similarity-based approaches—evaluate candidate test suites purely via test--requirement (coverage or mutant) vectors and thus satisfy this precondition~\cite{harrold1993,yoo2012,noemmer2020,khan2020,wei2017}. REDUNET is the only exception because it is explicitly designed to exploit control-flow graph structure to detect redundancy~\cite{mongiovi2020}, which is not available in LASSO's SRM abstraction. Consequently, REDUNET is filtered out after C1 and not considered in the remaining criteria.
 
 \section{C2: Coverage Preservation}\label{app:c2}
 
@@ -133,7 +133,7 @@ C1 enforces SRM-only operation without CFG access, essential for LASSO's languag
 
 \subsubsection*{C2 Summary}
 
-Greedy and exact methods guarantee 100\% coverage by construction. Search-based and similarity methods treat coverage as an optimisation objective without hard guarantees, failing LASSO's adequacy requirement.
+Greedy and exact approaches enforce coverage preservation by construction: greedy algorithms continue selecting tests until each requirement column is covered at least once~\cite{harrold1993,yoo2012,noemmer2020,jehan2023}, and ILP/SAT/NEMO encode the same condition as hard constraints in their optimisation models~\cite{elbaum2002,lin2018}. This matches how these techniques are used in empirical studies, where 100\% structural coverage of the original suite is treated as a non-negotiable adequacy condition~\cite{noemmer2020,jehan2023}. In contrast, search-based and similarity-based methods typically treat coverage as one optimisation objective among several (e.g.\ cost, time budget, multi-objective fitness)~\cite{yoo2012,khan2020,wei2017,bach2017}, so high coverage is encouraged but not guaranteed. Under LASSO's requirement that the minimised suite must retain all structural coverage, only the greedy and exact methods pass C2.
 
 \section{C3: Reduction Effectiveness}\label{app:c3}
 
@@ -151,7 +151,7 @@ Greedy and exact methods guarantee 100\% coverage by construction. Search-based 
     HGS & 1 & Comparable to classical greedy~\cite{yoo2012,noemmer2020}. \\
     Delayed Greedy (DG) & 1 & Often smallest suites among greedy variants~\cite{tallam2005,jehan2023}. \\
     Enhanced HGS (EHGS) & 1 & Average 73.66\% reduction reported~\cite{gladston2015}. \\
-    MA-EHGS & 1 & Inherits EHGS reduction; 52--90\% in benchmarks (Section~\ref{app:benchmarks}). \\[0.2em]
+    MA-EHGS & 1 & Expected to match EHGS (70--74\%) with marginal trade-off (~0.3pp) for mutation preservation~\cite{lin2018,shi2018}. \\[0.2em]
     \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
     ILP/SAT & 1 & Optimal for encoded constraints~\cite{elbaum2002}. \\
     NEMO & 1 & Optimal for multi-criteria model~\cite{lin2018}. \\[0.2em]
@@ -168,7 +168,9 @@ Greedy and exact methods guarantee 100\% coverage by construction. Search-based 
 
 \subsubsection*{C3 Summary}
 
-All greedy, exact, and search-based methods meet LASSO's 45\% reduction target. Similarity methods prioritise execution-time constraints over aggressive reduction and fail this criterion.
+All greedy, exact and metaheuristic approaches comfortably meet LASSO's 45\% reduction target. Empirical studies on Java programs report suite-size reductions around 69\% for HGS and around 72--74\% for EHGS and GRE on the FIRST RUN benchmark~\cite{gladston2015}, while Noemmer and Haas and Jehan and Wotawa observe roughly 60--75\% reduction for several greedy variants on Java and JavaScript projects~\cite{noemmer2020,jehan2023}. Exact ILP/SAT and NEMO models compute minimal or near-minimal hitting sets for the instances they can solve~\cite{elbaum2002,lin2018}. Search-based techniques such as GAs, MOEAs, PSO and ABC achieve similarly substantial reductions in their case-study evaluations~\cite{yoo2012,wei2017,ahuja2024}. In contrast, similarity-based methods in industrial settings are tuned to maximise coverage under strict time budgets rather than to shrink suites aggressively~\cite{bach2017}, leading to more conservative reductions that do not directly target strong minimisation.
+
+MA-EHGS extends EHGS by treating mutants as explicit requirements. Multi-criteria extensions in prior work show minimal impact on reduction effectiveness: Lin et al.'s tie-breaking variants change reduction by at most 0.3 percentage points~\cite{lin2018}, and Shi et al.\ observe that mutant-based minimisation trades slightly better minimisation for improved fault detection~\cite{shi2018}. We therefore expect MA-EHGS to achieve reduction effectiveness very close to EHGS (70--74\%) while guaranteeing 100\% mutation preservation by design.
 
 \section{C4: Mutation Score Preservation}\label{app:c4}
 
@@ -176,13 +178,13 @@ All greedy, exact, and search-based methods meet LASSO's 45\% reduction target. 
   \centering
   \footnotesize
   \caption{C4: Mutation Score Preservation—explicit mutation awareness (0/1).}
-  \label{tab:app-c4}
+  \label{tab:app:c4}
   \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
     \midrule
     \multicolumn{3}{@{}l}{\textit{Greedy Heuristics}} \\
-    MA-EHGS & 1 & Treats mutants as explicit requirements; 100\% retention~\cite{jehan2023}. \\[0.3em]
+    MA-EHGS & 1 & Treats mutants as explicit requirements; 100\% retention by design (Appendix~\ref{app:benchmarks}). \\[0.3em]
     Classical Greedy & 0 & Coverage-only; 3.5--21\% mutation loss reported~\cite{noemmer2020}. \\[0.3em]
     HGS & 0 & Coverage-only; same gap as Classical Greedy~\cite{noemmer2020}. \\[0.3em]
     Delayed Greedy (DG) & 0 & Coverage-only; mutation score not modelled~\cite{jehan2023}. \\[0.3em]
@@ -203,15 +205,15 @@ All greedy, exact, and search-based methods meet LASSO's 45\% reduction target. 
 
 \subsubsection*{C4 Summary: The Coverage--Mutation Gap}
 
-Literature demonstrates a clear gap between structural coverage and mutation score:
+Literature demonstrates a consistent gap between structural coverage and mutation score:
 
 \begin{itemize}
-  \item Coverage-only minimisation leads to 3.5--21\% relative mutation loss~\cite{noemmer2020}.
-  \item When mutants are treated as explicit requirements, no mutation loss occurs~\cite{jehan2023}.
-  \item MOEAs with mutation objectives maintain fault detection~\cite{wei2017}.
+  \item Coverage-only minimisation can lead to 3.5--21\% relative mutation loss, especially under aggressive reduction~\cite{noemmer2020}.
+  \item When mutants are treated as explicit requirements in the minimisation, mutation loss can be avoided and 100\% of originally killed mutants retained~\cite{jehan2023}.
+  \item Many-objective evolutionary algorithms that include mutation score as an explicit fitness objective preserve fault detection while still reducing cost~\cite{wei2017}.
 \end{itemize}
 
-Only MA-EHGS (deterministic, SRM-based) and MOEAs (stochastic, expensive) explicitly model mutation. MA-EHGS achieves 100\% mutation retention in benchmarks while maintaining greedy efficiency.
+Most classical techniques in the tables (greedy, ILP/SAT, PSO, ABC, similarity-based methods) optimise only structural coverage and cost and therefore do not explicitly control mutation score. Only MOEAs~\cite{wei2017} and MA-EHGS model mutants directly: MOEAs treat mutation score as a dedicated objective in a stochastic multi-objective search, whereas MA-EHGS encodes mutants as additional requirements in a deterministic SRM-based greedy algorithm. In LASSO’s setting, MA-EHGS thus bridges the coverage--mutation gap while remaining compatible with the existing SRM infrastructure and scalability requirements.
 
 \section{C5: Computational Scalability}\label{app:c5}
 
@@ -248,7 +250,7 @@ For C5, polynomial-time greedy heuristics receive 1 (pass), while exponential-ti
 
 \subsubsection*{C5 Summary}
 
-Greedy heuristics and similarity methods scale polynomially. Exact and search-based methods have exponential or population-based costs unsuitable for LASSO's large SRMs.
+Greedy heuristics and similarity-based methods operate in polynomial time over the SRM and have been applied to test suites with thousands of tests and requirements~\cite{yoo2012,noemmer2020,jehan2023,bach2017}. HGS’s original analysis shows a polynomial bound in the number of tests and requirements~\cite{harrold1993}, and EHGS and MA-EHGS follow the same matrix-based pattern~\cite{gladston2015}. In contrast, ILP/SAT formulations inherit the NP-completeness of hitting set~\cite{garey1979} and become costly as problem size grows~\cite{elbaum2002,yoo2012}, while NEMO’s nonlinear formulation is even more computationally demanding~\cite{lin2018}. Population-based algorithms such as GAs, MOEAs, PSO and ABC require many SRM evaluations per generation~\cite{yoo2012,wei2017,ahuja2024}, which makes them orders of magnitude slower in reported case studies. For LASSO’s expected SRM sizes (hundreds of tests, up to thousands of requirements), polynomial-time SRM-based algorithms such as MA-EHGS are therefore much more appropriate.
 
 \section{C6: Implementation Feasibility}\label{app:c6}
 
@@ -280,6 +282,10 @@ Greedy heuristics and similarity methods scale polynomially. Exact and search-ba
     \bottomrule
   \end{tabular}
 \end{table}
+
+\subsubsection*{C6 Summary}
+
+From an engineering perspective, SRM-based greedy heuristics are the easiest to integrate: they require only in-memory matrix operations, deterministic control flow and, at most, a few scalar parameters~\cite{harrold1993,gladston2015,yoo2012}. MA-EHGS fits this pattern by extending EHGS with two weights $(\alpha,\beta)$ while remaining a pure matrix algorithm that can be implemented directly in LASSO’s Java codebase without additional libraries. In contrast, ILP/SAT and NEMO require embedding and configuring external optimisation solvers~\cite{elbaum2002,lin2018}, and evolutionary and swarm-based methods require a full metaheuristic framework (populations, variation operators, termination conditions) and careful parameter tuning~\cite{yoo2012,khan2020,wei2017}. Similarity-based methods also introduce dependencies on clustering and distance-measure libraries~\cite{bach2017,khan2020}. Under LASSO’s constraints (no external solvers, deterministic behaviour, low maintenance overhead), MA-EHGS and other simple greedy heuristics are therefore the most feasible options.
 
 \section{Complete Multi-Criteria Scoring Table}\label{app:final-scores}
 
@@ -340,7 +346,6 @@ The binary multi-criteria evaluation clearly identifies MA-EHGS as the only algo
 \end{enumerate}
 
 This unique combination makes MA-EHGS the optimal choice for LASSO's SRM-based, language-agnostic test suite minimisation.
-
 
 \chapter{Mutation-Aware Enhanced HGS Pseudocode}
 \label{app:pseudocode}
@@ -436,7 +441,7 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
   \label{tab:appendix-benchmarks}
   \begin{tabular}{@{}llcccc@{}}
     \toprule
-    \multicolumn{6}{c}{\textbf{Part A: Parameter Sensitivity Analysis (100 Original Tests)}} \\
+    \multicolumn{6}{c}{\textbf{Part A: Parameter Sensitivity Analysis (80 Original Tests)}} \\
     \midrule
     $\alpha$ & $\beta$ & \textbf{Minimised} & \textbf{Coverage} & \textbf{Mutation} & \\
     \midrule
@@ -456,7 +461,7 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
     \midrule
     \textbf{Implementation} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
     \midrule
-    Implementation-A & 100 &  8 & 92.0\,\% & 100\,\% & 100\,\% \\
+    Implementation-A & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
     Implementation-B & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
     Implementation-C & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
     Implementation-D & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
