@@ -12,7 +12,7 @@ Test suite minimisation represents a sophisticated optimisation challenge where 
 
 Empirical evidence from large-scale industrial environments underscores the significant performance gains achievable through test suite minimisation. Bach et al.~\cite{bach2017} observed that over 90\% of test cases in a major industrial project (SAP) were redundant in terms of line coverage, with full test execution requiring several tens of hours. Applying minimisation techniques in such contexts can reduce execution time from many hours to just a few hours, or even minutes, without compromising coverage quality.
 
-These reductions yield immediate benefits. A 50--75\% shrinkage translates into lower computational demands, reduced infrastructure expenditure, and substantial cost savings. In continuous integration pipelines running hundreds of builds per day, a 60\% reduction eliminates roughly 300 redundant executions per cycle~\cite{yoo2012}. Shorter test cycles also enhance developer productivity by accelerating feedback loops, allowing defects to surface earlier and be resolved faster.
+These reductions yield immediate benefits: lower computational demands, reduced infrastructure expenditure, and substantial cost savings. In continuous integration pipelines running hundreds of builds per day, a 60\% reduction eliminates roughly 300 redundant executions per cycle~\cite{yoo2012}, accelerating feedback loops.
 
 
 \subsection{The Absence of a Perfect Solution}
@@ -72,13 +72,13 @@ The limitations identified in Section~\ref{sec:discussion:specific} suggest seve
 
 \textbf{Multi-Language Support.} The current prototype relies on Java tooling (JaCoCo and PIT). Extending to Python, JavaScript, and other ecosystems requires integrating equivalent coverage and mutation frameworks and normalising their outputs into a unified SRM representation.
 
-\textbf{Multisystem Minimisation.} LASSO's multi-system SRMs motivate minimisation across several implementations simultaneously. Future work should investigate aggregation strategies for coverage and mutation information, balancing global preservation with computational feasibility.
+\textbf{Multisystem Minimisation.} LASSO's multi-system SRMs motivate minimisation across several implementations simultaneously, requiring aggregation strategies for coverage and mutation information.
 
-\textbf{Integration Testing Validation.} Validation has focused on isolated unit tests. End-to-end integration tests within LASSO's Arena pipeline are needed to evaluate data extraction reliability, SRM generation correctness, and performance under realistic workloads.
+\textbf{Integration Testing Validation.} End-to-end integration tests within LASSO's Arena pipeline are needed to evaluate performance under realistic workloads.
 
 \textbf{Alpha--Beta Benchmarking.} Parameter sensitivity analysis on the Base64 benchmark revealed minimal impact of $\alpha$--$\beta$ configurations: most combinations produced identical 8-test results. However, larger test suites may exhibit greater parameter sensitivity. A systematic grid search across parameter combinations on diverse system types could identify configurations that optimise reduction while preserving coverage and mutation scores, potentially integrated as an LSL action for empirically guided parameter selection.
 
 \textbf{Weak Mutation Support.} MA-EHGS currently considers only strong mutants. Capturing weak mutants would require deeper instrumentation to detect internal state divergences, providing finer behavioural insight at higher cost.
 
-\textbf{LLM-Assisted Gap Analysis.} Large language models could assist in identifying and generating tests for uncovered coverage or mutation gaps. By analysing SRM data and optional code context, LLMs could propose targeted tests which are subsequently validated automatically, complementing minimisation through systematic test suite augmentation.
+\textbf{LLM-Assisted Gap Analysis.} Large language models could identify and generate tests for uncovered coverage or mutation gaps, complementing minimisation through systematic test suite augmentation.
 

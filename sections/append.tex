@@ -350,18 +350,24 @@ This unique combination makes MA-EHGS the optimal choice for LASSO's SRM-based, 
 \chapter{Mutation-Aware Enhanced HGS Pseudocode}
 \label{app:pseudocode}
 
-This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS (MA-EHGS) algorithm. The notation follows requirements-matrix formulations as used for EHGS~\cite{gladston2015} and other set-cover-based techniques.
+This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS (MA-EHGS) algorithm, which extends the Enhanced HGS (EHGS) heuristic~\cite{gladston2015} with explicit mutation-awareness to address the coverage--mutation gap observed in empirical studies~\cite{noemmer2020,jehan2023}. MA-EHGS operates directly on LASSO's Stimulus-Response Matrix (SRM) representation without requiring control-flow graphs or language-specific program structures, maintaining compatibility with LASSO's language-agnostic philosophy.
+
+\subsection*{Algorithm Overview}
+
+MA-EHGS retains the two-phase structure of EHGS: Phase~1 identifies and selects essential tests that uniquely cover any requirement (structural or mutation), ensuring no loss of coverage. Phase~2 applies a weighted greedy heuristic to select additional tests until all requirements are satisfied. The key innovation is the integration of mutation requirements into the unified requirements matrix $R = R_{\text{struct}} \cup R_{\text{mut}}$ and a weighted scoring function that balances structural coverage and mutation preservation during greedy selection.
+
+By treating both structural coverage (lines, branches, methods) and mutation requirements (killed mutants) as mandatory SRM columns, MA-EHGS guarantees 100\% preservation of both adequacy dimensions while achieving reduction effectiveness comparable to coverage-only EHGS~\cite{gladston2015}. The algorithm operates in polynomial time $O(nq)$, where $n$ is the number of tests and $q$ the total number of requirements, ensuring scalability for LASSO's large-scale analysis requirements.
 
 \subsection*{Notation}
 
 \begin{itemize}
-  \item $T = \{t_1,\dots,t_n\}$: set of tests (rows).
-  \item $R_{\text{struct}} = \{r_1,\dots,r_m\}$: structural requirements (e.g.\ lines, branches, methods).
+  \item $T = \{t_1,\dots,t_n\}$: set of tests (SRM rows).
+  \item $R_{\text{struct}} = \{r_1,\dots,r_m\}$: structural requirements (lines, branches, methods covered).
   \item $R_{\text{mut}} = \{m_1,\dots,m_p\}$: mutation requirements (mutants killed by the original suite).
-  \item $R = R_{\text{struct}} \cup R_{\text{mut}}$: unified requirement set (columns).
+  \item $R = R_{\text{struct}} \cup R_{\text{mut}}$: unified requirement set (SRM columns).
   \item $M \in \{0,1\}^{n \times |R|}$: binary requirements matrix; $M_{ij} = 1$ iff test $t_i$ satisfies requirement $r_j$.
-  \item $R_i = \{r_j \in R \mid M_{ij}=1\}$: set of requirements covered by test $t_i$.
-  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutants (default: $\alpha = 0.5$, $\beta = 0.5$). Setting $\beta = 0$ recovers a purely coverage-based EHGS. Setting $\alpha = 0$ would prioritise mutants only.
+  \item $R_i = \{r_j \in R \mid M_{ij}=1\}$: set of requirements satisfied by test $t_i$.
+  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutation requirements (default: $\alpha = 0.5$, $\beta = 0.5$). Setting $\beta = 0$ recovers purely coverage-based EHGS; setting $\alpha = 0$ prioritises mutation-only selection.
 \end{itemize}
 
 \subsection*{Algorithm}
@@ -369,62 +375,98 @@ This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS (M
 \begin{framed}
 \noindent\textbf{Procedure} MAEHGS($M$, $\alpha$, $\beta$)\\
 \textbf{Input:} Requirements matrix $M \in \{0,1\}^{n \times |R|}$, weights $\alpha \in [0,1]$, $\beta \ge 0$\\
-\textbf{Output:} Selected test subset $S \subseteq T$\\[4pt]
+\textbf{Output:} Minimised test subset $S \subseteq T$ guaranteeing 100\% coverage of all requirements in $R$\\[4pt]
 
 \noindent\textbf{Phase 1: Essential Test Selection}\\
+\emph{Objective:} Identify and select all tests that uniquely cover at least one requirement. These tests are essential because omitting them would leave requirements uncovered.\\[4pt]
+
 1. For each requirement $r_j \in R$, compute its set of covering tests:
 \[
   T_j = \{ t_i \in T \mid M_{ij} = 1 \}, \quad |T_j| = \text{cardinality of }T_j
 \]
+
 2. Initialise selected tests and uncovered requirements:
 \[
   S \leftarrow \emptyset,\quad R_{\text{uncov}} \leftarrow R
 \]
-3. For each requirement $r_j \in R$ with $|T_j| = 1$:
+
+3. For each requirement $r_j \in R$ with $|T_j| = 1$ (uniquely covered):
 \begin{itemize}
   \item Let $t_i$ be the unique test in $T_j$.
   \item Add $t_i$ to $S$ (if not already selected).
-  \item Remove all requirements covered by $t_i$:
+  \item Remove all requirements covered by $t_i$ from the uncovered set:
   \[
     R_{\text{uncov}} \leftarrow R_{\text{uncov}} \setminus R_i
   \]
 \end{itemize}
 
+\emph{Outcome:} All essential tests are selected. If $R_{\text{uncov}} = \emptyset$, the algorithm terminates (rare in practice). Otherwise, proceed to Phase~2.\\[8pt]
+
 \noindent\textbf{Phase 2: Weighted Greedy Selection}\\
+\emph{Objective:} Iteratively select tests that maximise a weighted combination of new structural coverage and new mutation kills, continuing until all requirements are satisfied.\\[4pt]
+
 4. While $R_{\text{uncov}} \neq \emptyset$:
 \begin{itemize}
   \item For each test $t_i \in T \setminus S$:
   \begin{itemize}
-    \item $\text{newCov}_{\text{struct}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{struct}}$
-    \item $\text{newCov}_{\text{mut}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{mut}}$
-    \item $\text{Score}(t_i) = \alpha \cdot |\text{newCov}_{\text{struct}}(t_i)| + \beta \cdot |\text{newCov}_{\text{mut}}(t_i)|$
+    \item Compute new structural coverage:
+    \[
+      \text{newCov}_{\text{struct}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{struct}}
+    \]
+    \item Compute new mutation kills:
+    \[
+      \text{newCov}_{\text{mut}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{mut}}
+    \]
+    \item Compute weighted score:
+    \[
+      \text{Score}(t_i) = \alpha \cdot |\text{newCov}_{\text{struct}}(t_i)| + \beta \cdot |\text{newCov}_{\text{mut}}(t_i)|
+    \]
   \end{itemize}
-  \item Choose a test with maximal score:
+  
+  \item Select the test with maximal score:
   \[
     t_{i^*} = \arg\max_{t_i \in T \setminus S} \text{Score}(t_i)
   \]
-  If several tests tie, break ties by the total number of newly covered requirements
-  $|\text{newCov}_{\text{struct}}(t_i)| + |\text{newCov}_{\text{mut}}(t_i)|$.
+  \emph{Tie-breaking:} If multiple tests achieve the same score, select the test with the highest total number of newly covered requirements $|\text{newCov}_{\text{struct}}(t_i)| + |\text{newCov}_{\text{mut}}(t_i)|$. If ties remain, use deterministic ordering (e.g., lexicographic by test identifier) to ensure reproducibility.
+  
   \item Add $t_{i^*}$ to $S$.
-  \item Remove requirements covered by $t_{i^*}$:
+  
+  \item Update uncovered requirements:
   \[
     R_{\text{uncov}} \leftarrow R_{\text{uncov}} \setminus R_{i^*}
   \]
 \end{itemize}
+
 5. Return $S$.
 \end{framed}
 
-\subsection*{Complexity}
-
-Let $n = |T|$ be the number of tests and $q = |R|$ the number of requirements (structural + mutants). Because mutation requirements extend the existing coverage matrix with additional columns from the same SRM, $q$ typically grows by a small constant factor. A straightforward implementation therefore behaves like other greedy heuristics:
+\subsection*{Key Properties}
 
 \begin{itemize}
-  \item Computes requirement cardinalities and essential tests in $O(nq)$ time (Phase~1).
-  \item In each greedy iteration (Phase~2), scans remaining tests and their coverage sets. Representing coverage sets as bitsets keeps each score computation at $O(q)$ and each iteration at $O(nq)$, matching classical EHGS behaviour.
-  \item Greedy selection rarely needs to examine all tests once requirements shrink, so practical runtime remains close to $O(nq)$ even with the extra mutation columns.
+  \item \textbf{Correctness:} By construction, $S$ covers all requirements in $R$. Phase~1 ensures no uniquely-covered requirement is lost. Phase~2 continues until $R_{\text{uncov}} = \emptyset$.
+  
+  \item \textbf{Determinism:} The implementation uses deterministic data structures (LinkedHashMap, LinkedHashSet in Java) and consistent tie-breaking rules, ensuring reproducible results across executions.
+  
+  \item \textbf{Language-agnostic:} The algorithm operates solely on the binary matrix $M$, which is constructed from LASSO's SRM representation. No control-flow graphs, abstract syntax trees, or other language-specific structures are required.
+  
+  \item \textbf{Parameter sensitivity:} Empirical validation (Appendix~\ref{app:benchmarks}) shows that balanced settings ($\alpha, \beta > 0$) produce robust results. Edge cases with $\alpha = 0$ or $\beta = 0$ reduce to mutation-only or coverage-only selection, respectively.
 \end{itemize}
 
-Overall, MA-EHGS runs in $O(nq)$ time in practice, comparable to other matrix-based greedy heuristics. Efficient bitset implementations and early termination when $R_{\text{uncov}}$ becomes small keep runtimes low for the SRM sizes considered in this thesis.
+\subsection*{Complexity}
+
+MA-EHGS operates in polynomial time comparable to other greedy matrix-based heuristics. Let $n = |T|$ be the number of tests and $q = |R| = |R_{\text{struct}}| + |R_{\text{mut}}|$ the total number of requirements. Because mutation requirements are collected from the same SRM used for coverage extraction, $q$ grows by at most a small constant factor over the structural requirements alone.
+
+The algorithm's complexity breaks down as follows:
+
+\begin{itemize}
+  \item \textbf{Phase 1 (Essential Test Selection):} Computing requirement cardinalities and identifying essential tests requires scanning the entire requirements matrix once, yielding $O(nq)$ time.
+  
+  \item \textbf{Phase 2 (Weighted Greedy Selection):} Each iteration scores all remaining tests by computing their intersection with uncovered requirements. Using efficient bitset representations, each score computation takes $O(q)$ time, and each iteration completes in $O(nq)$. In practice, greedy selection terminates well before examining all $n$ tests as $R_{\text{uncov}}$ shrinks rapidly, keeping actual runtime close to $O(nq)$ even with mutation columns included.
+  
+  \item \textbf{Overall:} The dominant term is $O(nq)$, matching the complexity of coverage-only greedy heuristics such as Classical Greedy, HGS, and EHGS~\cite{harrold1993,yoo2012,noemmer2020}. The addition of mutation requirements contributes only a constant factor to $q$, preserving the polynomial scalability that makes greedy algorithms suitable for LASSO's large-scale SRM analysis.
+\end{itemize}
+
+Empirical validation on benchmarks with up to 100 tests confirms that MA-EHGS achieves execution times comparable to other greedy heuristics, ensuring compatibility with LASSO's Arena pipeline for concurrent analysis of hundreds of systems.
 
 \chapter{Extended Benchmarks and Reproducibility}
 \label{app:benchmarks}
