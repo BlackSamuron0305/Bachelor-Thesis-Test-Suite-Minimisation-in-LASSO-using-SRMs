@@ -3,27 +3,27 @@
 
 This chapter evaluates candidate test-suite minimisation techniques against the criteria defined in Chapter~\ref{chap:evaluation} and justifies the selection of MA-EHGS for integration into LASSO. Detailed numerical scores and evaluation tables are provided in Appendix~\ref{app:evaluation-tables}.
 
-The evaluation covers four families (from Chapter~\ref{chap:literature-review}): greedy heuristics (Classical Greedy, HGS, EHGS, DG), exact optimisation (ILP, SAT, NEMO, REDUNET), search-based techniques (GAs, MOEAs), and similarity-based approaches. All are assessed using criteria C1--C6.
+The evaluation covers four families from Chapter~\ref{chap:literature-review}: greedy heuristics (Classical Greedy, HGS, EHGS, DG), exact optimisation (ILP, SAT, NEMO, REDUNET), search-based techniques (GAs, MOEAs), and similarity-based approaches. All are assessed using criteria C1--C6.
 
 %======================================================================
 \section{Criterion C1: SRM Compatibility}
 
 C1 requires that algorithms operate directly on SRMs without relying on control-flow graphs, abstract syntax trees, or other language-specific program structures.
 
-Greedy heuristics (Classical Greedy, HGS, EHGS, DG) work on test--requirement incidence matrices~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. ILP, SAT and NEMO encode set cover over tests and requirements~\cite{rothermel1998,yoo2012,elbaum2002,lin2018}. Search-based and similarity-based methods represent candidate suites via coverage and mutation vectors~\cite{yoo2012,khan2020,wei2017,bach2017}. All of these are compatible with LASSO’s SRM abstraction.
+Greedy heuristics (Classical Greedy, HGS, EHGS, DG) work on test--requirement incidence matrices~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. ILP, SAT and NEMO encode set cover over tests and requirements~\cite{rothermel1998,yoo2012,elbaum2002,lin2018}. Search-based and similarity-based methods evaluate candidate suites via coverage and (optionally) mutation vectors~\cite{yoo2012,khan2020,wei2017,bach2017}. All of these are compatible with LASSO’s SRM abstraction.
 
-REDUNET, in contrast, requires control-flow graphs and program-structure analysis~\cite{mongiovi2020}, which are not available in SRM-only settings. It therefore fails C1 and is excluded from further consideration.
+REDUNET, in contrast, requires control-flow graphs and program-structure analysis~\cite{mongiovi2020}, which are not available in SRM-only settings, so it fails C1 and is excluded.
 
 \textbf{Conclusion (C1).} All matrix-based techniques satisfy C1. REDUNET does not and is excluded.
 
 %======================================================================
 \section{Criterion C2: Coverage Preservation}
 
-C2 measures whether an algorithm can retain structural coverage (lines, branches, methods) after minimisation.
+C2 measures whether an algorithm retains structural coverage (lines, branches, methods) after minimisation.
 
-Greedy heuristics guarantee 100\% coverage by construction: they iteratively select tests until all requirements are covered~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. EHGS and DG preserve this property while refining the selection strategy~\cite{tallam2005,gladston2015}. MA-EHGS inherits this guarantee and, in this thesis, treats both structural and mutation requirements as mandatory columns in the SRM.
+Greedy heuristics guarantee 100\% coverage by construction: they iteratively select tests until all requirements are covered~\cite{harrold1993,chen2005,yoo2012,noemmer2020}. EHGS and DG preserve this property while refining the selection strategy~\cite{tallam2005,gladston2015}. MA-EHGS inherits this guarantee and, in this thesis, treats both structural and mutation requirements as mandatory SRM columns.
 
-Exact ILP/SAT formulations and NEMO enforce coverage constraints as hard constraints in their optimisation models~\cite{elbaum2002,yoo2012,lin2018}. Search-based and similarity-based approaches \emph{can} preserve coverage when configured with hard constraints, but many variants treat coverage as one objective among several and may trade it against other objectives~\cite{yoo2012,khan2020,wei2017,bach2017}.
+Exact ILP/SAT formulations and NEMO enforce coverage via hard constraints in their optimisation models~\cite{elbaum2002,yoo2012,lin2018}. Search-based and similarity-based approaches \emph{can} preserve coverage when configured with hard constraints, but many variants treat coverage as one objective among several and may trade it against other goals~\cite{yoo2012,khan2020,wei2017,bach2017}.
 
 \textbf{Conclusion (C2).} Greedy heuristics, ILP/SAT and NEMO preserve coverage under their standard configurations. Search-based and similarity-based methods require explicit configuration to guarantee C2.
 
@@ -32,20 +32,18 @@ Exact ILP/SAT formulations and NEMO enforce coverage constraints as hard constra
 
 C3 evaluates how strongly an algorithm reduces the test suite while satisfying C2.
 
-ILP, SAT, and NEMO provide optimal or near-optimal reductions for the encoded objective~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS, DG and related variants consistently achieve strong reductions: EHGS and GRE typically reach around 72--74\% suite-size reduction versus about 69\% for HGS~\cite{gladston2015}. Jehan and Wotawa report roughly 70\% reduction for multiple greedy variants on JavaScript projects with adequate mutation requirements~\cite{jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs also achieve substantial reductions, but their performance varies more strongly with configuration and subject programs~\cite{wei2017}.
+ILP, SAT, and NEMO provide optimal or near-optimal reductions for the encoded objective~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS, DG and related variants consistently achieve strong reductions: EHGS and GRE typically reach around 72--74\% suite-size reduction versus about 69\% for HGS on the FIRST RUN benchmark~\cite{gladston2015}, and Noemmer and Haas as well as Jehan and Wotawa report roughly 60--75\% reduction for multiple greedy variants on Java and JavaScript projects~\cite{noemmer2020,jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs also achieve substantial reductions, but their performance varies more strongly with configuration and subject programs~\cite{wei2017}.
 
-By construction, MA-EHGS extends EHGS with a second adequacy dimension (mutation requirements). Prior work suggests that such multi-criteria extensions typically trade a small amount of additional tests for improved fault-based metrics: for example, Lin et al.'s tie-breaking variants change average suite-size reduction from 85.2\% to 84.94\% for HGS and from 91.83\% to 91.84\% for GRE, i.e.\ by at most about 0.3 percentage points~\cite{lin2018}. In addition, Shi et al.\ report that mutant-based minimisation yields better fault-detection loss while statement-based minimisation delivers slightly better minimisation results~\cite{shi2018}. We therefore expect MA-EHGS to achieve very similar reduction ratios to coverage-only EHGS, with only marginally larger suites but improved mutation preservation.
+By construction, MA-EHGS extends EHGS with a second adequacy dimension (mutation requirements). Prior work suggests that such multi-criteria or fault-based extensions trade only a small number of additional tests for improved fault-based metrics: Lin et al.\ report that tie-breaking variants change average suite-size reduction by at most about 0.3 percentage points for HGS and GRE~\cite{lin2018}, and Shi et al.\ observe that mutant-based minimisation improves fault-detection loss while statement-based minimisation delivers slightly better minimisation results~\cite{shi2018}. We therefore expect MA-EHGS to achieve very similar reduction ratios to coverage-only EHGS, with only marginally larger suites but improved mutation preservation.
 
-\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS, DG and related greedy heuristics provide strong practical reduction (70--74\%). Based on multi-criteria extensions in prior work~\cite{lin2018,shi2018}, MA-EHGS is expected to achieve similar reduction effectiveness to EHGS with marginal trade-offs (approximately 0.3 percentage points) for complete mutation preservation.
+\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS, DG and related greedy heuristics provide strong practical reduction (around 70--74\%). Based on multi-criteria extensions in prior work~\cite{lin2018,shi2018}, MA-EHGS is expected to achieve reduction effectiveness very close to EHGS, with only marginal trade-offs for complete mutation preservation.
 
 %======================================================================
 \section{Criterion C4: Mutation Score Preservation}
 
 C4 measures how well an algorithm preserves mutation score as a proxy for fault-detection capability.
 
-Coverage-only minimisation can lose mutants. Noemmer and Haas report relative mutation-score losses between about 3.5\% and 21\%, depending on subject systems~\cite{noemmer2020}. Jehan and Wotawa confirm that, under adequate reduction (100\% coverage retained), loss is typically small but increases once coverage constraints are relaxed~\cite{jehan2023}. Many-objective evolutionary algorithms that include mutation score as an explicit objective retain 95--100\% of mutants in their benchmarks~\cite{wei2017}.
-
-These results suggest two key points: (i) structural redundancy does not imply semantic redundancy, and (ii) explicit mutation-awareness helps preserve fault-detection capability.
+Coverage-only minimisation can lose mutants: Noemmer and Haas report relative mutation-score losses between about 3.5\% and 21\%, depending on subject systems and reduction thresholds~\cite{noemmer2020}. Jehan and Wotawa confirm that, under adequate reduction (100\% coverage retained), loss is typically small but increases once coverage constraints are relaxed~\cite{jehan2023}. Many-objective evolutionary algorithms that include mutation score as an explicit objective retain 95--100\% of mutants in their benchmarks~\cite{wei2017}. These results show that structural coverage and mutation score capture complementary aspects of adequacy and that explicit mutation-awareness helps preserve fault-detection capability.
 
 MA-EHGS addresses this by encoding mutants as explicit requirements and weighting them via parameter $\beta$, so that mutation information directly influences test selection. In contrast, coverage-only greedy variants have no mechanism to prioritise tests that are mutation-critical but structurally similar to others.
 
@@ -56,9 +54,9 @@ MA-EHGS addresses this by encoding mutants as explicit requirements and weightin
 
 C5 concerns how algorithms scale with increasing numbers of tests and requirements, as encountered in LASSO’s SRMs.
 
-Greedy SRM-based heuristics, including Classical Greedy, HGS, EHGS and MA-EHGS, operate in $O(nm)$ time where $n$ is the number of tests and $m$ the number of requirements~\cite{yoo2012,noemmer2020}. DG remains polynomial but incurs higher quadratic overhead due to concept-lattice construction~\cite{tallam2005}. These approaches are routinely reported as scalable in empirical studies~\cite{gladston2015,noemmer2020,jehan2023}.
+Greedy SRM-based heuristics, including Classical Greedy, HGS, EHGS and MA-EHGS, operate in $O(nm)$ time where $n$ is the number of tests and $m$ the number of requirements~\cite{yoo2012,noemmer2020}. DG remains polynomial but incurs overhead due to concept-lattice construction~\cite{tallam2005}. These approaches are routinely reported as scalable in empirical studies~\cite{gladston2015,noemmer2020,jehan2023}.
 
-ILP/SAT and NEMO, by contrast, face exponential worst-case complexity and are generally limited to smaller instances~\cite{elbaum2002,yoo2012,lin2018}. Search-based techniques and MOEAs require many evaluations of candidate suites across generations, leading to substantially higher runtime than greedy algorithms~\cite{yoo2012,khan2020,wei2017}. Similarity-based methods often rely on pairwise comparisons between tests, resulting in roughly $O(n^2 m)$ behaviour, which can still be acceptable for prioritisation but is less attractive for frequent, large-scale minimisation~\cite{bach2017}.
+ILP/SAT and NEMO, by contrast, face exponential worst-case complexity and are generally limited to smaller instances~\cite{elbaum2002,yoo2012,lin2018}. Search-based techniques and MOEAs require many evaluations of candidate suites across generations, leading to substantially higher runtime than greedy algorithms~\cite{yoo2012,khan2020,wei2017}. Similarity-based methods often rely on pairwise comparisons between tests, which can be acceptable for prioritisation but are less attractive for frequent large-scale minimisation~\cite{bach2017}.
 
 \textbf{Conclusion (C5).} Greedy SRM-based heuristics (including MA-EHGS) provide the best scalability profile for large SRMs. Exact methods and metaheuristics are significantly more expensive.
 
@@ -78,15 +76,10 @@ In contrast, ILP/SAT and NEMO require integration with external optimisation sol
 
 The criteria reveal a clear trade-off landscape: \emph{Greedy heuristics} satisfy C1--C3 and C5--C6 well, but traditional variants are coverage-only (C4). \emph{Exact methods} excel in C2--C3 but perform poorly in C5--C6. \emph{Search-based approaches} support mutation-awareness (C4) but perform poorly in C5--C6. \emph{Similarity-based methods} are useful for prioritisation but less aligned with strict minimisation.
 
-MA-EHGS combines the strengths of greedy SRM-based heuristics with explicit mutation-awareness:
+MA-EHGS combines the strengths of greedy SRM-based heuristics with explicit mutation-awareness: it operates directly on SRMs without program structure (C1), guarantees structural coverage (and, in this thesis, full mutant coverage) by treating all requirements as mandatory (C2), inherits the strong reduction behaviour of EHGS with only marginal trade-offs for mutation preservation (C3, C4), retains greedy typicall scalability (C5), and integrates into LASSO without external solvers or major architectural changes (C6).
 
-\begin{itemize}
-  \item It operates directly on SRMs and requires no program structure (C1).
-  \item It guarantees structural coverage (and, in this thesis, full mutant coverage) by treating all requirements as mandatory (C2).
-  \item It inherits the strong reduction behaviour of EHGS (C3).
-  \item It incorporates mutation information via $\beta$-weighted mutant requirements (C4).
-  \item It retains greedy $O(nm)$ scalability (C5).
-  \item It integrates into LASSO without external solvers or major architectural changes (C6).
-\end{itemize}
+\paragraph{Why EHGS rather than HGS or DG as the mutation-aware base?}
+
+Among the coverage-only greedy heuristics that perform well on coverage retention (C2) and scalability (C5), three candidates could serve as a base for a mutation-aware extension: Classical Greedy/HGS, Delayed Greedy (DG), and Enhanced HGS (EHGS). EHGS was selected for two reasons. First, Gladston and Ramesh show that EHGS consistently outperforms HGS in reduction effectiveness: on the FIRST RUN benchmark, HGS achieves an average suite-size reduction of 69.01\%, whereas EHGS reaches 73.66\%, i.e.\ a gain of roughly 4--5 percentage points~\cite{gladston2015}. Second, DG often produces the smallest suites among greedy variants~\cite{tallam2005,jehan2023}, but relies on concept lattices and specialised data structures~\cite{tallam2005}, which conflicts with C6 (Implementation Feasibility) in LASSO's context. EHGS achieves comparable reduction while remaining a pure matrix-based algorithm with deterministic control flow, making it significantly easier to integrate and maintain within LASSO’s Java codebase.
 
 \textbf{Overall,} MA-EHGS offers the most favourable balance across C1--C6 for LASSO’s SRM-based environment: it preserves the simplicity and scalability of greedy minimisation while addressing the empirically observed coverage--mutation gap through explicit mutation-awareness. The next chapter presents its implementation and empirical evaluation.

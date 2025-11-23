@@ -151,7 +151,7 @@ Greedy and exact approaches enforce coverage preservation by construction: greed
     HGS & 1 & Comparable to classical greedy~\cite{yoo2012,noemmer2020}. \\
     Delayed Greedy (DG) & 1 & Often smallest suites among greedy variants~\cite{tallam2005,jehan2023}. \\
     Enhanced HGS (EHGS) & 1 & Average 73.66\% reduction reported~\cite{gladston2015}. \\
-    MA-EHGS & 1 & Expected to match EHGS (70--74\%) with marginal trade-off (~0.3pp) for mutation preservation~\cite{lin2018,shi2018}. \\[0.2em]
+    MA-EHGS & 1 & Expected to match EHGS (70--74\%) with marginal trade-off for mutation preservation~\cite{lin2018,shi2018}. \\[0.2em]
     \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
     ILP/SAT & 1 & Optimal for encoded constraints~\cite{elbaum2002}. \\
     NEMO & 1 & Optimal for multi-criteria model~\cite{lin2018}. \\[0.2em]
@@ -183,21 +183,21 @@ MA-EHGS extends EHGS by treating mutants as explicit requirements. Multi-criteri
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
     \midrule
-    \multicolumn{3}{@{}l}{\textit{Greedy Heuristics}} \\
-    MA-EHGS & 1 & Treats mutants as explicit requirements; 100\% retention by design (Appendix~\ref{app:benchmarks}). \\[0.3em]
-    Classical Greedy & 0 & Coverage-only; 3.5--21\% mutation loss reported~\cite{noemmer2020}. \\[0.3em]
-    HGS & 0 & Coverage-only; same gap as Classical Greedy~\cite{noemmer2020}. \\[0.3em]
-    Delayed Greedy (DG) & 0 & Coverage-only; mutation score not modelled~\cite{jehan2023}. \\[0.3em]
-    Enhanced HGS (EHGS) & 0 & Coverage-only; mutation not evaluated~\cite{gladston2015}. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Exact Optimisation}} \\
-    ILP/SAT & 0 & Structural coverage only; mutation not modelled~\cite{elbaum2002,yoo2012}. \\[0.3em]
-    NEMO & 0 & Uses historical failure data; no mutation testing~\cite{lin2018}. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Search-Based / Metaheuristic}} \\
-    Genetic Algorithms & 0 & Coverage and cost objectives; no mutation~\cite{yoo2012,khan2020}. \\[0.3em]
-    MOEAs & 1 & Mutation score as explicit objective; maintains fault detection~\cite{wei2017}. \\[0.3em]
-    Particle Swarm Optimisation (PSO) & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\[0.3em]
-    Artificial Bee Colony (ABC) & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Data-Driven / Similarity-Based}} \\
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 0 & Coverage-only; 3.5--21\% mutation loss reported~\cite{noemmer2020}. \\
+    HGS & 0 & Coverage-only; same gap as Classical Greedy~\cite{noemmer2020}. \\
+    Delayed Greedy (DG) & 0 & Coverage-only; mutation score not modelled~\cite{jehan2023}. \\
+    Enhanced HGS (EHGS) & 0 & Coverage-only; mutation not evaluated~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Treats mutants as explicit requirements; 100\% retention by design (Appendix~\ref{app:benchmarks}). \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 0 & Structural coverage only; mutation not modelled~\cite{elbaum2002,yoo2012}. \\
+    NEMO & 0 & Uses historical failure data; no mutation testing~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Coverage and cost objectives; no mutation~\cite{yoo2012,khan2020}. \\
+    MOEAs & 1 & Mutation score as explicit objective; maintains fault detection~\cite{wei2017}. \\
+    PSO & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\
+    ABC & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
     Similarity-based methods & 0 & Coverage overlap; mutation not modelled~\cite{bach2017,khan2020}. \\
     \bottomrule
   \end{tabular}
@@ -263,21 +263,21 @@ Greedy heuristics and similarity-based methods operate in polynomial time over t
     \toprule
     \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
     \midrule
-    \multicolumn{3}{@{}l}{\textit{Greedy Heuristics}} \\
-    Classical Greedy & 1 & Simple matrix iteration; no parameters~\cite{harrold1993}. \\[0.3em]
-    HGS & 1 & Cardinality grouping; deterministic~\cite{harrold1993}. \\[0.3em]
-    Delayed Greedy (DG) & 0 & Concept lattices require specialised data structures~\cite{tallam2005}. \\[0.3em]
-    Enhanced HGS (EHGS) & 1 & Adds unique-coverage phase; remains deterministic~\cite{gladston2015}. \\[0.3em]
-    MA-EHGS & 1 & Two scalar parameters ($\alpha$, $\beta$); matrix-based, no external dependencies. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Exact Optimisation}} \\
-    ILP/SAT & 0 & Requires external solvers (CPLEX, Gurobi)~\cite{elbaum2002,yoo2012}. \\[0.3em]
-    NEMO & 0 & Nonlinear ILP; complex solver configuration~\cite{lin2018}. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Search-Based / Metaheuristic}} \\
-    Genetic Algorithms & 0 & Evolutionary framework; parameter-sensitive~\cite{yoo2012,khan2020}. \\[0.3em]
-    MOEAs & 0 & Multi-objective EA; non-deterministic~\cite{wei2017}. \\[0.3em]
-    Particle Swarm Optimisation (PSO) & 0 & Swarm framework; tuning required~\cite{khan2020}. \\[0.3em]
-    Artificial Bee Colony (ABC) & 0 & Swarm framework; tuning required~\cite{khan2020}. \\[0.3em]
-    \multicolumn{3}{@{}l}{\textit{Data-Driven / Similarity-Based}} \\
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 1 & Simple matrix iteration; no parameters~\cite{harrold1993}. \\
+    HGS & 1 & Cardinality grouping; deterministic~\cite{harrold1993}. \\
+    Delayed Greedy (DG) & 0 & Concept lattices require specialised data structures~\cite{tallam2005}. \\
+    Enhanced HGS (EHGS) & 1 & Adds unique-coverage phase; remains deterministic~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Two scalar parameters ($\alpha$, $\beta$); matrix-based, no external dependencies. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 0 & Requires external solvers (CPLEX, Gurobi)~\cite{elbaum2002,yoo2012}. \\
+    NEMO & 0 & Nonlinear ILP; complex solver configuration~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Evolutionary framework; parameter-sensitive~\cite{yoo2012,khan2020}. \\
+    MOEAs & 0 & Multi-objective EA; non-deterministic~\cite{wei2017}. \\
+    PSO & 0 & Swarm framework; tuning required~\cite{khan2020}. \\
+    ABC & 0 & Swarm framework; tuning required~\cite{khan2020}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
     Similarity-based methods & 0 & Requires clustering libraries~\cite{bach2017,khan2020}. \\
     \bottomrule
   \end{tabular}
