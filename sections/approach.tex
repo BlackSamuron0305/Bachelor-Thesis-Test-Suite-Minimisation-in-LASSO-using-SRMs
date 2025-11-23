@@ -32,20 +32,20 @@ Exact ILP/SAT formulations and NEMO enforce coverage via hard constraints in the
 
 C3 evaluates how strongly an algorithm reduces the test suite while satisfying C2.
 
-ILP, SAT, and NEMO provide optimal or near-optimal reductions for the encoded objective~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS, DG and related variants consistently achieve strong reductions: EHGS and GRE typically reach around 72--74\% suite-size reduction versus about 69\% for HGS on the FIRST RUN benchmark~\cite{gladston2015}, and Noemmer and Haas as well as Jehan and Wotawa report roughly 60--75\% reduction for multiple greedy variants on Java and JavaScript projects~\cite{noemmer2020,jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs also achieve substantial reductions, but their performance varies more strongly with configuration and subject programs~\cite{wei2017}.
+ILP, SAT, and NEMO provide optimal or near-optimal reductions~\cite{rothermel1998,elbaum2002,lin2018}. Among greedy heuristics, EHGS and GRE typically reach 72--74\% suite-size reduction versus about 69\% for HGS~\cite{gladston2015}, with similar ranges (60--75\%) reported for Java and JavaScript projects~\cite{noemmer2020,jehan2023}. DG often produces the smallest suites among greedy algorithms~\cite{tallam2005}. Mutation-aware MOEAs achieve substantial reductions but vary with configuration~\cite{wei2017}.
 
-By construction, MA-EHGS extends EHGS with a second adequacy dimension (mutation requirements). Prior work suggests that such multi-criteria or fault-based extensions trade only a small number of additional tests for improved fault-based metrics: Lin et al.\ report that tie-breaking variants change average suite-size reduction by at most about 0.3 percentage points for HGS and GRE~\cite{lin2018}, and Shi et al.\ observe that mutant-based minimisation improves fault-detection loss while statement-based minimisation delivers slightly better minimisation results~\cite{shi2018}. We therefore expect MA-EHGS to achieve very similar reduction ratios to coverage-only EHGS, with only marginally larger suites but improved mutation preservation.
+MA-EHGS extends EHGS with mutation requirements. Prior work shows multi-criteria extensions trade only small numbers of additional tests for improved fault metrics~\cite{lin2018,shi2018}, so MA-EHGS is expected to achieve reduction effectiveness close to EHGS with marginally larger suites but complete mutation preservation.
 
-\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS, DG and related greedy heuristics provide strong practical reduction (around 70--74\%). Based on multi-criteria extensions in prior work~\cite{lin2018,shi2018}, MA-EHGS is expected to achieve reduction effectiveness very close to EHGS, with only marginal trade-offs for complete mutation preservation.
+\textbf{Conclusion (C3).} Exact ILP/SAT/NEMO offer optimal reductions. EHGS and related greedy heuristics provide strong practical reduction (around 70--74\%). MA-EHGS is expected to achieve similar effectiveness with only marginal trade-offs for mutation preservation.
 
 %======================================================================
 \section{Criterion C4: Mutation Score Preservation}
 
 C4 measures how well an algorithm preserves mutation score as a proxy for fault-detection capability.
 
-Coverage-only minimisation can lose mutants: Noemmer and Haas report relative mutation-score losses between about 3.5\% and 21\%, depending on subject systems and reduction thresholds~\cite{noemmer2020}. Jehan and Wotawa confirm that, under adequate reduction (100\% coverage retained), loss is typically small but increases once coverage constraints are relaxed~\cite{jehan2023}. Many-objective evolutionary algorithms that include mutation score as an explicit objective retain 95--100\% of mutants in their benchmarks~\cite{wei2017}. These results show that structural coverage and mutation score capture complementary aspects of adequacy and that explicit mutation-awareness helps preserve fault-detection capability.
+Coverage-only minimisation can lose 3.5--21\% of mutation score~\cite{noemmer2020,jehan2023}, while mutation-aware MOEAs retain 95--100\%~\cite{wei2017}. This shows structural coverage and mutation score capture complementary adequacy aspects.
 
-MA-EHGS addresses this by encoding mutants as explicit requirements and weighting them via parameter $\beta$, so that mutation information directly influences test selection. In contrast, coverage-only greedy variants have no mechanism to prioritise tests that are mutation-critical but structurally similar to others.
+MA-EHGS addresses this by encoding mutants as explicit requirements weighted via parameter $\beta$, directly influencing test selection. Coverage-only greedy variants lack mechanisms to prioritise mutation-critical tests.
 
 \textbf{Conclusion (C4).} Mutation-aware greedy and evolutionary techniques provide the strongest mutation preservation. MA-EHGS offers a deterministic, SRM-based way to integrate mutation-awareness, whereas traditional coverage-only heuristics rely on structural coverage alone.
 
@@ -76,7 +76,7 @@ In contrast, ILP/SAT and NEMO require integration with external optimisation sol
 
 The criteria reveal a clear trade-off landscape: \emph{Greedy heuristics} satisfy C1--C3 and C5--C6 well, but traditional variants are coverage-only (C4). \emph{Exact methods} excel in C2--C3 but perform poorly in C5--C6. \emph{Search-based approaches} support mutation-awareness (C4) but perform poorly in C5--C6. \emph{Similarity-based methods} are useful for prioritisation but less aligned with strict minimisation.
 
-MA-EHGS combines the strengths of greedy SRM-based heuristics with explicit mutation-awareness: it operates directly on SRMs without program structure (C1), guarantees structural coverage (and, in this thesis, full mutant coverage) by treating all requirements as mandatory (C2), inherits the strong reduction behaviour of EHGS with only marginal trade-offs for mutation preservation (C3, C4), retains greedy typicall scalability (C5), and integrates into LASSO without external solvers or major architectural changes (C6).
+MA-EHGS combines the strengths of greedy SRM-based heuristics with explicit mutation-awareness: it operates directly on SRMs (C1), guarantees full coverage of structural and mutation requirements (C2), achieves strong reduction with marginal trade-offs (C3, C4), retains polynomial scalability (C5), and integrates without external solvers (C6).
 
 \paragraph{Why EHGS rather than HGS or DG as the mutation-aware base?}
 
