@@ -2,7 +2,10 @@
 \label{chap:implementation}
 
 This chapter describes the implementation of the Mutation-Aware Enhanced HGS minimiser within LASSO. We present the key contributions as a sequential process: first, we establish SRM data collection for structural coverage and mutation information. Second, we implement the minimisation algorithm. Third, we integrate it as an LSL action with configurable parameters. Fourth, we validate parameter sensitivity and scalability. The work was developed in a dedicated branch:\\[2pt]
-\centerline{\texttt{<https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization>}}
+\centerline{\small
+\centerline{\url{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization}}
+}
+
 
 \section{SRM Data Collection}
 
@@ -74,13 +77,13 @@ The scoring function is
 \[
 \mathrm{score}(t_i) = \alpha \cdot |\mathrm{newCoverage}(t_i)| + \beta \cdot |\mathrm{newMutants}(t_i)|,
 \]
-where $\alpha$ and $\beta$ are user-configurable weights (default: $\alpha = \beta = 0.5$).
+where $\alpha$ and $\beta$ are user-configurable weights (default: $\alpha = 0.3$, $\beta = 0.7$).
 
 The implementation uses deterministic Java collections (LinkedHashMap, LinkedHashSet) to ensure reproducible results across executions.
 
 \subsection{Complexity Analysis}
 
-The algotithm takes the existing Enhances HGS algrithm and adds the mutation requirements to the requirements matrix. Therefore, the typicall fast execution time of Greedy algorithms still holds, as we only add a small constant factor to the number of requirements.
+The algorithm takes the existing Enhanced HGS algorithm and adds the mutation requirements to the requirements matrix. Therefore, the typical fast execution time of Greedy algorithms still holds, as we only add a small constant factor to the number of requirements.
 
 \section{LSL Action Integration}
 
@@ -99,11 +102,11 @@ The LSL action provides the following configurable parameters:
 
 A representative LSL configuration appears below:
 
-\begin{lstlisting}[language=Java,caption={LSL configuration for the minimisation action. Note that for alpha and beta 50 means 0.5 for the formula},label={lst:lsl-min},basicstyle=\small\ttfamily,escapechar=@]
+\begin{lstlisting}[language=Java,caption={LSL configuration for the minimisation action. Note that for alpha and beta 30 means 0.3 and 70 means 0.7 for the formula},label={lst:lsl-min},basicstyle=\small\ttfamily,escapechar=@]
 action(name: 'minimize', type: 'TestSuiteMinimization') {
     @\dots@
-    alpha = @\textcolor{blue}{70}@
-    beta  = @\textcolor{blue}{30}@
+    alpha = @\textcolor{blue}{30}@
+    beta  = @\textcolor{blue}{70}@
     keepMutants  = @\textcolor{blue}{true}@
     keepOracle = @\textcolor{blue}{false}@
     @\dots@

@@ -367,7 +367,7 @@ By treating both structural coverage (lines, branches, methods) and mutation req
   \item $R = R_{\text{struct}} \cup R_{\text{mut}}$: unified requirement set (SRM columns).
   \item $M \in \{0,1\}^{n \times |R|}$: binary requirements matrix; $M_{ij} = 1$ iff test $t_i$ satisfies requirement $r_j$.
   \item $R_i = \{r_j \in R \mid M_{ij}=1\}$: set of requirements satisfied by test $t_i$.
-  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutation requirements (default: $\alpha = 0.5$, $\beta = 0.5$). Setting $\beta = 0$ recovers purely coverage-based EHGS; setting $\alpha = 0$ prioritises mutation-only selection.
+  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutation requirements (default: $\alpha = 0.3$, $\beta = 0.7$). Setting $\beta = 0$ recovers purely coverage-based EHGS; setting $\alpha = 0$ prioritises mutation-only selection.
 \end{itemize}
 
 \subsection*{Algorithm}
@@ -452,21 +452,6 @@ By treating both structural coverage (lines, branches, methods) and mutation req
   \item \textbf{Parameter sensitivity:} Empirical validation (Appendix~\ref{app:benchmarks}) shows that balanced settings ($\alpha, \beta > 0$) produce robust results. Edge cases with $\alpha = 0$ or $\beta = 0$ reduce to mutation-only or coverage-only selection, respectively.
 \end{itemize}
 
-\subsection*{Complexity}
-
-MA-EHGS operates in polynomial time comparable to other greedy matrix-based heuristics. Let $n = |T|$ be the number of tests and $q = |R| = |R_{\text{struct}}| + |R_{\text{mut}}|$ the total number of requirements. Because mutation requirements are collected from the same SRM used for coverage extraction, $q$ grows by at most a small constant factor over the structural requirements alone.
-
-The algorithm's complexity breaks down as follows:
-
-\begin{itemize}
-  \item \textbf{Phase 1 (Essential Test Selection):} Computing requirement cardinalities and identifying essential tests requires scanning the entire requirements matrix once, yielding $O(nq)$ time.
-  
-  \item \textbf{Phase 2 (Weighted Greedy Selection):} Each iteration scores all remaining tests by computing their intersection with uncovered requirements. Using efficient bitset representations, each score computation takes $O(q)$ time, and each iteration completes in $O(nq)$. In practice, greedy selection terminates well before examining all $n$ tests as $R_{\text{uncov}}$ shrinks rapidly, keeping actual runtime close to $O(nq)$ even with mutation columns included.
-  
-  \item \textbf{Overall:} The dominant term is $O(nq)$, matching the complexity of coverage-only greedy heuristics such as Classical Greedy, HGS, and EHGS~\cite{harrold1993,yoo2012,noemmer2020}. The addition of mutation requirements contributes only a constant factor to $q$, preserving the polynomial scalability that makes greedy algorithms suitable for LASSO's large-scale SRM analysis.
-\end{itemize}
-
-Empirical validation on benchmarks with up to 100 tests confirms that MA-EHGS achieves execution times comparable to other greedy heuristics, ensuring compatibility with LASSO's Arena pipeline for concurrent analysis of hundreds of systems.
 
 \chapter{Extended Benchmarks and Reproducibility}
 \label{app:benchmarks}
@@ -475,7 +460,7 @@ This appendix complements the implementation chapter by providing representative
 
 \section*{Representative Benchmark Results}
 
-Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: parameter sensitivity analysis across $\alpha$--$\beta$ configurations (100 original tests) and cross-implementation validation across multiple Base64 encoder/decoder systems.
+Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: parameter sensitivity analysis across $\alpha$--$\beta$ configurations (80 original tests) and cross-implementation validation across multiple Base64 encoder/decoder systems.
 
 \begin{table}[H]
   \centering
@@ -487,7 +472,7 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
     \midrule
     $\alpha$ & $\beta$ & \textbf{Minimised} & \textbf{Coverage} & \textbf{Mutation} & \\
     \midrule
-    1.0 & 0.0 & 7 & 100\,\% & --- & \\
+    1.0 & 0.0 & 7 & 100\,\% & 80\,\% & \\
     0.9 & 0.1 & 8 & 100\,\% & 100\,\% & \\
     0.8 & 0.2 & 8 & 100\,\% & 100\,\% & \\
     0.7 & 0.3 & 8 & 100\,\% & 100\,\% & \\
@@ -497,21 +482,26 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
     0.3 & 0.7 & 8 & 100\,\% & 100\,\% & \\
     0.2 & 0.8 & 8 & 100\,\% & 100\,\% & \\
     0.1 & 0.9 & 8 & 100\,\% & 100\,\% & \\
-    0.0 & 1.0 & 7 & 100\,\% & 100\,\% & \\
+    0.0 & 1.0 & 7 & --- & 100\,\% & \\
     \midrule
-    \multicolumn{6}{c}{\textbf{Part B: Cross-Implementation Validation ($\alpha = 0.5$, $\beta = 0.5$)}} \\
+    \multicolumn{6}{c}{\textbf{Part B: Cross-Implementation Validation ($\alpha = 0.3$, $\beta = 0.7$)}} \\
     \midrule
     \textbf{Implementation} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
     \midrule
     Implementation-A & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
-    Implementation-B & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
-    Implementation-C & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
-    Implementation-D & TBD & TBD & TBD\,\% & TBD\,\% & TBD\,\% \\
+    Implementation-B & 80 &  2 & 97.5\,\% & 100\,\% & 100\,\% \\
+    Implementation-C & 80 &  9 & 88.8\,\% & 100\,\% & 100\,\% \\
+    \midrule
+    \multicolumn{6}{c}{\textbf{Part C: Small Suite Validation ($\alpha = 0.1$, $\beta = 0.9$)}} \\
+    \midrule
+    \textbf{System} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
+    \midrule
+    String Utility & 4 &  3 & 25.0\,\% & 100\,\% & 100\,\% \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable behaviour across parameter configurations: all balanced settings ($\alpha, \beta > 0$) yield identical 8-test suites with 100\% coverage and mutation retention. Edge cases where either parameter equals zero produce slightly smaller 7-test suites but sacrifice either mutation awareness ($\beta=0$) or coverage emphasis ($\alpha=0$). This stability indicates that the dual-objective scoring function reliably identifies the same essential test subset across a wide range of weight combinations. The table also validates consistency across multiple Base64 encoder/decoder implementations, showing that the algorithm generalises across different system variants while maintaining complete preservation guarantees.
+Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable behaviour across parameter configurations: all balanced settings ($\alpha, \beta > 0$) yield identical 8-test suites with 100\% coverage and mutation retention. Edge cases where either parameter equals zero produce slightly smaller 7-test suites but sacrifice either mutation awareness ($\beta=0$) or coverage emphasis ($\alpha=0$). This stability indicates that the dual-objective scoring function reliably identifies the same essential test subset across a wide range of weight combinations.
 
 \section*{Reproducibility Notes}
 
@@ -519,7 +509,7 @@ Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable be
   \item \textbf{Environment:} LASSO Arena running Docker containers based on \texttt{maven:3.9-eclipse-temurin-17}.
   \item \textbf{Coverage:} JaCoCo 0.8.11 with per-test coverage collection, using reset-based isolation between tests.
   \item \textbf{Mutation:} PIT is configured with common mutation operators (e.g.\ conditionals, increments, arithmetic, negated conditionals, return values).
-  \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.5$ and $\beta = 0.5$. Parameter sensitivity analysis (Table~\ref{tab:appendix-benchmarks}) tested all combinations where $\alpha + \beta = 1.0$ in 0.1 increments, revealing stable behaviour: all balanced configurations produced identical 8-test suites with 100\% coverage and mutation retention.
+  \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.3$ and $\beta = 0.7$. Parameter sensitivity analysis (Table~\ref{tab:appendix-benchmarks}) tested all combinations where $\alpha + \beta = 1.0$ in 0.1 increments, revealing stable behaviour: all balanced configurations produced identical 8-test suites with 100\% coverage and mutation retention.
 \end{itemize}
 
 \chapter{SRM Coverage Extraction Specification}
