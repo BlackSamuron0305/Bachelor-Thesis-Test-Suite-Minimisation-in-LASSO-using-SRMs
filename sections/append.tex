@@ -488,9 +488,9 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
     \midrule
     \textbf{Implementation} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
     \midrule
-    Implementation-A & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
-    Implementation-B & 80 &  2 & 97.5\,\% & 100\,\% & 100\,\% \\
-    Implementation-C & 80 &  9 & 88.8\,\% & 100\,\% & 100\,\% \\
+    Implementation-A\textsuperscript{a} & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
+    Implementation-B\textsuperscript{b} & 80 &  2 & 97.5\,\% & 100\,\% & 100\,\% \\
+    Implementation-C\textsuperscript{c} & 80 &  9 & 88.8\,\% & 100\,\% & 100\,\% \\
     \midrule
     \multicolumn{6}{c}{\textbf{Part C: Small Suite Validation ($\alpha = 0.1$, $\beta = 0.9$)}} \\
     \midrule
@@ -499,6 +499,12 @@ Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: paramet
     String Utility & 4 &  3 & 25.0\,\% & 100\,\% & 100\,\% \\
     \bottomrule
   \end{tabular}
+  \vspace{0.3em}
+  
+  \footnotesize
+  \textsuperscript{a}commons-codec 1.15 \quad
+  \textsuperscript{b}bouncycastle bcprov-jdk18on 1.78 \quad
+  \textsuperscript{c}tomcat-embed-core 10.1.20
 \end{table}
 
 Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable behaviour across parameter configurations: all balanced settings ($\alpha, \beta > 0$) yield identical 8-test suites with 100\% coverage and mutation retention. Edge cases where either parameter equals zero produce slightly smaller 7-test suites but sacrifice either mutation awareness ($\beta=0$) or coverage emphasis ($\alpha=0$). This stability indicates that the dual-objective scoring function reliably identifies the same essential test subset across a wide range of weight combinations.
@@ -506,10 +512,19 @@ Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable be
 \section*{Reproducibility Notes}
 
 \begin{itemize}
-  \item \textbf{Environment:} LASSO Arena running Docker containers based on \texttt{maven:3.9-eclipse-temurin-17}.
+  \item \textbf{Environment:} LASSO Arena running Docker containers using Java-17.
   \item \textbf{Coverage:} JaCoCo 0.8.11 with per-test coverage collection, using reset-based isolation between tests.
   \item \textbf{Mutation:} PIT is configured with common mutation operators (e.g.\ conditionals, increments, arithmetic, negated conditionals, return values).
   \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.3$ and $\beta = 0.7$. Parameter sensitivity analysis (Table~\ref{tab:appendix-benchmarks}) tested all combinations where $\alpha + \beta = 1.0$ in 0.1 increments, revealing stable behaviour: all balanced configurations produced identical 8-test suites with 100\% coverage and mutation retention.
+  \item \textbf{Reproducing results:}
+  \begin{enumerate}
+    \item Clone the implementation repository from the \href{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization}{test-suite-minimization} branch.
+    \item Install prerequisites: LASSO platform and Java development environment (Java 17 or higher).
+    \item Follow deployment instructions at \href{https://softwareobservatorium.github.io/web/}{softwareobservatorium.github.io}. Build and deploy LASSO using the cloned repository code to include the test suite minimisation implementation.
+    \item Run \texttt{mvn install} in the cloned repository to build the project and automatically install all dependencies (JaCoCo, PIT, and other required tools).
+    \item After deployment, configure and execute the minimisation by adding the \texttt{TestSuiteMinimization} action to your LSL script.
+    \item For detailed setup instructions, LSL configuration examples, and usage guidelines, refer to \href{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/TestSuiteMinimization_Implementation.md?ref_type=heads}{TestSuiteMinimization\_Implementation.md} in the repository.
+  \end{enumerate}
 \end{itemize}
 
 \chapter{SRM Coverage Extraction Specification}
