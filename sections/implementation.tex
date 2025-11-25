@@ -6,7 +6,7 @@ This chapter describes the implementation of the Mutation-Aware Enhanced HGS min
 \small
 \url{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization}\\[0.5ex]
 Detailed implementation documentation is available at:\\
-\url{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/TestSuiteMinimization_Implementation.md?ref_type=heads}\par
+\url{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/TestSuiteMinimization_Implementation.md}\par
 }
 
 
@@ -52,7 +52,7 @@ For each test, we record all mutants it kills, forming the mutation requirement 
 \[
 R = R_{\text{struct}} \cup R_{\text{mut}},
 \]
-providing the complete matrix representation required by the minimisation algorithm.
+providing the complete matrix representation required by the minimisation algorithm. The complete SRM extraction and matrix construction specification is provided in Appendix~\ref{app:srm}.
 
 \section{Algorithm Implementation}
 
@@ -82,7 +82,7 @@ The scoring function is
 \]
 where $\alpha$ and $\beta$ are user-configurable weights (default: $\alpha = 0.3$, $\beta = 0.7$).
 
-The implementation uses deterministic Java collections (LinkedHashMap, LinkedHashSet) to ensure reproducible results across executions.
+The implementation uses deterministic Java collections (LinkedHashMap, LinkedHashSet) to ensure reproducible results across executions. For complete algorithmic details and formal pseudocode, see Appendix~\ref{app:pseudocode}.
 
 \subsection{Complexity Analysis}
 
