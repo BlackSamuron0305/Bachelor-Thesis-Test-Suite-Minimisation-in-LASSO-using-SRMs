@@ -1,0 +1,50 @@
+\chapter{Evaluation Criteria and Scoring Framework}\label{chap:evaluation}
+
+Building upon the fundamentals established in the previous chapter, this chapter defines six evaluation criteria (C1--C6): one mandatory precondition and five performance dimensions, together with a scoring model for systematic algorithm comparison. These criteria operationalise the research questions from Section~\ref{sec:rq} and provide the foundation for evaluating different minimisation algorithms in the next chapter.
+
+\section{Evaluation Criteria (C1--C6)}
+
+\subsection{Mandatory Precondition}
+
+\begin{description}
+  \item[\textbf{C1: SRM Compatibility (Mandatory)}] 
+  The algorithm must operate directly on \emph{Stimulus--Response Matrix} (SRM) representations without requiring control-flow graphs, syntax trees, or language-specific structural analysis~\cite{Kessel2022}. 
+  Algorithms failing C1 receive a score of zero and are excluded. 
+  This precondition is essential because LASSO operates entirely on SRM abstractions. Language independence requires that algorithms process abstract requirement matrices rather than language-specific artefacts.
+\end{description}
+
+\subsection{Performance Criteria}
+
+\begin{description}
+  \item[\textbf{C2: Coverage Retention}] 
+  Measures how much of the original structural coverage (method, line, branch) is retained after minimisation~\cite{zhu1997}. 
+  High retention indicates that the reduced suite maintains structural adequacy.
+  Together with C4, this addresses the research question of whether minimisation can preserve the effectiveness of the original test suite.
+
+  \item[\textbf{C3: Reduction Effectiveness}] 
+  Quantifies the proportion of test cases eliminated while preserving required coverage~\cite{yoo2012}. 
+  A high reduction rate reflects strong elimination of redundant tests and tangible computational savings.
+  This criterion captures the core benefit of minimisation: reducing cost without violating adequacy constraints (C2, C4).
+
+  \item[\textbf{C4: Mutation-Coverage Preservation}] 
+  Assesses fault-detection capability via mutation testing~\cite{jehan2023,noemmer2020}. 
+  The mutation score (ratio of killed mutants to total mutants) acts as a fault-based adequacy metric complementing structural coverage.
+  Empirical work shows that structural coverage alone does not fully capture fault-revealing power~\cite{jehan2023}. C4 therefore complements C2 to assess how well a minimised suite preserves test effectiveness.
+
+  \item[\textbf{C5: Computational Scalability}] 
+  Examines algorithm performance on large SRMs as the number of tests and requirements increases. 
+  Methods with near-linear complexity and efficient runtime behaviour are favoured~\cite{Kessel2022,bach2017}.
+  This criterion ensures that an algorithm remains feasible for large-scale use cases where SRMs may contain thousands of rows and columns.
+
+  \item[\textbf{C6: Implementation Feasibility}] 
+  Considers practical integration factors such as implementation effort, parameter tuning, dependency overhead, and compatibility with LASSO’s architecture~\cite{yoo2012}. 
+  Even theoretically optimal algorithms may become impractical if they require complex configuration or structural changes to the LASSO pipeline. C6 makes this trade-off explicit.
+\end{description}
+
+Taken together, C2--C4 focus on preserving quality and fault detection, while C5--C6 address the practical feasibility of deploying a minimisation algorithm in LASSO’s SRM-based environment.
+
+\section{Application to Algorithm Comparison}
+
+The criteria defined above provide the foundation for systematic algorithm evaluation in Chapter~\ref{chap:comparison}. To enable objective comparison, each algorithm is evaluated on criteria C2--C6 using a binary pass/fail system (0 or 1) based on whether it meets LASSO's operational requirements for that criterion. The detailed scoring methodology, justification, and complete evaluation tables are provided in Appendix~\ref{app:evaluation-tables}. Chapter~\ref{chap:comparison} applies these criteria qualitatively to identify the most suitable minimisation approach for LASSO's SRM-based environment.
+
+

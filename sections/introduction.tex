@@ -1,70 +1,46 @@
 \chapter{Introduction}
 
-This document provides an overview of the requirements for preparing a master thesis at the Chair of Software Engineering at the University of Mannheim. It also serves as a template for the format of the thesis, which is available in both a LaTeX\footnote{An introduction to using LaTex is available here: \textit{https://en.wikibooks.org/wiki/LaTeX}} and Word form. This document, and other resources for the thesis, are provided in the resources folder of the corresponding Ilias group.  
+Software testing ensures that program modifications do not introduce defects. As systems evolve, test suites grow and increase execution cost and maintenance effort. Modern suites often combine human-written, automatically generated, and in recent years more frequently AI-generated tests. Tools such as Randoop~\cite{pacheco2007} and EvoSuite~\cite{fraser2011} can produce thousands of tests, and large industrial suites may require days or weeks to execute~\cite{rothermel1998}. Although such suites achieve high coverage and mutation scores, they frequently contain redundant tests whose requirements are subsumed by others, resulting in prolonged execution, increased costs, and elevated maintenance overhead.
 
-\chapter{General Requirements}
+\emph{Test-suite minimisation} addresses this issue by systematically removing redundant tests while preserving fault-detection capability~\cite{yoo2012}. Techniques range from \emph{coverage-preserving} approaches, which maintain all coverage requirements, to \emph{coverage-relaxing} approaches, which accept limited coverage loss for stronger reduction. While minimisation can significantly reduce computational demand and feedback latency, overly aggressive reduction risks discarding tests with unique defect-revealing behaviour. Effective minimisation therefore requires balancing reduction efficiency with fault-detection retention.
 
-Each chapter begins on a new page. This chapter gives a short overview of the formal requirements for a master thesis at the Software Engineering Group at the University of Mannheim and clarifies the submission process. Please keep in mind that you also have to adhere to the respective examination regulations of your course of study.
+\section{Background and Motivation}
 
-The detailed requirements are listed in Table 1 below. All master theses must be prepared using either the Word or LaTex templates, which can be found in the resources folder of the Ilias group. In addition, the basic rules of scientific writing have to be observed, such as identifying the sources of your work and verbatim quotes, etc.
-
-
-
-\begin{table}[H]
-\centering
-\begin{tabular}{|M{0.42\textwidth}|M{0.42\textwidth}|}
-\hline
-Minimum number of content-bearing pages (i.e. the arabically numbered pages) & 30 (inclusive)\\ 
-\hline
-Maximum number of content-bearing pages (i.e. the arabically numbered pages) & 35 (inclusive)\\
-\hline
-List of Figures & yes\\
-\hline
-List of Tables & yes\\
-\hline
-Declaration of Authorship & yes\\
-\hline
-Assignment of Rights & yes\\
-\hline
-Duration & 3 months\\
-\hline
-Number of copies to be submitted & Two copies (hard bound, dark blue cover) to the chair's office
-\\
-\hline
-Work products & Upload to ILIAS\\
-\hline
-\end{tabular}
-\caption{Overview of the requirements \label{tableAnforderungen}}
-\end{table}
-
-These requirements are \textbf{mandatory}. Theses which are too short or too long or do not meet the other requirements defined in this document will have a reduced grade and may fail. The Chair of Software Engineering reserves the right to check the originality of the submission using software such as TurnItIn (https://www.turnitin.com/).
-
-%\section{Figures}
-\begin{figure}
-    \centering
-    \includegraphics{graphics/diagram.pdf}
-    \caption{Example Figure}
-    \label{fig:my_label}
-\end{figure}
+Testing remains a major cost driver in software engineering. Classical studies estimate that verification and validation account for up to half of total development effort~\cite{boehm1984}. The cost pressure persists in modern continuous-integration environments, where automated or AI-generated suites may contain tens of thousands of tests~\cite{rothermel1998,bach2017}. Executing all tests after each change is often infeasible, motivating techniques that reduce suite size while retaining quality. Test suite minimisation has been exploring this issue for decades, with numerous algorithms proposed to identify and eliminate redundant tests~\cite{yoo2012}, by leveraging coverage and quite recently mutation information as a proxy for fault-detection capability~\cite{jehan2023}. Details on coverage and mutation testing are provided in Chapter~\ref{chap:fundamentals}. 
 
 
-\section{References and Literature}
+\section{LASSO Context}
 
-Good sources of literature for preparing a Computer Science thesis can be found here:
+The \emph{Large-Scale Software Observatorium} (LASSO)~\cite{Kessel2022} is a research platform for scalable analysis of large software corpora (\emph{Big Code}). LASSO automates the extraction of static properties and dynamic execution behaviour from open-source systems and enables reproducible pipelines through the \emph{LASSO Scripting Language} (LSL). This makes it a central infrastructure for empirical software engineering and for evaluating emerging techniques such as AI-assisted code generation.
 
-\begin{itemize}
-\item IEEE Computer Society Digital Library: \url{http://www.computer.org/portal/site/csdl/index.jsp}
-\item ACM Digital Library: \url{http://portal.acm.org/dl.cfm}
-\item CEUR Workshop Proceedings: \url{http://ceur-ws.org/}
-\item Springer Link: \url{http://www.springerlink.com/home/main.mpx}
-\end{itemize}
+LASSO represents system behaviour through \emph{Stimulus--Response Matrices} (SRMs)~\cite{Kessel2022}, where rows denote test stimuli, columns denote systems, and cells contain structured response objects. SRMs allow language-independent extraction of coverage metrics, mutation scores, and behavioural characteristics, enabling systematic comparison of functionally equivalent implementations. Section~\ref{sec:srm} provides formal definitions.
 
-The ACM and Springer documents are free of charge if accessed with a university IP (e.g. over a VPN connection or from the PI pool). For the IEEE library, the login details can be obtained at the university library. CEUR documents are all freely accessible. The bibliography has to be structured according to the specifications defined by the template, and citations should have this form: \cite{tannenbaum}, which is the IEEE referencing \cite{IEEEStyle}. This is taken care of automatically by the LaTeX template.
+Despite supporting large-scale behavioural and coverage analysis, LASSO currently lacks integrated test-suite minimisation. Redundant test executions accumulate significant computational overhead across the platform. Integrating minimisation would reduce this overhead while preserving the behavioural coverage required for reliable system analysis.
 
-\section{Submission}
+\section{Research Objectives and Questions}
+\label{sec:rq}
 
-The two physical copies of the thesis, printed double-sided, must be submitted by the agreed deadline to the group’s office. In addition, a PDF version of the thesis along with all work products (e.g. code, models, questionnaires…) must be uploaded to the respective Ilias group. If the theses are not submitted by the agreed deadline, the examination conditions have not been satisfied and you will receive a grade 5.0.
+This thesis investigates how test-suite minimisation can be integrated into LASSO using its SRM abstraction. The study is guided by:
+\begin{enumerate}
+  \item \textbf{RQ1:} Which minimisation techniques demonstrate the highest practical effectiveness in the literature for the LASSO platform?
+  \item \textbf{RQ2:} Which evaluation criteria best suit minimisation within LASSO's SRM-based environment?
+  \item \textbf{RQ3:} Which approach best balances reduction effectiveness, coverage preservation, mutation preservation and scalability?
+  \item \textbf{RQ4:} How can the selected approach be integrated into LASSO while maintaining language independence?
+\end{enumerate}
 
-Once the physical and soft copies of the thesis have been received, and all items borrowed from the group (e.g. keys, books) have been returned, the Studienbüro will be informed that the thesis has been successfully submitted. However, the thesis will NOT be graded, or certified as being sufficient for a passing grade, until after the submission deadline.
+\section{Implementation Strategy}
 
+This thesis performs minimisation directly on SRMs rather than relying on external tools, which typically require source-code access or language-specific instrumentation. SRMs already encapsulate all data required for behavioural minimisation (test identifiers, execution results, coverage information, and mutation data), allowing language-independent and scalable processing while ensuring seamless integration into LASSO's analysis pipeline.
 
+\section{Thesis Structure}
+
+The remainder of this thesis is organised as follows:
+\begin{description}
+  \item[Chapter~2] introduces coverage, mutation testing, SRMs, and formally defines the minimisation problem.
+  \item[Chapter~3] surveys greedy, exact, search-based, and data-driven minimisation techniques.
+  \item[Chapter~4] defines evaluation criteria (C1--C6) and the scoring framework.
+  \item[Chapter~5] applies the framework to select the Mutation-Aware Enhanced HGS approach.
+  \item[Chapter~6] describes the implementation and integration into LASSO.
+  \item[Chapter~7] discusses limitations, trade-offs, and deployment considerations.
+  \item[Chapter~8] concludes and outlines future work.
+\end{description}

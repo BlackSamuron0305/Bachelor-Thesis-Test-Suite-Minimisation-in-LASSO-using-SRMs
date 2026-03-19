@@ -14,7 +14,7 @@
 	]{scrbook}
 
 \usepackage[left=4cm,right=2.5cm,top=3.7cm,bottom=4cm]{geometry}
-\usepackage[english, ngerman]{babel}    % use German and American hyphenation
+\usepackage[english, ngerman, greek]{babel}    % use German, English and Greek
 \usepackage[utf8]{inputenc}             % umlauts can be written in the usual way
 \usepackage[super]{nth}                 % superscript
 \usepackage{listings}                   % to support code listings
@@ -27,21 +27,25 @@
 
 \usepackage{multirow}                   % to support complex tables
 \usepackage{longtable}	                % to support complex tables
+\usepackage{threeparttable}             % for table notes
+\usepackage{booktabs}                   % improved tables
+\usepackage[table]{xcolor}              % for colored table cells
+\usepackage{colortbl}                   % for \cellcolor command
+\usepackage{adjustbox}                  % fit tables/figures to width
 \usepackage{rotating}	                % to enable landscape pages
 \usepackage{framed}
 \usepackage{scrlayer-scrpage}           % to support headers and footers
 \pagestyle{scrheadings}                 % the header style
 
-\usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating
+\usepackage{float}                      % adds location parameter [H] to [htb] to force figures and tables to a location, no floating% to control the how many levels of subsection nesting are shown in the table of contents
+\usepackage{scrhack}                    % fixes deprecated float addtolist warnings with KOMA-Script
 
 \usepackage[urldate=long, dateabbrev=true]{biblatex}
 \addbibresource{literature/lit.bib}
 
-
-
 \usepackage[
-pdftitle={The title of this paper},     % the title to display for pdfs
-pdfauthor={The Author},                 % set the author
+pdftitle={Test Suite Minimisation in LASSO Using Stimulus--Response Matrices},     % the title to display for pdfs
+pdfauthor={Laith Philipp Sandoukr},                 % set the author
 colorlinks,                             % setw link color for all links to black, i.e. invisible but working links
 citecolor=black,
 filecolor=black,
@@ -58,8 +62,16 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 
 \usepackage{array}        % for table column types
 \newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+\usepackage{amsmath}      % for \text command
+\usepackage{amssymb}      % for \mathbb command
+\usepackage{xspace}       % for better spacing
+\usepackage{tikz}         % for diagrams and figures
+\usetikzlibrary{arrows,shapes}
 % generates a list of abbreviations automatically: 2x latex, makeindex myfile.nlo -s nomencl.ist -o myfile.nls, 2x latex
-\usepackage{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
+\usepackage[intoc]{nomencl}      % to include abbreviations: \abbrev{PDA}{personal digital assistant}
+
+% Helper: fit content to text width while keeping aspect ratio
+\newenvironment{fitcenter}{\begin{center}\begin{adjustbox}{max width=\textwidth}}{\end{adjustbox}\end{center}}
 
 
 \let\abbrev\nomenclature
@@ -69,6 +81,7 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \setlength{\nomitemsep}{-\parsep}
 \makenomenclature
 \newcommand{\Listofabbrev}{
+\cleardoublepage
 \printnomenclature
 \newpage
 }
@@ -106,14 +119,18 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \listoffigures              % includes list of figures
 \listoftables               % includes list of tables
 \clearpage                  % tell the ToC that there is a page break after list of tables, however the hyperlink still points to the wrong page
-\addcontentsline{toc}{chapter}{\nomname} 
 
+\input{sections/abbreviations}  % define abbreviations
 \Listofabbrev               %  list of abbreviations
 
 \mainmatter                 % main part, arabic numerals for chapters
-\input{sections/abbreviations}
 \include{sections/introduction}
+\include{sections/fundamentals}
+\include{sections/literature_review}
+\include{sections/evaluation}
+\include{sections/approach}
 \include{sections/implementation}
+\include{sections/discussion}
 \include{sections/conclusion}
 
 %Backmatter, if the list of tables, figures or abbreviations are longer than 1 page set the correct page counter!
@@ -131,11 +148,5 @@ pdfpagelabels        % used with plainpages=false to make pdf readers show roman
 \renewcommand{\thesection}{\Alph{section}.\arabic{section}}
 \setcounter{section}{0}
 \input{sections/append}
-
-% Declaration of Authorship
-\include{sections/Authorship}
-
-% Assignment of Usage Rights
-\include{sections/UsageRights}
 
 \end{document}

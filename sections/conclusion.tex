@@ -1,3 +1,35 @@
 \chapter{Conclusion}
 
-Every thesis should start with an Introduction section and end with a Conclusion section. The other sections in between should be adapted to the specific topic of the thesis.
+\section{Summary}
+
+This thesis developed an SRM-based test-suite minimisation framework for LASSO by implementing the Mutation-Aware Enhanced Harrold--Gupta--Soffa (MA-EHGS) approach. Based on systematic literature review and evaluation criteria C1--C6, MA-EHGS was selected for its scalability, preservation guarantees, and SRM compatibility. MA-EHGS extends EHGS with mutation requirements as an additional adequacy dimension. Based on multi-criteria minimisation literature~\cite{lin2018,shi2018}, we expect reduction effectiveness very similar to coverage-only EHGS (approximately 70--74\%) with marginal trade-offs (around 0.3 percentage points) for guaranteed 100\% mutation preservation. Unit-test validation on Base64 implementations confirmed correct algorithmic behaviour: MA-EHGS preserved 100\% coverage for all $\alpha>0$ and 100\% mutation retention for all $\beta>0$ configurations, validating the dual-parameter weighting mechanism.
+
+
+\section{Key Contributions}
+
+The thesis makes three main contributions:
+
+\paragraph{Algorithmic contribution.}
+MA-EHGS extends the validated Enhanced Harrold--Gupta--Soffa (EHGS) algorithm~\cite{gladston2015} with a dual-parameter weighting scheme that jointly considers structural coverage and mutation preservation:
+\[
+\text{score}(t) = \alpha \cdot |\text{newCoverage}| + \beta \cdot |\text{newMutants}|
+\]
+This enables configurable balancing between structural adequacy and behavioural (mutation-based) fault-detection preservation.
+
+\paragraph{Practical integration into LASSO.}
+The framework extracts metric data from SRM response objects, performs minimisation, and generates reduced SRMs while preserving the language-independent SRM schema. The algorithmic design operates on SRM abstractions without language-specific dependencies, though the current implementation uses Java tooling (JaCoCo and PIT).
+
+\section{Future Work}
+
+Future improvements include extending the approach beyond Java, enabling multisystem minimisation for cross-project SRMs, conducting full integration testing in LASSO's Arena pipeline, benchmarking $\alpha$--$\beta$ configurations, supporting weak mutation detection, and exploring LLM-assisted test generation to close coverage or mutation gaps.
+
+\section*{Research Questions Answered}
+
+\begin{description}
+  \item[RQ1:] Greedy heuristics, especially EHGS, were identified as the most effective and practical techniques in current literature.
+  \item[RQ2:] Evaluation criteria C1--C6 were defined to capture reduction, preservation, scalability, and SRM compatibility.
+  \item[RQ3:] MA-EHGS emerged as the best trade-off across these criteria while preserving LASSO's language independence.
+  \item[RQ4:] Integration was achieved via a requirements-matrix extension that incorporates mutation information without altering LASSO's SRM abstraction.
+\end{description}
+
+Overall, this thesis demonstrates that SRM-based minimisation can substantially reduce test suites while preserving fault-detection capability. MA-EHGS provides a scalable and configurable mechanism for improving testing efficiency in large software repositories.

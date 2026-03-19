@@ -1,74 +1,483 @@
+% Bibliography for Test Suite Minimization in LASSO thesis
 
-Monographien
-@Book{tannenbaum,
-author={Andrew S. Tanenbaum and Maarten Van Steen},
-title={{D}istributed {S}ystems - {P}rinciples and {P}aradigms},
-year={2007},
-edition={2nd edition},
-publisher={Pearson Prentice Hall},
-address={New Jersey},
+% verfied references and formatting according to IEEE style
+
+@article{elbaum2002,
+  author   = {Elbaum, S. and Malishevsky, A.G. and Rothermel, G.},
+  journal  = {IEEE Transactions on Software Engineering},
+  title    = {Test case prioritization: a family of empirical studies},
+  year     = {2002},
+  volume   = {28},
+  number   = {2},
+  pages    = {159-182},
+  keywords = {Computer aided software engineering;Fault detection;Software testing;System testing;Costs;Software measurement;Radio access networks;Feedback;Debugging;Instruments},
+  doi      = {10.1109/32.988497}
 }
 
-@online{IEEEStyle,
-    author={Murdoch University},
-    publisher={Murdoch University},
-    year={2021},
-    title = {{I}{E}{E}{E} {S}tyle {R}eferencing {G}uide},
-    url = {https://libguides.murdoch.edu.au/IEEE/home},
-    urldate = {2021-04-30}
-}   
-
-Artikel aus Fachzeitschriften
-@Article{ECORA,
- author = {Amir Padovitz and Seng W. Loke and Arkady Zaslavsky},
- title = {The ECORA framework: A hybrid architecture for context-oriented pervasive computing},
- journal = {Pervasive Mobile Computing},
- volume = {4},
- number = {2},
- year = {2008},
- pages = {182--215},
- }
-
-
-Sammelbaende. Vorsicht, immer *number* verwenden, nicht *volume*
-@Incollection{COMITY,
-title = {{C}{O}{M}{I}{T}{Y} - {C}onflict {A}voidance in {P}ervasive {C}omputing {E}nvironments.},
-author = {Verena Tuttlies and Gregor Schiele and Christian Becker},
-booktitle = {OTM Workshops (2007)},
-editor = {Robert Meersman and Zahir Tari and Pilar Herrero},
-pages = {763-772},
-publisher = {Springer},
-series = {Lecture Notes in Computer Science},
-number = {4806},
-year = {2007},
-address = {Heidelberg}
-} 
-
-Hochschulschriften, default ist masters thesis
-@mastersthesis{master,
-author={C. Welscher},
-year={2001},
-title={{I}ndigene {V}ölker im {G}ebiet {T}jumén ({W}estsibirien): {Z}iele, {S}ituation und zielorientierte
-{A}ktivitäten},
-school={Institut für Friedenssicherungsrecht und humanitäres Völkerrecht,
-Ruhr-Universität Bochum},
+@inproceedings{fraser2011,
+  author    = {Fraser, Gordon and Arcuri, Andrea},
+  title     = {EvoSuite: automatic test suite generation for object-oriented software},
+  year      = {2011},
+  isbn      = {9781450304436},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/2025113.2025179},
+  doi       = {10.1145/2025113.2025179},
+  abstract  = {To find defects in software, one needs test cases that execute the software systematically, and oracles that assess the correctness of the observed behavior when running these test cases. This paper presents EvoSuite, a tool that automatically generates test cases with assertions for classes written in Java code. To achieve this, EvoSuite applies a novel hybrid approach that generates and optimizes whole test suites towards satisfying a coverage criterion. For the produced test suites, EvoSuite suggests possible oracles by adding small and effective sets of assertions that concisely summarize the current behavior; these assertions allow the developer to detect deviations from expected behavior, and to capture the current behavior in order to protect against future defects breaking this behavior.},
+  booktitle = {Proceedings of the 19th ACM SIGSOFT Symposium and the 13th European Conference on Foundations of Software Engineering},
+  pages     = {416–419},
+  numpages  = {4},
+  keywords  = {test case generation, search based soft- ware testing, assertion generation},
+  location  = {Szeged, Hungary},
+  series    = {ESEC/FSE '11}
 }
 
-Hochschulschriften, type angeben (Habil., Diss.,...)
-@mastersthesis{habil,
-type={Fast eine Habil.},
-author={C. Welscher},
-year={2001},
-title={{I}ndigene {V}ölker im {G}ebiet {T}jumén ({W}estsibirien): {Z}iele, {S}ituation und zielorientierte
-{A}ktivitäten},
-school={Institut für Friedenssicherungsrecht und humanitäres Völkerrecht,
-Ruhr-Universität Bochum},
+@article{chvatal1979,
+  issn      = {0364765X, 15265471},
+  url       = {http://www.jstor.org/stable/3689577},
+  author    = {V. Chvatal},
+  journal   = {Mathematics of Operations Research},
+  number    = {3},
+  pages     = {233--235},
+  publisher = {INFORMS},
+  title     = {A Greedy Heuristic for the Set-Covering Problem},
+  urldate   = {2025-11-10},
+  volume    = {4},
+  year      = {1979}
 }
 
-@misc{random,
-type={Certificate},
-author={Max Mustermann},
-note={Currently under review},
-year={2009},
-title={Something that is not covered by any other annotation may be declared misc - certificates, patents and stuff like that}}
 
+@inproceedings{pacheco2007,
+  author    = {Pacheco, Carlos and Lahiri, Shuvendu K. and Ernst, Michael D. and Ball, Thomas},
+  booktitle = {29th International Conference on Software Engineering (ICSE'07)},
+  title     = {Feedback-Directed Random Test Generation},
+  year      = {2007},
+  volume    = {},
+  number    = {},
+  pages     = {75-84},
+  keywords  = {System testing;Contracts;Object oriented modeling;Law;Legal factors;Open source software;Software testing;Feedback;Filters;Error correction codes},
+  doi       = {10.1109/ICSE.2007.37}
+}
+
+
+@article{jia2011,
+  author   = {Jia, Yue and Harman, Mark},
+  journal  = {IEEE Transactions on Software Engineering},
+  title    = {An Analysis and Survey of the Development of Mutation Testing},
+  year     = {2011},
+  volume   = {37},
+  number   = {5},
+  pages    = {649-678},
+  keywords = {Genetic mutations;Software testing;Fault detection;History;Books;Programming profession;Computer languages;Java;Educational institutions;Automata;Mutation testing;survey.},
+  doi      = {10.1109/TSE.2010.62}
+}
+
+
+@article{khan2020,
+  author   = {Rehman Khan, Saif Ur and Lee, Sai Peck and Javaid, Nadeem and Abdul, Wadood},
+  journal  = {IEEE Access},
+  title    = {A Systematic Review on Test Suite Reduction: Approaches, Experiment’s Quality Evaluation, and Guidelines},
+  year     = {2018},
+  volume   = {6},
+  number   = {},
+  pages    = {11816-11841},
+  keywords = {Testing;Systematics;Guidelines;Software systems;Optimization;Web services;Clustering algorithms;Software testing;regression testing;test suite reduction;experiments;guidelines},
+  doi      = {10.1109/ACCESS.2018.2809600}
+}
+
+
+@article{zhu1997,
+  author     = {Zhu, Hong and Hall, Patrick A. V. and May, John H. R.},
+  title      = {Software unit test coverage and adequacy},
+  year       = {1997},
+  issue_date = {Dec. 1997},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {29},
+  number     = {4},
+  issn       = {0360-0300},
+  url        = {https://doi.org/10.1145/267580.267590},
+  doi        = {10.1145/267580.267590},
+  journal    = {ACM Comput. Surv.},
+  month      = dec,
+  pages      = {366–427},
+  numpages   = {62}
+}
+
+
+@article{yoo2012,
+  author     = {Yoo, S. and Harman, M.},
+  title      = {Regression testing minimization, selection and prioritization: a survey},
+  year       = {2012},
+  issue_date = {March 2012},
+  publisher  = {John Wiley and Sons Ltd.},
+  address    = {GBR},
+  volume     = {22},
+  number     = {2},
+  issn       = {0960-0833},
+  url        = {https://doi.org/10.1002/stv.430},
+  doi        = {10.1002/stv.430},
+  journal    = {Softw. Test. Verif. Reliab.},
+  month      = mar,
+  pages      = {67–120},
+  numpages   = {54}
+}
+
+
+@article{rothermel1998,
+  author   = {Rothermel, G. and Harrold, M.J.},
+  journal  = {IEEE Transactions on Software Engineering},
+  title    = {Empirical studies of a safe regression test selection technique},
+  year     = {1998},
+  volume   = {24},
+  number   = {6},
+  pages    = {401-419},
+  keywords = {Software testing;Costs;Software safety;Algorithm design and analysis;Fault detection;Performance evaluation},
+  doi      = {10.1109/32.689399}
+}
+
+
+@phdthesis{Kessel2022,
+  author = {Kessel, Marcus},
+  year   = {2023},
+  month  = {02},
+  pages  = {},
+  title  = {LASSO - an observatorium for the dynamic selection, analysis and comparison of software}
+}
+
+
+@inproceedings{harrold1993,
+  author    = {Harrold, M.J. and Gupta, R. and Soffa, M.L.},
+  booktitle = {Proceedings. Conference on Software Maintenance 1990},
+  title     = {A methodology for controlling the size of a test suite},
+  year      = {1990},
+  volume    = {},
+  number    = {},
+  pages     = {302-310},
+  doi       = {10.1109/ICSM.1990.131378}
+}
+
+
+@article{gladston2015,
+  author  = {Gladston, Angelin and Nehemiah, Khanna and Narayanasamy, Premalatha and Arputharaj, Kannan},
+  year    = {2015},
+  month   = {01},
+  pages   = {1113-1132},
+  title   = {Test suite reduction using HGS based heuristic approach},
+  volume  = {34},
+  journal = {Computing and Informatics}
+}
+
+
+@inbook{offutt2000,
+  author    = {Offutt, A. Jefferson and Untch, Ronald H.},
+  title     = {Mutation 2000: uniting the orthogonal},
+  year      = {2001},
+  isbn      = {0792373235},
+  publisher = {Kluwer Academic Publishers},
+  address   = {USA},
+  booktitle = {Mutation Testing for the New Century},
+  pages     = {34–44},
+  numpages  = {11}
+}
+
+
+
+@misc{jacoco-counters,
+  author       = {{JaCoCo Project}},
+  title        = {JaCoCo --- Java Code Coverage Library: Counters},
+  howpublished = {\url{https://www.jacoco.org/jacoco/trunk/doc/counters.html}},
+  note         = {Accessed November 1, 2025}
+}
+
+
+@inproceedings{tallam2005,
+  author  = {Tallam, Sriraman and Gupta, Neelam},
+  year    = {2005},
+  month   = {09},
+  pages   = {35-42},
+  title   = {A concept analysis inspired greedy algorithm for test suite minimization},
+  volume  = {31},
+  journal = {SIGSOFT Software Engineering Notes},
+  doi     = {10.1145/1108792.1108802}
+}
+
+@article{hussein2020,
+  author  = {Hussein, Hager and Younes, Ahmed and Abdelmoez, Walid},
+  year    = {2020},
+  month   = {08},
+  pages   = {143-155},
+  title   = {Quantum­-Inspired Genetic Algorithm for Solving the Test Suite Minimization Problem},
+  volume  = {19},
+  journal = {WSEAS TRANSACTIONS ON COMPUTERS},
+  doi     = {10.37394/23205.2020.19.20}
+}
+
+
+
+@inproceedings{bach2017,
+  author    = {Bach, Thomas and Andrzejak, Artur and Pannemans, Ralf},
+  booktitle = {2017 IEEE International Conference on Software Testing, Verification and Validation Workshops (ICSTW)},
+  title     = {Coverage-Based Reduction of Test Execution Time: Lessons from a Very Large Industrial Project},
+  year      = {2017},
+  pages     = {3-12},
+  doi       = {10.1109/ICSTW.2017.6}
+}
+
+
+
+@article{allamanis2018,
+  author     = {Allamanis, Miltiadis and Barr, Earl T. and Devanbu, Premkumar and Sutton, Charles},
+  title      = {A Survey of Machine Learning for Big Code and Naturalness},
+  year       = {2018},
+  issue_date = {July 2019},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {51},
+  number     = {4},
+  issn       = {0360-0300},
+  url        = {https://doi.org/10.1145/3212695},
+  doi        = {10.1145/3212695},
+  journal    = {ACM Comput. Surv.},
+  month      = jul,
+  articleno  = {81},
+  numpages   = {37}
+}
+
+
+@article{jehan2023,
+  author  = {Jehan, Seema and Wotawa, Franz},
+  journal = {IEEE Access},
+  title   = {An Empirical Study of Greedy Test Suite Minimization Techniques Using Mutation Coverage},
+  year    = {2023},
+  volume  = {11},
+  number  = {},
+  pages   = {65427-65442},
+  doi     = {10.1109/ACCESS.2023.3289073}
+}
+
+
+@inproceedings{just2014,
+  author = {Just, Rene and Jalali, Darioush and Ernst, Michael},
+  year   = {2014},
+  month  = {07},
+  pages  = {},
+  title  = {Defects4J: a database of existing faults to enable controlled testing studies for Java programs},
+  isbn   = {978-1-4503-2645-2},
+  doi    = {10.1145/2610384.2628055}
+}
+%=======================================================================
+
+@inproceedings{noemmer2020,
+  author    = {Raphael Noemmer and Roman Haas},
+  title     = {An Evaluation of Test Suite Minimization Techniques},
+  booktitle = {Software Quality: Quality Intelligence in Software and Systems Engineering},
+  editor    = {Dietmar Winkler and Stefan Biffl and Daniel Mendez and Johannes Bergsmann},
+  pages     = {51--66},
+  year      = {2020},
+  series    = {Lecture Notes in Business Information Processing},
+  volume    = {383},
+  publisher = {Springer},
+  doi       = {10.1007/978-3-030-39250-9\_4}
+}
+
+
+@article{boehm1984,
+  author    = {Barry W. Boehm},
+  title     = {Software Engineering Economics},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {SE-10},
+  number    = {1},
+  pages     = {4--21},
+  year      = {1984},
+  publisher = {IEEE},
+  doi       = {10.1109/TSE.1984.5010193}
+}
+
+@article{mongiovi2020,
+  author  = {Misael Mongiovì and Andrea Fornaia and Emiliano Tramontana},
+  title   = {REDUNET: Reducing Test Suites by Integrating Set Cover and Network-Based Optimization},
+  journal = {Applied Network Science},
+  volume  = {5},
+  number  = {86},
+  year    = {2020},
+  doi     = {10.1007/s41109-020-00323-w}
+}
+
+
+
+
+
+
+
+
+@online{fuzzingbook,
+  author = {Andreas Zeller and Rahul Gopinath and Marcel Böhme and Gordon Fraser and Christian Holler and Frank Li and Zachary P. Jadek and Sergey Feldman and others},
+  title  = {The Fuzzing Book -- Mutation Analysis Chapter},
+  year   = {2019},
+  url    = {https://www.fuzzingbook.org/html/MutationAnalysis.html},
+  note   = {Accessed September 14, 2025}
+}
+
+@article{zhang2010,
+  author  = {Lingming Zhang and Tao Xie and Lu Zhang and Nikolai Tillmann and Jonathan de Halleux and Hong Mei},
+  title   = {Test generation via dynamic symbolic execution for mutation testing},
+  journal = {Software Maintenance and Evolution: Research and Practice},
+  volume  = {22},
+  number  = {4},
+  pages   = {261--285},
+  year    = {2010},
+  doi     = {10.1002/smr.439}
+}
+
+@inproceedings{jeffrey2005,
+  author    = {Dennis Jeffrey and Neelam Gupta},
+  title     = {Test Suite Reduction with Selective Redundancy},
+  booktitle = {Proceedings of the 21st IEEE International Conference on Software Maintenance (ICSM)},
+  pages     = {549--558},
+  year      = {2005},
+  publisher = {IEEE},
+  doi       = {10.1109/ICSM.2005.88}
+}
+
+@inproceedings{shi2018,
+  author       = {August Shi and Alex Gyori and Suleman Mahmood and Peiyuan Zhao and Darko Marinov},
+  title        = {Evaluating Test-Suite Reduction in Real Software Evolution},
+  booktitle    = {Proceedings of the 27th ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA 2018)},
+  pages        = {84--94},
+  year         = {2018},
+  organization = {ACM}
+}
+
+@inproceedings{herzig2015,
+  author    = {Kim Herzig and Michaela Greiler and Jacek Czerwonka and Brendan Murphy},
+  title     = {The Art of Testing Less without Sacrificing Quality},
+  booktitle = {Proceedings of the 37th International Conference on Software Engineering (ICSE)},
+  year      = {2015},
+  volume    = {1},
+  pages     = {483--493},
+  publisher = {IEEE Press},
+  doi       = {10.1109/ICSE.2015.66}
+}
+
+
+@article{wong1995,
+  author  = {W. Eric Wong and Joseph R. Horgan and Saul London and Hiralal Agrawal},
+  title   = {A Study of Effective Regression Testing in Practice},
+  journal = {Journal of Systems and Software},
+  volume  = {28},
+  number  = {2},
+  year    = {1995},
+  pages   = {135--144},
+  doi     = {10.1016/0164-1212(94)00089-4}
+}
+
+@article{slavik1997,
+  author    = {Petr Slav{\'i}k},
+  title     = {A Tight Analysis of the Greedy Algorithm for Set Cover},
+  journal   = {Journal of Algorithms},
+  volume    = {25},
+  number    = {2},
+  pages     = {237--254},
+  year      = {1997},
+  publisher = {Academic Press},
+  doi       = {10.1006/jagm.1997.0887}
+}
+
+@inproceedings{cruciani2019,
+  author    = {Emilio Cruciani and Bryce Brubaker and Anna Aichinger and Eva K{\"u}hn and Wolfgang {\"O}stlund},
+  title     = {FAST-R: Fast Approximate Silhouette-Based Test Reduction},
+  booktitle = {Proceedings of the 12th IEEE Conference on Software Testing, Validation and Verification (ICST)},
+  pages     = {450--461},
+  year      = {2019},
+  publisher = {IEEE},
+  doi       = {10.1109/ICST.2019.00053}
+}
+
+% PAPER 1: Interaction-Based Test Suite Minimization (Nishino et al., 2020)
+@inproceedings{nishino2020,
+  author       = {Nishino, Kohei and Kitamura, Takashi and Kishi, Tomoji and Artho, Cyrille},
+  title        = {Toward an Encoding Approach to Interaction-Based Test Suite Minimization},
+  booktitle    = {Proceedings of the 13th IEEE International Conference on Software Testing, Verification and Validation Workshops (ICSTW)},
+  year         = {2020},
+  organization = {IEEE}
+}
+
+% PAPER 2: Test Suite Minimization Through PSO (Ahuja & Bhatia, 2024)
+@inproceedings{ahuja2024,
+  author       = {Ahuja, Neeru and Bhatia, Pradeep Kumar},
+  title        = {Test Suite Minimization Through PSO},
+  booktitle    = {Proceedings of the International Conference on Reliability, Infocom Technologies and Optimization (ICRITO)},
+  year         = {2024},
+  organization = {IEEE}
+}
+
+% PAPER 3: Many-Objective Evolutionary Optimization with Mutation Testing (Wei et al., 2017)
+@inproceedings{wei2017,
+  author       = {Wei, Zheng and Wu, Xiaoxue and Yang, Xibing and Cao, Shichao and Liu, Wenxin and Lin, Jun},
+  title        = {Test Suite Minimization with Mutation Testing-Based Many-Objective Evolutionary Optimization},
+  booktitle    = {Proceedings of the International Conference on Software Analysis, Testing and Evolution (SATE)},
+  year         = {2017},
+  organization = {IEEE}
+}
+
+% PAPER 4: NEMO - Multi-Criteria Test-Suite Minimization with Integer Nonlinear Programming (Lin et al., 2018)
+@inproceedings{lin2018,
+  author       = {Lin, Jun-Wei and Jabbarvand, Reyhaneh and Garcia, Joshua and Malek, Sam},
+  title        = {NEMO: Multi-Criteria Test-Suite Minimization with Integer Nonlinear Programming},
+  booktitle    = {Proceedings of the 40th International Conference on Software Engineering (ICSE)},
+  year         = {2018},
+  pages        = {658--668},
+  organization = {ACM}
+}
+
+@book{garey1979,
+  author    = {Michael R. Garey and David S. Johnson},
+  title     = {Computers and Intractability: A Guide to the Theory of NP-Completeness},
+  year      = {1979},
+  publisher = {W. H. Freeman}
+}
+
+@article{hemmati2011,
+  author     = {Hemmati, Hadi and Arcuri, Andrea and Briand, Lionel},
+  title      = {Achieving scalable model-based testing through test case diversity},
+  year       = {2013},
+  issue_date = {February 2013},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {22},
+  number     = {1},
+  issn       = {1049-331X},
+  url        = {https://doi.org/10.1145/2430536.2430540},
+  doi        = {10.1145/2430536.2430540},
+  journal    = {ACM Trans. Softw. Eng. Methodol.},
+  month      = mar,
+  articleno  = {6},
+  numpages   = {42}
+}
+
+
+@article{rothermel2002,
+  author   = {Rothermel, G. and Untch, R.H. and Chengyun Chu and Harrold, M.J.},
+  journal  = {IEEE Transactions on Software Engineering},
+  title    = {Prioritizing test cases for regression testing},
+  year     = {2001},
+  volume   = {27},
+  number   = {10},
+  pages    = {929-948},
+  keywords = {Computer aided software engineering;Software testing;Fault detection;Costs;Computer Society;System testing;Software maintenance;Processor scheduling;Feedback;Application software},
+  doi      = {10.1109/32.962562}
+}
+
+@article{chen2005,
+  title    = {A new heuristic for test suite reduction},
+  journal  = {Information and Software Technology},
+  volume   = {40},
+  number   = {5},
+  pages    = {347-354},
+  year     = {1998},
+  issn     = {0950-5849},
+  doi      = {https://doi.org/10.1016/S0950-5849(98)00050-0},
+  url      = {https://www.sciencedirect.com/science/article/pii/S0950584998000500},
+  author   = {T.Y. Chen and M.F. Lau},
+}

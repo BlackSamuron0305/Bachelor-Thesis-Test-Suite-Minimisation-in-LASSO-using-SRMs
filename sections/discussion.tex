@@ -1,0 +1,84 @@
+\chapter{Discussion}
+\label{chap:discussion}
+
+This chapter critically analyses test suite minimisation from two perspectives: general advantages and disadvantages inherent to the technique, followed by specific considerations for the Mutation-Aware Enhanced HGS implementation within LASSO.
+
+\section{General Advantages and Disadvantages of Test Suite Minimisation}
+\label{sec:discussion:general}
+
+Test suite minimisation represents a sophisticated optimisation challenge where no single approach universally excels. This section examines inherent trade-offs and fundamental constraints independent of specific algorithmic implementations.
+
+\subsection{Practical Performance Benefits}
+
+Empirical evidence from large-scale industrial environments underscores the significant performance gains achievable through test suite minimisation. Bach et al.~\cite{bach2017} observed that over 90\% of test cases in a major industrial project (SAP) were redundant in terms of line coverage, with full test execution requiring several tens of hours. Applying minimisation techniques in such contexts can reduce execution time from many hours to just a few hours, or even minutes, without compromising coverage quality.
+
+These reductions yield immediate benefits: lower computational demands, reduced infrastructure expenditure, and substantial cost savings. In continuous integration pipelines running hundreds of builds per day, a 60\% reduction eliminates roughly 300 redundant executions per cycle~\cite{yoo2012}, accelerating feedback loops.
+
+
+\subsection{The Absence of a Perfect Solution}
+
+Despite these compelling advantages, test suite minimisation remains an inherently complex optimisation problem with no universally optimal solution. The difficulty arises from conflicting objectives and problem-specific constraints that vary across application domains. Minimisation confronts multiple competing goals: maximising reduction while preserving coverage, maintaining fault-detection capability, ensuring computational feasibility, and adapting to diverse system characteristics. No technique satisfies all objectives simultaneously across all contexts.
+
+Different application domains prioritise these objectives differently. Safety-critical systems demand absolute fault-detection preservation, favouring conservative approaches that sacrifice reduction potential. High-frequency continuous integration pipelines prioritise execution speed, accepting greater risk of fault-detection loss. Large-scale observatories require language-agnostic solutions operating on behavioural abstractions, excluding techniques dependent on source code analysis.
+
+\subsection{The Coverage Limitation}
+
+Compounding these challenges, structural coverage metrics inadequately capture fault-detection capability. Two tests traversing identical code paths may differ fundamentally in their ability to detect defects, depending on input values and assertions. Coverage preservation therefore guarantees structural but not behavioural equivalence. Tests appearing coverage-redundant may be semantically distinct in fault-revealing behaviour.
+
+Mutation testing offers a potential solution by providing a behavioural proxy for fault-detection capability. Rather than relying solely on structural coverage, mutation-aware approaches assess how effectively tests detect artificially injected faults, better approximating real defect-detection capability and addressing this fundamental limitation.
+
+
+
+
+
+
+
+\section{Thesis-Specific Considerations for MA-EHGS in LASSO}
+\label{sec:discussion:specific}
+
+Having examined general minimisation principles, this section discusses the advantages and limitations of MA-EHGS as implemented within LASSO's architectural context.
+
+\subsection{Advantages of the Approach}
+
+The proposed approach provides several critical advantages aligned with LASSO's architectural requirements and operational objectives. The MA-EHGS algorithm itself is language-agnostic: it operates exclusively on SRM abstractions, enabling minimisation without requiring source code access or control-flow graph construction. This design principle makes the algorithmic approach applicable to any programming language or system that can be represented in SRM format, directly supporting LASSO's intended role as a large-scale software observatorium for diverse codebases.
+
+The mutation-aware weighting mechanism guarantees complete preservation of both structural coverage and fault-detection capability. By encoding killed mutants as explicit mandatory requirements in the SRM, the algorithm ensures 100\% mutation score retention by design---every mutant that must be killed is treated as a requirement that must be covered. As long as neither $\alpha$ nor $\beta$ equals zero, the greedy selection ensures all requirements (including mutant-kills) are retained in the minimised suite.
+
+MA-EHGS achieves polynomial-time complexity comparable to other greedy heuristics, ensuring scalability for LASSO's large-scale analysis requirements.
+
+
+\subsection{Limitations of the Implementation}
+
+The current LASSO implementation depends on Java-specific tooling (JaCoCo for coverage collection and PIT for mutation testing). While the MA-EHGS algorithm itself is language-agnostic and operates exclusively on SRM abstractions, this tooling dependency constrains the current prototype to Java projects. The underlying SRM-based architecture is designed for straightforward adaptation to other languages by integrating equivalent coverage and mutation frameworks, but such integration remains future work.
+
+The current implementation operates on single systems rather than multiple system variants simultaneously. Extending minimisation across multiple systems introduces substantial complexity: coverage and mutation scores vary across implementations, requiring aggregation strategies. Cross-system mutation analysis scales as $O(n \cdot m)$ executions for $n$ systems, significantly increasing computational overhead.
+
+Mutation detection operates exclusively on strong mutations (observable output differences). Weak mutations (internal state divergences) remain undetected, and tests revealing only weak mutations may appear redundant.
+
+The HGS selection strategy prioritises comprehensive coverage without accepting trade-offs. When test $t_1$ covers requirements $\{1, \ldots, 20\}$ and test $t_2$ covers $\{1, \ldots, 21\}$, both are retained because $t_2$ provides unique coverage. This conservative approach guarantees 100\% coverage but produces larger suites compared to aggressive strategies accepting partial coverage loss.
+
+Validation focused on unit testing, lacking comprehensive integration testing. While ensuring algorithmic correctness, this does not assess end-to-end performance in real LASSO pipelines.
+
+\subsection{Implications for LASSO Platform Evolution}
+
+MA-EHGS provides a pragmatic solution balancing LASSO's constraints with minimisation effectiveness. The mutation-aware design achieves substantial efficiency gains while preserving fault-detection capability. Incorporating mutation constraints yields slightly lower reduction than coverage-only Enhanced HGS, but this trade-off is acceptable given improved fault-detection guarantees. The extension of the empirically validated Enhanced HGS baseline~\cite{gladston2015} demonstrates that language-agnostic behavioural abstraction enables practical large-scale optimisation.
+
+The deterministic behaviour, linear complexity, and guaranteed mutation preservation position MA-EHGS as suitable for production deployment. The configurable design accommodates diverse preferences, from pure coverage-based ($\beta = 0$) to pure mutation-based minimisation ($\alpha = 0$), acknowledging domain-specific trade-offs.
+
+\section{Future Work}
+\label{sec:discussion:future}
+
+The limitations identified in Section~\ref{sec:discussion:specific} suggest several extensions for MA-EHGS within LASSO.
+
+\textbf{Multi-Language Support.} The current prototype relies on Java tooling (JaCoCo and PIT). Extending to Python, JavaScript, and other ecosystems requires integrating equivalent coverage and mutation frameworks and normalising their outputs into a unified SRM representation.
+
+\textbf{Multisystem Minimisation.} LASSO's multi-system SRMs motivate minimisation across several implementations simultaneously, requiring aggregation strategies for coverage and mutation information.
+
+\textbf{Integration Testing Validation.} End-to-end integration tests within LASSO's Arena pipeline are needed to evaluate performance under realistic workloads.
+
+\textbf{Alpha--Beta Benchmarking.} Parameter sensitivity analysis on the Base64 benchmark revealed minimal impact of $\alpha$--$\beta$ configurations: most combinations produced identical 8-test results. However, larger test suites may exhibit greater parameter sensitivity. A systematic grid search across parameter combinations on diverse system types could identify configurations that optimise reduction while preserving coverage and mutation scores, potentially integrated as an LSL action for empirically guided parameter selection.
+
+\textbf{Weak Mutation Support.} MA-EHGS currently considers only strong mutants. Capturing weak mutants would require deeper instrumentation to detect internal state divergences, providing finer behavioural insight at higher cost.
+
+\textbf{LLM-Assisted Gap Analysis.} Large language models could identify and generate tests for uncovered coverage or mutation gaps, complementing minimisation through systematic test suite augmentation.
+

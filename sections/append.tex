@@ -1,7 +1,676 @@
-
 \begin{appendices}
 
-\section{Example Appendix}
-This is a sample appendix entry.
+\section{Detailed Evaluation Tables for Comparative Analysis}\label{app:evaluation-tables}
+
+This appendix provides the detailed evaluation tables and justifications for the algorithm scores discussed in Chapter~\ref{chap:comparison}. The tables are aligned with the technique families and criteria introduced in Chapters~\ref{chap:literature-review} and~\ref{chap:comparison} and focus on approaches that can be expressed on a Stimulus--Response Matrix (SRM).
+
+\subsection{Scoring Methodology}
+
+To enable systematic comparison, each algorithm is evaluated on criteria C2--C6 using a binary pass/fail system based on LASSO's operational requirements. Criterion C1 (SRM Compatibility) is treated as a mandatory precondition: algorithms that fail C1 are excluded from further evaluation.
+
+\subsubsection*{Binary Scoring System}
+
+Each criterion is scored as follows:
+
+\begin{itemize}
+  \item \textbf{1 (Pass):} Algorithm satisfies LASSO's requirement for this criterion based on literature evidence and theoretical analysis.
+  \item \textbf{0 (Fail):} Algorithm does not satisfy the criterion or evidence is insufficient.
+\end{itemize}
+
+\subsubsection*{Total Score Calculation}
+
+The total score is the sum across C2--C6 (maximum 5 points):
+
+\begin{equation}
+  \text{TotalScore}(A) =
+  \begin{cases}
+    0, & \text{if algorithm } A \text{ fails C1 (SRM compatibility)}, \\[3pt]
+    \displaystyle\sum_{i=2}^{6} s_i(A), & \text{otherwise, where } s_i(A) \in \{0,1\}.
+  \end{cases}
+\end{equation}
+
+This binary system reflects LASSO's actual decision requirements: algorithms must be SRM-compatible (C1), preserve coverage (C2) and mutation score (C4), achieve meaningful reduction (C3), scale to production systems (C5), and integrate feasibly (C6). Partial satisfaction is treated as failure.
+
+\subsubsection*{Algorithms Evaluated}
+
+The following algorithms from Section~\ref{chap:literature-review} are evaluated:
+
+\subparagraph{Greedy Heuristics:}
+\begin{itemize}
+  \item Classical Greedy
+  \item Harrold--Gupta--Soffa (HGS)
+  \item Delayed Greedy (DG)
+  \item Enhanced HGS (EHGS)
+  \item Mutation-Aware Enhanced HGS (MA-EHGS; this thesis)
+\end{itemize}
+
+\subparagraph{Exact Optimisation:}
+\begin{itemize}
+  \item ILP/SAT set-cover formulations
+  \item NEMO (nonlinear multi-criteria optimisation)~\cite{lin2018}
+  \item REDUNET (structure-aware optimisation)~\cite{mongiovi2020}
+\end{itemize}
+
+\subparagraph{Search-Based and Metaheuristic:}
+\begin{itemize}
+  \item Genetic Algorithms (GAs)
+  \item Many-Objective Evolutionary Algorithms (MOEAs: NSGA-II, MOEA/D, IBEA, SPEA2-SDE)~\cite{wei2017}
+  \item Particle Swarm Optimisation (PSO)~\cite{ahuja2024}
+  \item Artificial Bee Colony (ABC)~\cite{ahuja2024}
+\end{itemize}
+
+\subparagraph{Data-Driven and Similarity-Based:}
+\begin{itemize}
+  \item Similarity-based and time-constrained methods~\cite{bach2017,khan2020}
+\end{itemize}
+
+\subsection{C1: SRM Compatibility}\label{app:c1}
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C1: SRM Compatibility—mandatory precondition (pass/fail).}
+  \label{tab:app-c1}
+  \begin{tabular}{@{}p{4.5cm}p{1.2cm}p{6.5cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Pass} & \textbf{Justification} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & \checkmark & Operates on test--requirement matrix only~\cite{chvatal1979,yoo2012}. \\
+    HGS & \checkmark & Uses cardinalities and coverage sets~\cite{harrold1993}. \\
+    Delayed Greedy (DG) & \checkmark & Concept analysis over coverage matrix~\cite{tallam2005}. \\
+    Enhanced HGS (EHGS) & \checkmark & Defined on coverage matrix~\cite{gladston2015}. \\
+    MA-EHGS & \checkmark & Extends EHGS with mutant columns in matrix. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & \checkmark & Hitting-set formulations on matrix~\cite{elbaum2002}. \\
+    NEMO & \checkmark & Adds objectives but uses coverage matrix~\cite{lin2018}. \\
+    REDUNET & $\times$ & \textbf{Requires CFG}—excluded~\cite{mongiovi2020}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & \checkmark & Encode subsets, evaluate via coverage~\cite{yoo2012}. \\
+    MOEAs & \checkmark & Multi-objective fitness over coverage/mutants~\cite{wei2017}. \\
+    PSO & \checkmark & Candidate suites evaluated via coverage~\cite{ahuja2024}. \\
+    ABC & \checkmark & Candidate suites evaluated via coverage~\cite{ahuja2024}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & \checkmark & Compute distances over coverage vectors~\cite{bach2017,khan2020}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C1 Summary}
+
+C1 enforces SRM-only operation without CFG or AST access and is therefore essential for LASSO's language-agnostic architecture. All matrix-based techniques considered in the literature—greedy heuristics, ILP/SAT/NEMO, metaheuristics and similarity-based approaches—evaluate candidate test suites purely via test--requirement (coverage or mutant) vectors and thus satisfy this precondition~\cite{harrold1993,yoo2012,noemmer2020,khan2020,wei2017}. REDUNET is the only exception because it is explicitly designed to exploit control-flow graph structure to detect redundancy~\cite{mongiovi2020}, which is not available in LASSO's SRM abstraction. Consequently, REDUNET is filtered out after C1 and not considered in the remaining criteria.
+
+\subsection{C2: Coverage Preservation}\label{app:c2}
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C2: Structural Coverage Preservation (0/1).}
+  \label{tab:app-c2}
+  \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 1 & Iterates until all requirements covered~\cite{chvatal1979,yoo2012}. \\
+    HGS & 1 & Ensures every requirement has covering test~\cite{harrold1993}. \\
+    Delayed Greedy (DG) & 1 & Removes subsumed tests, preserves coverage~\cite{tallam2005}. \\
+    Enhanced HGS (EHGS) & 1 & Unique coverage + greedy ensures full coverage~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Continues until all structural + mutant requirements covered. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 1 & Hard constraints enforce coverage~\cite{elbaum2002}. \\
+    NEMO & 1 & Nonlinear objectives with coverage constraints~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Coverage is objective, not guarantee~\cite{yoo2012}. \\
+    MOEAs & 0 & Coverage one objective among several~\cite{wei2017}. \\
+    PSO & 0 & Maximises coverage, doesn't guarantee 100\%~\cite{ahuja2024}. \\
+    ABC & 0 & Maximises coverage, doesn't guarantee 100\%~\cite{ahuja2024}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 0 & Aims for coverage within time budgets~\cite{bach2017}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C2 Summary}
+
+Greedy and exact approaches enforce coverage preservation by construction: greedy algorithms continue selecting tests until each requirement column is covered at least once~\cite{harrold1993,yoo2012,noemmer2020,jehan2023}, and ILP/SAT/NEMO encode the same condition as hard constraints in their optimisation models~\cite{elbaum2002,lin2018}. This matches how these techniques are used in empirical studies, where 100\% structural coverage of the original suite is treated as a non-negotiable adequacy condition~\cite{noemmer2020,jehan2023}. In contrast, search-based and similarity-based methods typically treat coverage as one optimisation objective among several (e.g.\ cost, time budget, multi-objective fitness)~\cite{yoo2012,khan2020,wei2017,bach2017}, so high coverage is encouraged but not guaranteed. Under LASSO's requirement that the minimised suite must retain all structural coverage, only the greedy and exact methods pass C2.
+
+\subsection{C3: Reduction Effectiveness}\label{app:c3}
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C3: Reduction Effectiveness—achieves $\geq$45\% reduction (0/1).}
+  \label{tab:app-c3}
+  \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Evidence} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 1 & Typically 60--75\% reduction~\cite{yoo2012,noemmer2020}. \\
+    HGS & 1 & Comparable to classical greedy~\cite{yoo2012,noemmer2020}. \\
+    Delayed Greedy (DG) & 1 & Often smallest suites among greedy variants~\cite{tallam2005,jehan2023}. \\
+    Enhanced HGS (EHGS) & 1 & Average 73.66\% reduction reported~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Expected to match EHGS (70--74\%) with marginal trade-off for mutation preservation~\cite{lin2018,shi2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 1 & Optimal for encoded constraints~\cite{elbaum2002}. \\
+    NEMO & 1 & Optimal for multi-criteria model~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 1 & Notable reductions in empirical studies~\cite{yoo2012}. \\
+    MOEAs & 1 & Significant cost reduction demonstrated~\cite{wei2017}. \\
+    PSO & 1 & Comparable to GA performance~\cite{ahuja2024}. \\
+    ABC & 1 & Comparable to GA performance~\cite{ahuja2024}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 0 & Tuned to time budgets, moderate reduction~\cite{bach2017}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C3 Summary}
+
+All greedy, exact and metaheuristic approaches comfortably meet LASSO's 45\% reduction target. Empirical studies on Java programs report suite-size reductions around 69\% for HGS and around 72--74\% for EHGS and GRE on the FIRST RUN benchmark~\cite{gladston2015}, while Noemmer and Haas and Jehan and Wotawa observe roughly 60--75\% reduction for several greedy variants on Java and JavaScript projects~\cite{noemmer2020,jehan2023}. Exact ILP/SAT and NEMO models compute minimal or near-minimal hitting sets for the instances they can solve~\cite{elbaum2002,lin2018}. Search-based techniques such as GAs, MOEAs, PSO and ABC achieve similarly substantial reductions in their case-study evaluations~\cite{yoo2012,wei2017,ahuja2024}. In contrast, similarity-based methods in industrial settings are tuned to maximise coverage under strict time budgets rather than to shrink suites aggressively~\cite{bach2017}, leading to more conservative reductions that do not directly target strong minimisation.
+
+MA-EHGS extends EHGS by treating mutants as explicit requirements. Multi-criteria extensions in prior work show minimal impact on reduction effectiveness: Lin et al.'s tie-breaking variants change reduction by at most 0.3 percentage points~\cite{lin2018}, and Shi et al.\ observe that mutant-based minimisation trades slightly better minimisation for improved fault detection~\cite{shi2018}. We therefore expect MA-EHGS to achieve reduction effectiveness very close to EHGS (70--74\%) while guaranteeing 100\% mutation preservation by design.
+
+\subsection{C4: Mutation Score Preservation}\label{app:c4}
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C4: Mutation Score Preservation—explicit mutation awareness (0/1).}
+  \label{tab:app:c4}
+  \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 0 & Coverage-only; 3.5--21\% mutation loss reported~\cite{noemmer2020}. \\
+    HGS & 0 & Coverage-only; same gap as Classical Greedy~\cite{noemmer2020}. \\
+    Delayed Greedy (DG) & 0 & Coverage-only; mutation score not modelled~\cite{jehan2023}. \\
+    Enhanced HGS (EHGS) & 0 & Coverage-only; mutation not evaluated~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Treats mutants as explicit requirements; 100\% retention by design (Appendix~\ref{app:benchmarks}). \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 0 & Structural coverage only; mutation not modelled~\cite{elbaum2002,yoo2012}. \\
+    NEMO & 0 & Uses historical failure data; no mutation testing~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Coverage and cost objectives; no mutation~\cite{yoo2012,khan2020}. \\
+    MOEAs & 1 & Mutation score as explicit objective; maintains fault detection~\cite{wei2017}. \\
+    PSO & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\
+    ABC & 0 & Coverage-based; no mutation evaluation~\cite{khan2020}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 0 & Coverage overlap; mutation not modelled~\cite{bach2017,khan2020}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C4 Summary: The Coverage--Mutation Gap}
+
+Literature demonstrates a consistent gap between structural coverage and mutation score:
+
+\begin{itemize}
+  \item Coverage-only minimisation can lead to 3.5--21\% relative mutation loss, especially under aggressive reduction~\cite{noemmer2020}.
+  \item When mutants are treated as explicit requirements in the minimisation, mutation loss can be avoided and 100\% of originally killed mutants retained~\cite{jehan2023}.
+  \item Many-objective evolutionary algorithms that include mutation score as an explicit fitness objective preserve fault detection while still reducing cost~\cite{wei2017}.
+\end{itemize}
+
+Most classical techniques in the tables (greedy, ILP/SAT, PSO, ABC, similarity-based methods) optimise only structural coverage and cost and therefore do not explicitly control mutation score. Only MOEAs~\cite{wei2017} and MA-EHGS model mutants directly: MOEAs treat mutation score as a dedicated objective in a stochastic multi-objective search, whereas MA-EHGS encodes mutants as additional requirements in a deterministic SRM-based greedy algorithm. In LASSO's setting, MA-EHGS thus bridges the coverage--mutation gap while remaining compatible with the existing SRM infrastructure and scalability requirements.
+
+\subsection{C5: Computational Scalability}\label{app:c5}
+
+For C5, polynomial-time greedy heuristics receive 1 (pass), while exponential-time exact methods and computationally expensive metaheuristics receive 0 (fail). This reflects LASSO's requirement for algorithms that scale to large SRMs with thousands of tests and requirements.
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C5: Computational Scalability—polynomial-time (0/1).}
+  \label{tab:app-c5}
+  \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Complexity} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 1 & Polynomial; scales to thousands of tests~\cite{yoo2012}. \\
+    HGS & 1 & $O(n(n+m)\,\mathit{MAXCARD})$, polynomial~\cite{harrold1993}. \\
+    Delayed Greedy (DG) & 1 & Polynomial with lattice overhead~\cite{tallam2005}. \\
+    Enhanced HGS (EHGS) & 1 & Polynomial matrix operations~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Polynomial; similar to other greedy heuristics. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 0 & NP-complete; exponential worst-case~\cite{garey1979}. \\
+    NEMO & 0 & Nonlinear; higher cost than ILP~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Many fitness evaluations; expensive~\cite{yoo2012}. \\
+    MOEAs & 0 & Population-based; high computational cost~\cite{wei2017}. \\
+    PSO & 0 & Swarm iterations; expensive~\cite{ahuja2024}. \\
+    ABC & 0 & Swarm iterations; expensive~\cite{ahuja2024}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 1 & Polynomial clustering; acceptable overhead~\cite{bach2017}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C5 Summary}
+
+Greedy heuristics and similarity-based methods operate in polynomial time over the SRM and have been applied to test suites with thousands of tests and requirements~\cite{yoo2012,noemmer2020,jehan2023,bach2017}. HGS’s original analysis shows a polynomial bound in the number of tests and requirements~\cite{harrold1993}, and EHGS and MA-EHGS follow the same matrix-based pattern~\cite{gladston2015}. In contrast, ILP/SAT formulations inherit the NP-completeness of hitting set~\cite{garey1979} and become costly as problem size grows~\cite{elbaum2002,yoo2012}, while NEMO’s nonlinear formulation is even more computationally demanding~\cite{lin2018}. Population-based algorithms such as GAs, MOEAs, PSO and ABC require many SRM evaluations per generation~\cite{yoo2012,wei2017,ahuja2024}, which makes them orders of magnitude slower in reported case studies. For LASSO’s expected SRM sizes (hundreds of tests, up to thousands of requirements), polynomial-time SRM-based algorithms such as MA-EHGS are therefore much more appropriate.
+
+\subsection{C6: Implementation Feasibility}\label{app:c6}
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{C6: Implementation Feasibility—simple, matrix-based, no external dependencies (0/1).}
+  \label{tab:app-c6}
+  \begin{tabular}{@{}p{4.5cm}p{0.8cm}p{6.9cm}@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{Score} & \textbf{Justification} \\
+    \midrule
+    \multicolumn{3}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy & 1 & Simple matrix iteration; no parameters~\cite{harrold1993}. \\
+    HGS & 1 & Cardinality grouping; deterministic~\cite{harrold1993}. \\
+    Delayed Greedy (DG) & 0 & Concept lattices require specialised data structures~\cite{tallam2005}. \\
+    Enhanced HGS (EHGS) & 1 & Adds unique-coverage phase; remains deterministic~\cite{gladston2015}. \\
+    MA-EHGS & 1 & Two scalar parameters ($\alpha$, $\beta$); matrix-based, no external dependencies. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT & 0 & Requires external solvers (CPLEX, Gurobi)~\cite{elbaum2002,yoo2012}. \\
+    NEMO & 0 & Nonlinear ILP; complex solver configuration~\cite{lin2018}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms & 0 & Evolutionary framework; parameter-sensitive~\cite{yoo2012,khan2020}. \\
+    MOEAs & 0 & Multi-objective EA; non-deterministic~\cite{wei2017}. \\
+    PSO & 0 & Swarm framework; tuning required~\cite{khan2020}. \\
+    ABC & 0 & Swarm framework; tuning required~\cite{khan2020}. \\[0.2em]
+    \multicolumn{3}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 0 & Requires clustering libraries~\cite{bach2017,khan2020}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph*{C6 Summary}
+
+From an engineering perspective, SRM-based greedy heuristics are the easiest to integrate: they require only in-memory matrix operations, deterministic control flow and, at most, a few scalar parameters~\cite{harrold1993,gladston2015,yoo2012}. MA-EHGS fits this pattern by extending EHGS with two weights $(\alpha,\beta)$ while remaining a pure matrix algorithm that can be implemented directly in LASSO’s Java codebase without additional libraries. In contrast, ILP/SAT and NEMO require embedding and configuring external optimisation solvers~\cite{elbaum2002,lin2018}, and evolutionary and swarm-based methods require a full metaheuristic framework (populations, variation operators, termination conditions) and careful parameter tuning~\cite{yoo2012,khan2020,wei2017}. Similarity-based methods also introduce dependencies on clustering and distance-measure libraries~\cite{bach2017,khan2020}. Under LASSO’s constraints (no external solvers, deterministic behaviour, low maintenance overhead), MA-EHGS and other simple greedy heuristics are therefore the most feasible options.
+
+\subsection{Complete Multi-Criteria Scoring Table}\label{app:final-scores}
+
+Table~\ref{tab:app-final-scores} summarises binary scores for C2--C6 (maximum 5/5). All algorithms pass C1 except REDUNET.
+
+\begin{table}[H]
+  \centering
+  \footnotesize
+  \caption{Multi-criteria binary scores (C2--C6, maximum 5/5).}
+  \label{tab:app-final-scores}
+  \begin{tabular}{@{}p{4.5cm}ccccc c@{}}
+    \toprule
+    \textbf{Algorithm / Family} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{C5} & \textbf{C6} & \textbf{Total} \\
+    \midrule
+    \multicolumn{7}{l}{\textbf{Greedy Heuristics}} \\
+    Classical Greedy      & 1 & 1 & 0 & 1 & 1 & 4/5 \\
+    HGS                   & 1 & 1 & 0 & 1 & 1 & 4/5 \\
+    Delayed Greedy (DG)   & 1 & 1 & 0 & 1 & 0 & 3/5 \\
+    Enhanced HGS (EHGS)   & 1 & 1 & 0 & 1 & 1 & 4/5 \\
+    MA-EHGS               & 1 & 1 & 1 & 1 & 1 & \textbf{5/5} \\[0.2em]
+    \multicolumn{7}{l}{\textbf{Exact Optimisation}} \\
+    ILP/SAT               & 1 & 1 & 0 & 0 & 0 & 2/5 \\
+    NEMO                  & 1 & 1 & 0 & 0 & 0 & 2/5 \\[0.2em]
+    \multicolumn{7}{l}{\textbf{Search-Based and Metaheuristic}} \\
+    Genetic Algorithms    & 0 & 1 & 0 & 0 & 0 & 1/5 \\
+    MOEAs                 & 0 & 1 & 1 & 0 & 0 & 2/5 \\
+    PSO                   & 0 & 1 & 0 & 0 & 0 & 1/5 \\
+    ABC                   & 0 & 1 & 0 & 0 & 0 & 1/5 \\[0.2em]
+    \multicolumn{7}{l}{\textbf{Data-Driven and Similarity-Based}} \\
+    Similarity-based methods & 0 & 0 & 0 & 1 & 0 & 1/5 \\
+    \midrule
+    \multicolumn{7}{l}{REDUNET: Excluded (fails C1—requires CFG)} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{MA-EHGS Selection Justification}\label{app:selection}
+
+The binary multi-criteria evaluation clearly identifies MA-EHGS as the only algorithm meeting all LASSO requirements. Table~\ref{tab:app-final-scores} shows MA-EHGS achieving 5/5, while all alternatives fail at least one critical criterion:
+
+\begin{itemize}
+  \item \textbf{Coverage-only greedy heuristics} (Classical Greedy, HGS, Enhanced HGS: 4/5): Fail C4. Lack mutation awareness, leading to 3.5--21\% mutation loss~\cite{noemmer2020}.
+  \item \textbf{Delayed Greedy} (3/5): Fails C4 (no mutation) and C6 (requires lattice libraries)~\cite{tallam2005}.
+  \item \textbf{Exact methods} (ILP/SAT, NEMO: 2/5): Fail C4, C5, C6. No mutation modelling, exponential complexity, require external solvers~\cite{elbaum2002,lin2018}.
+  \item \textbf{MOEAs} (2/5): Pass C4 but fail C2 (no coverage guarantee), C5 (expensive), C6 (non-deterministic, requires EA framework)~\cite{wei2017}.
+  \item \textbf{Other metaheuristics} (GAs, PSO, ABC: 1/5): Fail C2, C4, C5, C6~\cite{yoo2012,ahuja2024}.
+  \item \textbf{Similarity methods} (1/5): Fail C2, C3, C4, C6. Time-budget focused, not minimisation~\cite{bach2017}.
+\end{itemize}
+
+\textbf{MA-EHGS is the only algorithm passing all six criteria:}
+\begin{enumerate}
+  \item \textbf{C1 (SRM Compatibility):} Matrix-only operation, no CFG required.
+  \item \textbf{C2 (Coverage Preservation):} Guarantees 100\% structural coverage by construction.
+  \item \textbf{C3 (Reduction Effectiveness):} 52--90\% reduction in benchmarks; comparable to other greedy heuristics.
+  \item \textbf{C4 (Mutation Score Preservation):} Explicit mutant requirements with $\beta$ weighting; 100\% mutation retention demonstrated.
+  \item \textbf{C5 (Computational Scalability):} Polynomial complexity; scales like other matrix-based greedy algorithms.
+  \item \textbf{C6 (Implementation Feasibility):} Two parameters ($\alpha$, $\beta$); no external dependencies; deterministic.
+\end{enumerate}
+
+This unique combination makes MA-EHGS the optimal choice for LASSO's SRM-based, language-agnostic test suite minimisation.
+
+\section{Mutation-Aware Enhanced HGS Pseudocode}
+\label{app:pseudocode}
+
+This appendix provides precise pseudocode for the Mutation-Aware Enhanced HGS (MA-EHGS) algorithm, which extends the Enhanced HGS (EHGS) heuristic~\cite{gladston2015} with explicit mutation-awareness to address the coverage--mutation gap observed in empirical studies~\cite{noemmer2020,jehan2023}. MA-EHGS operates directly on LASSO's Stimulus-Response Matrix (SRM) representation without requiring control-flow graphs or language-specific program structures, maintaining compatibility with LASSO's language-agnostic philosophy.
+
+\subsubsection*{Algorithm Overview}
+
+MA-EHGS retains the two-phase structure of EHGS: Phase~1 identifies and selects essential tests that uniquely cover any requirement (structural or mutation), ensuring no loss of coverage. Phase~2 applies a weighted greedy heuristic to select additional tests until all requirements are satisfied. The key innovation is the integration of mutation requirements into the unified requirements matrix $R = R_{\text{struct}} \cup R_{\text{mut}}$ and a weighted scoring function that balances structural coverage and mutation preservation during greedy selection.
+
+By treating both structural coverage (lines, branches, methods) and mutation requirements (killed mutants) as mandatory SRM columns, MA-EHGS guarantees 100\% preservation of both adequacy dimensions while achieving reduction effectiveness comparable to coverage-only EHGS~\cite{gladston2015}. The algorithm operates in polynomial time $O(nq)$, where $n$ is the number of tests and $q$ the total number of requirements, ensuring scalability for LASSO's large-scale analysis requirements.
+
+\subsubsection*{Notation}
+
+\begin{itemize}
+  \item $T = \{t_1,\dots,t_n\}$: set of tests (SRM rows).
+  \item $R_{\text{struct}} = \{r_1,\dots,r_m\}$: structural requirements (lines, branches, methods covered).
+  \item $R_{\text{mut}} = \{m_1,\dots,m_p\}$: mutation requirements (mutants killed by the original suite).
+  \item $R = R_{\text{struct}} \cup R_{\text{mut}}$: unified requirement set (SRM columns).
+  \item $M \in \{0,1\}^{n \times |R|}$: binary requirements matrix; $M_{ij} = 1$ iff test $t_i$ satisfies requirement $r_j$.
+  \item $R_i = \{r_j \in R \mid M_{ij}=1\}$: set of requirements satisfied by test $t_i$.
+  \item Weights: $\alpha \in [0,1]$ for structural requirements, $\beta \ge 0$ for mutation requirements (default: $\alpha = 0.3$, $\beta = 0.7$). Setting $\beta = 0$ recovers purely coverage-based EHGS; setting $\alpha = 0$ prioritises mutation-only selection.
+\end{itemize}
+
+\subsubsection*{Algorithm}
+
+\begin{framed}
+\noindent\textbf{Procedure} MAEHGS($M$, $\alpha$, $\beta$)\\
+\textbf{Input:} Requirements matrix $M \in \{0,1\}^{n \times |R|}$, weights $\alpha \in [0,1]$, $\beta \ge 0$\\
+\textbf{Output:} Minimised test subset $S \subseteq T$ guaranteeing 100\% coverage of all requirements in $R$\\[4pt]
+
+\noindent\textbf{Phase 1: Essential Test Selection}\\
+\emph{Objective:} Identify and select all tests that uniquely cover at least one requirement. These tests are essential because omitting them would leave requirements uncovered.\\[4pt]
+
+1. For each requirement $r_j \in R$, compute its set of covering tests:
+\[
+  T_j = \{ t_i \in T \mid M_{ij} = 1 \}, \quad |T_j| = \text{cardinality of }T_j
+\]
+
+2. Initialise selected tests and uncovered requirements:
+\[
+  S \leftarrow \emptyset,\quad R_{\text{uncov}} \leftarrow R
+\]
+
+3. For each requirement $r_j \in R$ with $|T_j| = 1$ (uniquely covered):
+\begin{itemize}
+  \item Let $t_i$ be the unique test in $T_j$.
+  \item Add $t_i$ to $S$ (if not already selected).
+  \item Remove all requirements covered by $t_i$ from the uncovered set:
+  \[
+    R_{\text{uncov}} \leftarrow R_{\text{uncov}} \setminus R_i
+  \]
+\end{itemize}
+
+\emph{Outcome:} All essential tests are selected. If $R_{\text{uncov}} = \emptyset$, the algorithm terminates (rare in practice). Otherwise, proceed to Phase~2.\\[8pt]
+
+\noindent\textbf{Phase 2: Weighted Greedy Selection}\\
+\emph{Objective:} Iteratively select tests that maximise a weighted combination of new structural coverage and new mutation kills, continuing until all requirements are satisfied.\\[4pt]
+
+4. While $R_{\text{uncov}} \neq \emptyset$:
+\begin{itemize}
+  \item For each test $t_i \in T \setminus S$:
+  \begin{itemize}
+    \item Compute new structural coverage:
+    \[
+      \text{newCov}_{\text{struct}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{struct}}
+    \]
+    \item Compute new mutation kills:
+    \[
+      \text{newCov}_{\text{mut}}(t_i) = R_i \cap R_{\text{uncov}} \cap R_{\text{mut}}
+    \]
+    \item Compute weighted score:
+    \[
+      \text{Score}(t_i) = \alpha \cdot |\text{newCov}_{\text{struct}}(t_i)| + \beta \cdot |\text{newCov}_{\text{mut}}(t_i)|
+    \]
+  \end{itemize}
+  
+  \item Select the test with maximal score:
+  \[
+    t_{i^*} = \arg\max_{t_i \in T \setminus S} \text{Score}(t_i)
+  \]
+  \emph{Tie-breaking:} If multiple tests achieve the same score, select the test with the highest total number of newly covered requirements $|\text{newCov}_{\text{struct}}(t_i)| + |\text{newCov}_{\text{mut}}(t_i)|$. If ties remain, use deterministic ordering (e.g., lexicographic by test identifier) to ensure reproducibility.
+  
+  \item Add $t_{i^*}$ to $S$.
+  
+  \item Update uncovered requirements:
+  \[
+    R_{\text{uncov}} \leftarrow R_{\text{uncov}} \setminus R_{i^*}
+  \]
+\end{itemize}
+
+5. Return $S$.
+\end{framed}
+
+\subsubsection*{Key Properties}
+
+\begin{itemize}
+  \item \textbf{Correctness:} By construction, $S$ covers all requirements in $R$. Phase~1 ensures no uniquely-covered requirement is lost. Phase~2 continues until $R_{\text{uncov}} = \emptyset$.
+  
+  \item \textbf{Determinism:} The implementation uses deterministic data structures (LinkedHashMap, LinkedHashSet in Java) and consistent tie-breaking rules, ensuring reproducible results across executions.
+  
+  \item \textbf{Language-agnostic:} The algorithm operates solely on the binary matrix $M$, which is constructed from LASSO's SRM representation. No control-flow graphs, abstract syntax trees, or other language-specific structures are required.
+  
+  \item \textbf{Parameter sensitivity:} Empirical validation (Appendix~\ref{app:benchmarks}) shows that balanced settings ($\alpha, \beta > 0$) produce robust results. Edge cases with $\alpha = 0$ or $\beta = 0$ reduce to mutation-only or coverage-only selection, respectively.
+\end{itemize}
+
+
+\section{Extended Benchmarks and Reproducibility}
+\label{app:benchmarks}
+
+This appendix complements the implementation chapter by providing representative empirical results and reproducibility notes for the MA-EHGS implementation within LASSO.
+
+\subsection*{Representative Benchmark Results}
+
+Table~\ref{tab:appendix-benchmarks} presents MA-EHGS validation results: parameter sensitivity analysis across $\alpha$--$\beta$ configurations (80 original tests) and cross-implementation validation across multiple Base64 encoder/decoder systems.
+
+\begin{table}[H]
+  \centering
+  \caption{MA-EHGS validation: parameter sensitivity and cross-implementation consistency.}
+  \label{tab:appendix-benchmarks}
+  \begin{tabular}{@{}llcccc@{}}
+    \toprule
+    \multicolumn{6}{c}{\textbf{Part A: Parameter Sensitivity Analysis (80 Original Tests)}} \\
+    \midrule
+    $\alpha$ & $\beta$ & \textbf{Minimised} & \textbf{Coverage} & \textbf{Mutation} & \\
+    \midrule
+    1.0 & 0.0 & 7 & 100\,\% & 80\,\% & \\
+    0.9 & 0.1 & 8 & 100\,\% & 100\,\% & \\
+    0.8 & 0.2 & 8 & 100\,\% & 100\,\% & \\
+    0.7 & 0.3 & 8 & 100\,\% & 100\,\% & \\
+    0.6 & 0.4 & 8 & 100\,\% & 100\,\% & \\
+    0.5 & 0.5 & 8 & 100\,\% & 100\,\% & \\
+    0.4 & 0.6 & 8 & 100\,\% & 100\,\% & \\
+    0.3 & 0.7 & 8 & 100\,\% & 100\,\% & \\
+    0.2 & 0.8 & 8 & 100\,\% & 100\,\% & \\
+    0.1 & 0.9 & 8 & 100\,\% & 100\,\% & \\
+    0.0 & 1.0 & 7 & --- & 100\,\% & \\
+    \midrule
+    \multicolumn{6}{c}{\textbf{Part B: Cross-Implementation Validation ($\alpha = 0.3$, $\beta = 0.7$)}} \\
+    \midrule
+    \textbf{Implementation} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
+    \midrule
+    Implementation-A\textsuperscript{a} & 80 &  8 & 90.0\,\% & 100\,\% & 100\,\% \\
+    Implementation-B\textsuperscript{b} & 80 &  2 & 97.5\,\% & 100\,\% & 100\,\% \\
+    Implementation-C\textsuperscript{c} & 80 &  9 & 88.8\,\% & 100\,\% & 100\,\% \\
+    \midrule
+    \multicolumn{6}{c}{\textbf{Part C: Small Suite Validation ($\alpha = 0.1$, $\beta = 0.9$)}} \\
+    \midrule
+    \textbf{System} & \textbf{Original} & \textbf{Minimised} & \textbf{Reduction} & \textbf{Coverage} & \textbf{Mutation} \\
+    \midrule
+    String Utility & 4 &  3 & 25.0\,\% & 100\,\% & 100\,\% \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.3em}
+  
+  \footnotesize
+  \textsuperscript{a}commons-codec 1.15 \quad
+  \textsuperscript{b}bouncycastle bcprov-jdk18on 1.78 \quad
+  \textsuperscript{c}tomcat-embed-core 10.1.20
+\end{table}
+
+Table~\ref{tab:appendix-benchmarks} demonstrates that MA-EHGS exhibits stable behaviour across parameter configurations: all balanced settings ($\alpha, \beta > 0$) yield identical 8-test suites with 100\% coverage and mutation retention. Edge cases where either parameter equals zero produce slightly smaller 7-test suites but sacrifice either mutation awareness ($\beta=0$) or coverage emphasis ($\alpha=0$). This stability indicates that the dual-objective scoring function reliably identifies the same essential test subset across a wide range of weight combinations.
+
+\subsection*{Reproducibility Notes}
+
+\begin{itemize}
+  \item \textbf{Environment:} LASSO Arena running Docker containers using Java-17.
+  \item \textbf{Coverage:} JaCoCo 0.8.11 with per-test coverage collection, using reset-based isolation between tests.
+  \item \textbf{Mutation:} PIT is configured with common mutation operators (e.g.\ conditionals, increments, arithmetic, negated conditionals, return values).
+  \item \textbf{Parameters:} Default MA-EHGS weights are $\alpha = 0.3$ and $\beta = 0.7$. Parameter sensitivity analysis (Table~\ref{tab:appendix-benchmarks}) tested all combinations where $\alpha + \beta = 1.0$ in 0.1 increments, revealing stable behaviour: all balanced configurations produced identical 8-test suites with 100\% coverage and mutation retention.
+  \item \textbf{Reproducing results:}
+  \begin{enumerate}
+    \item Clone the implementation repository from the \href{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/tree/test-suite-minimization}{test-suite-minimization} branch.
+    \item Install prerequisites: LASSO platform and Java development environment (Java 17 or higher).
+    \item Follow deployment instructions at \href{https://softwareobservatorium.github.io/web/}{softwareobservatorium.github.io}. Build and deploy LASSO using the cloned repository code to include the test suite minimisation implementation.
+    \item Run \texttt{mvn install} in the cloned repository to build the project and automatically install all dependencies (JaCoCo, PIT, and other required tools).
+    \item After deployment, configure and execute the minimisation by adding the \texttt{TestSuiteMinimization} action to your LSL script.
+    \item For detailed setup instructions, LSL configuration examples, and usage guidelines, refer to \href{https://swtrepo.informatik.uni-mannheim.de/laith.sandouk/lasso/-/blob/test-suite-minimization/TestSuiteMinimization_Implementation.md}{TestSuiteMinimization\_Implementation.md} in the repository.
+  \end{enumerate}
+\end{itemize}
+
+\section{SRM Coverage Extraction Specification}
+\label{app:srm}
+
+This appendix specifies how LASSO's Stimulus--Response Matrices (SRMs) are converted into a requirements matrix suitable for MA-EHGS.
+
+\subsection*{SRM Structure}
+
+LASSO stores SRMs in an Apache Ignite distributed cache:
+
+\begin{itemize}
+  \item \textbf{Rows (stimuli):} test sequences, method invocations, or API calls.
+  \item \textbf{Columns (systems):} executable systems under test.
+  \item \textbf{Cells:} structured response objects $M_{ij}$ with execution results for system $j$ responding to stimulus $i$.
+  \item \textbf{Cache keys (CellId):} include \texttt{executionId}, \texttt{systemId}, \texttt{adapterId}, \texttt{variantId} (original/mutant), \texttt{sheetId} (test or coverage key), and coordinates.
+  \item \textbf{Cache values (CellValue):} include execution outputs, coverage elements, or metrics.
+\end{itemize}
+
+\subsection*{Per-Test Coverage Collection}
+
+Per-test coverage is collected via test lifecycle hooks:
+
+\begin{enumerate}
+  \item \textbf{Before each test $t_i$:} coverage counters are reset.
+  \item \textbf{During $t_i$:} JaCoCo instruments bytecode and records line, branch, and method coverage.
+  \item \textbf{After $t_i$:} coverage data are exported for that test only.
+\end{enumerate}
+
+Coverage is stored as cells with a uniform naming scheme, e.g.\ \texttt{sheetId = "COVERAGE\_testName"} and a type field indicating whether the value is a line, branch, or method identifier. This design is language-agnostic and can be mirrored for non-Java systems using other coverage tools.
+
+\subsection*{Mutation Result Collection}
+
+For mutation testing:
+
+\begin{itemize}
+  \item Each test $t_i$ is executed against the original system and each mutant variant.
+  \item Results are stored with \texttt{sheetId = "testName()"}, and \texttt{variantId} distinguishing original vs.\ individual mutants.
+  \item A mutant is considered \emph{killed} by $t_i$ if any SRM cell for $t_i$ and that mutant differs from the original system's output in the corresponding cell.
+\end{itemize}
+
+\subsection*{Requirements Matrix Construction}
+
+The SRM data are then transformed into a unified requirements matrix:
+
+\begin{itemize}
+  \item Tests $T = \{t_1,\dots,t_n\}$ are derived from distinct test names.
+  \item Structural requirements $R_{\text{struct}}$ are derived from covered lines, branches, and methods across all tests and systems.
+  \item Mutation requirements $R_{\text{mut}}$ are derived from the set of mutant identifiers killed by at least one test and selected for preservation.
+  \item For each test $t_i$ and requirement $r_j$, $M_{ij}=1$ if $t_i$ covers $r_j$ (structural) or kills $r_j$ (mutant). Otherwise $M_{ij}=0$.
+\end{itemize}
+
+The resulting matrix $M$ is the input to MA-EHGS and to other SRM-based minimisation algorithms.
+
+\clearpage
+
+\section{Licensing Header Template}
+\label{app:license}
+
+For completeness, the standard source header text required by the Chair of Software Technology is reproduced below as a template to be included at the top of each compilation unit.
+
+\begin{framed}
+\begin{doublespace}
+Copyright (c) 2021, Chair of Software Technology\\
+All rights reserved.\\
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\\
+\begin{itemize}
+\item Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+\item Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+\item Neither the name of the University Mannheim nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+\end{itemize}
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+\end{doublespace}
+\end{framed}
+
+\clearpage
+
+\section{\large Declaration of Authorship / Eidesstattliche Erkl\"{a}rung}
+\pagestyle{empty}
+I hereby declare that the work presented in this thesis is my own and that I have not called upon the help of a third party. In addition, I affirm that neither I nor anybody else has previously submitted this work or parts of it to obtain credits elsewhere. I have clearly marked and acknowledged all quotations and references that have been taken from the works of others. All secondary literature and other sources are marked and listed in the bibliography. The same applies to all charts, diagrams and illustrations as well as to all Internet resources. Moreover, I consent to my paper being electronically stored and sent anonymously in order to be checked for plagiarism. I know that if this declaration is not made, the paper may not be graded.
+
+\vspace{-0.3cm}
+
+\hrulefill
+
+\vspace{-0.2cm}
+Hiermit versichere ich, dass diese Abschlussarbeit von mir persönlich verfasst
+ist und dass ich keinerlei fremde Hilfe in Anspruch genommen habe. Ebenso
+versichere ich, dass diese Arbeit oder Teile daraus weder von mir selbst noch
+von anderen als Leistungsnachweise andernorts eingereicht wurden. Wörtliche oder
+sinn\-gemäße Übernahmen aus anderen Schriften und Veröffentlichungen in gedruckter
+oder elektronischer Form sind gekennzeichnet. Sämtliche Sekundärliteratur und
+sonstige Quellen sind nachgewiesen und in der Bibliographie aufgeführt. Das
+Glei\-che gilt für graphische Darstellungen und Bilder sowie für alle
+Internet-Quellen.
+
+Ich bin ferner damit einverstanden, dass meine Arbeit zum Zwecke eines
+Plagiatsabgleichs in elektronischer Form anonymisiert versendet und gespeichert
+werden kann. Mir ist bekannt, dass von der Korrektur der Arbeit abgesehen werden
+kann, wenn die Erklärung nicht erteilt wird.
+
+\vspace{1.0cm}
+
+Mannheim, December 1, 2025
+
+\vspace{1.5cm}
+
+Laith Philipp Sandouk
+
+\clearpage
+
+\section{\large Assignment of Usage Rights / Abtretungserkl\"arung}
+\pagestyle{empty}
+I hereby grant the University of Mannheim, Chair of Software Engineering, Prof. Dr. Colin Atkinson, extensive, exclusive, unlimited and unrestricted usage rights to the work described in this thesis. 
+
+This includes the right to use the results in research and teaching. In particular, this includes the right to reproduce, distribute, translate, change and transfer the results to third parties, as well as any further results derived from them.
+
+Whenever the results of my work are used in their original form or in a revised version, I will be mentioned by name as a co-author, in compliance with the copyright rules. This assignment does not include any commercial use.
+
+\vspace{-0.3cm}
+
+\hrulefill
+
+\vspace{-0.2cm} 
+Hinsichtlich meiner Bachelorarbeit räume ich der Universität Mannheim/Lehrstuhl für Softwaretechnik,
+Prof. Dr. Colin Atkinson, umfassende, ausschließliche unbefristete und
+unbeschränkte Nutzungsrechte an den entstandenen Arbeitsergebnissen ein.
+
+Die Abtretung umfasst das Recht auf Nutzung der Arbeitsergebnisse in Forschung
+und Lehre, das Recht der Vervielfältigung, Verbreitung und Übersetzung sowie
+das Recht zur Bearbeitung und Änderung inklusive Nutzung der dabei
+entstehenden Ergebnisse, sowie das Recht zur Weiterübertragung auf Dritte.
+
+Solange von mir erstellte Ergebnisse in der ursprünglichen oder in
+überarbeiteter Form verwendet werden, werde ich nach Maßgabe des Urheberrechts
+als Co-Autor namentlich genannt. Eine gewerbliche Nutzung ist von dieser
+Abtretung nicht mit umfasst.
+\bigskip
+
+\vspace{1.0cm}
+
+Mannheim, December 1, 2025
+
+\vspace{1.5cm}
+
+Laith Philipp Sandouk
 
 \end{appendices}
