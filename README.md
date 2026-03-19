@@ -1,4 +1,4 @@
-# Test Suite Minimisation in LASSO Using Stimulus–Response Matrices
+# Test Suite Minimisation in the Large-Scale Software Observatorium Using Stimulus-Response Matrices
 
 This repository contains the thesis and implementation for test suite minimisation in the LASSO platform, focusing on scalable, language-independent reduction of redundant tests using Stimulus–Response Matrices (SRMs) and mutation-aware algorithms.
 
@@ -8,7 +8,7 @@ This repository contains the thesis and implementation for test suite minimisati
 
 ## Overview
 
-- **Thesis Title:** Test Suite Minimisation in LASSO Using Stimulus–Response Matrices
+- **Thesis Title:** Test Suite Minimisation in the Large-Scale Software Observatorium Using Stimulus-Response Matrices
 - **Author:** Laith Philipp Sandouk
 - **Platform:** LASSO (Large-Scale Software Observatorium)
 - **Core Algorithm:** Mutation-Aware Enhanced Harrold–Gupta–Soffa (MA-EHGS)
